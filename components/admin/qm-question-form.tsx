@@ -245,7 +245,7 @@ function MatcherFields({ defaults }: { defaults?: MatcherData }) {
       {/* Count selector */}
       <div className="flex items-center gap-3">
         <span className="text-xs text-[rgba(255,255,255,0.55)]">Number of pairs:</span>
-        {[2, 3, 4, 5, 6, 8].map((n) => (
+        {[2, 3, 4, 5, 6, 7, 8].map((n) => (
           <button key={n} type="button" onClick={() => changeCount(n)}
             className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${count === n ? "bg-[#0F9C00] text-white" : "border border-[rgba(255,255,255,0.2)] text-[rgba(255,255,255,0.6)] hover:border-white"}`}>
             {n}

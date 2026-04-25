@@ -383,7 +383,9 @@ function MatcherInput({
   );
 }
 
-// ─── Classifier (drag and drop) ───────────────────────────────────────────────
+// ─── Classifier (drag-and-drop on desktop + tap-to-select on mobile) ──────────
+// Browsers don't fire click after a drag, so both interaction models
+// coexist safely in a single component.
 
 function ClassifierInput({
   data,
@@ -396,6 +398,7 @@ function ClassifierInput({
 }) {
   const [dragItem, setDragItem] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState<number | "bank" | null>(null);
+  const [activeItem, setActiveItem] = useState<number | null>(null); // tap selection
 
   const [shuffled] = useState<number[]>(() => {
     const idx = data.items.map((_, i) => i);
@@ -406,26 +409,65 @@ function ClassifierInput({
     return idx;
   });
 
-  const selected: (number | null)[] = Array.isArray(value)
+  const placements: (number | null)[] = Array.isArray(value)
     ? (value as (number | null)[])
     : Array(data.items.length).fill(null);
 
-  function assign(itemIdx: number, catIdx: number | null) {
-    const next = [...selected];
-    next[itemIdx] = catIdx;
+  function assign(ii: number, ci: number | null) {
+    const next = [...placements];
+    next[ii] = ci;
     onChange(next);
   }
 
-  const unplaced = shuffled.filter((ii) => selected[ii] === null);
+  // ── Drag handlers (desktop) ───────────────────────────────────────────────
+  function onDragStartItem(ii: number, e: React.DragEvent) {
+    setDragItem(ii);
+    setActiveItem(null);
+    e.dataTransfer.effectAllowed = "move";
+  }
+  function onDragEndItem() {
+    setDragItem(null);
+    setDragOver(null);
+  }
+
+  // ── Tap/click handlers (mobile — click never fires after a real drag) ─────
+  function tapBankItem(ii: number) {
+    setActiveItem((prev) => (prev === ii ? null : ii));
+  }
+  function tapCategory(ci: number) {
+    if (activeItem === null) return;
+    assign(activeItem, ci);
+    setActiveItem(null);
+  }
+  function tapPlacedItem(ii: number, e: React.MouseEvent) {
+    e.stopPropagation();
+    if (activeItem === ii) {
+      assign(ii, null); // second tap → return to bank
+      setActiveItem(null);
+    } else {
+      setActiveItem(ii); // first tap → select to move
+    }
+  }
+
+  const unplaced = shuffled.filter((ii) => placements[ii] === null);
   const catCols = Math.min(data.categories.length, 2);
+  const hasTapSelection = activeItem !== null && dragItem === null;
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Bank — drag items from here, or drop back to unassign */}
+      <p className="text-xs text-[rgba(255,255,255,0.45)]">
+        {hasTapSelection
+          ? `Tap a category to place "${data.items[activeItem!].text}" — or tap it again to cancel.`
+          : "Drag items into a category, or tap to select and then tap a category."}
+      </p>
+
+      {/* Bank */}
       <div
-        className={`min-h-14 rounded-2xl border-2 border-dashed p-4 transition-colors ${
+        className={`min-h-12 rounded-2xl border-2 border-dashed p-4 transition-colors ${
           dragOver === "bank"
             ? "border-[rgba(255,255,255,0.45)] bg-[rgba(255,255,255,0.05)]"
+            : hasTapSelection
+            ? "border-[rgba(255,255,255,0.2)]"
             : "border-[rgba(255,255,255,0.15)]"
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragOver("bank"); }}
@@ -439,19 +481,21 @@ function ClassifierInput({
       >
         <div className="flex flex-wrap gap-2 min-h-8">
           {unplaced.length === 0 ? (
-            <span className="text-xs text-[rgba(255,255,255,0.3)]">All items placed — drag one back to move it</span>
+            <span className="text-xs text-[rgba(255,255,255,0.3)]">All items placed</span>
           ) : (
             unplaced.map((ii) => (
               <div
                 key={ii}
                 draggable
-                onDragStart={(e) => {
-                  setDragItem(ii);
-                  e.dataTransfer.effectAllowed = "move";
-                }}
-                onDragEnd={() => { setDragItem(null); setDragOver(null); }}
-                className={`cursor-grab rounded-full border border-[rgba(255,255,255,0.3)] px-3 py-1.5 text-sm font-semibold text-white select-none transition-opacity ${
-                  dragItem === ii ? "opacity-40" : "opacity-100"
+                onDragStart={(e) => onDragStartItem(ii, e)}
+                onDragEnd={onDragEndItem}
+                onClick={() => tapBankItem(ii)}
+                className={`cursor-grab rounded-full border px-3 py-1.5 text-sm font-semibold text-white select-none transition-all active:scale-95 ${
+                  activeItem === ii
+                    ? "border-[#0F9C00] bg-[rgba(15,156,0,0.25)] ring-2 ring-[#0F9C00] scale-105"
+                    : dragItem === ii
+                    ? "opacity-40 border-[rgba(255,255,255,0.3)]"
+                    : "border-[rgba(255,255,255,0.3)] hover:border-white"
                 }`}
               >
                 {data.items[ii].text}
@@ -461,21 +505,17 @@ function ClassifierInput({
         </div>
       </div>
 
-      {/* Category drop zones */}
+      {/* Category buckets */}
       <div
         className="grid gap-3"
         style={{ gridTemplateColumns: `repeat(${catCols}, minmax(0, 1fr))` }}
       >
         {data.categories.map((cat, ci) => {
-          const placed = shuffled.filter((ii) => selected[ii] === ci);
+          const placed = shuffled.filter((ii) => placements[ii] === ci);
+          const highlight = dragOver === ci || hasTapSelection;
           return (
             <div
               key={ci}
-              className={`min-h-24 rounded-2xl border-2 p-4 transition-colors ${
-                dragOver === ci
-                  ? "border-[#0F9C00] bg-[rgba(15,156,0,0.08)]"
-                  : "border-[rgba(255,255,255,0.18)]"
-              }`}
               onDragOver={(e) => { e.preventDefault(); setDragOver(ci); }}
               onDragLeave={() => setDragOver(null)}
               onDrop={(e) => {
@@ -484,6 +524,12 @@ function ClassifierInput({
                 setDragOver(null);
                 setDragItem(null);
               }}
+              onClick={() => tapCategory(ci)}
+              className={`min-h-24 rounded-2xl border-2 p-4 transition-colors ${
+                highlight
+                  ? "cursor-pointer border-[#0F9C00] bg-[rgba(15,156,0,0.06)]"
+                  : "border-[rgba(255,255,255,0.18)]"
+              }`}
             >
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--accent)]">
                 {cat}
@@ -493,14 +539,17 @@ function ClassifierInput({
                   <div
                     key={ii}
                     draggable
-                    onDragStart={(e) => {
-                      setDragItem(ii);
-                      e.dataTransfer.effectAllowed = "move";
-                    }}
-                    onDragEnd={() => { setDragItem(null); setDragOver(null); }}
-                    className={`cursor-grab rounded-full bg-[rgba(15,156,0,0.2)] px-3 py-1 text-xs font-semibold text-[#0F9C00] select-none transition-opacity ${
-                      dragItem === ii ? "opacity-40" : "opacity-100"
+                    onDragStart={(e) => onDragStartItem(ii, e)}
+                    onDragEnd={onDragEndItem}
+                    onClick={(e) => tapPlacedItem(ii, e)}
+                    className={`cursor-grab rounded-full px-3 py-1 text-xs font-semibold select-none transition-all active:scale-95 ${
+                      activeItem === ii
+                        ? "bg-[rgba(15,156,0,0.4)] text-[#0F9C00] ring-2 ring-[#0F9C00] scale-105"
+                        : dragItem === ii
+                        ? "opacity-40 bg-[rgba(15,156,0,0.2)] text-[#0F9C00]"
+                        : "bg-[rgba(15,156,0,0.2)] text-[#0F9C00] hover:bg-red-500/20 hover:text-red-400"
                     }`}
+                    title="Drag or tap to move"
                   >
                     {data.items[ii].text}
                   </div>
@@ -512,7 +561,7 @@ function ClassifierInput({
       </div>
 
       <p className="text-xs text-[rgba(255,255,255,0.4)]">
-        Drag items into the correct category. Drag back to the top to remove.
+        Mobile: tap an item to select it, tap a category to place it, tap a placed item twice to return it.
       </p>
     </div>
   );
