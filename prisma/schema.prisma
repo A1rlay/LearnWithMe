@@ -32,6 +32,62 @@ model Video {
   updatedAt       DateTime   @updatedAt
 }
 
+// ─── QuestionMaker ────────────────────────────────────────────────────────────
+
+enum QMQuestionType {
+  MULTIPLE_OPTION
+  OPEN_ANSWER
+  MATCHER
+  CLASSIFIER
+}
+
+model QMTopic {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  order       Int          @default(0)
+  questions   QMQuestion[]
+  sessions    QMSession[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model QMQuestion {
+  id        String         @id @default(cuid())
+  topicId   String
+  topic     QMTopic        @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  order     Int
+  type      QMQuestionType
+  prompt    String
+  data      Json
+  answers   QMAnswer[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model QMSession {
+  id          String     @id @default(cuid())
+  topicId     String
+  topic       QMTopic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  answers     QMAnswer[]
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+}
+
+model QMAnswer {
+  id         String     @id @default(cuid())
+  sessionId  String
+  session    QMSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionId String
+  question   QMQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answer     Json
+  isCorrect  Boolean?
+  reviewedAt DateTime?
+  createdAt  DateTime   @default(now())
+}
+
+// ─── WordCatch ────────────────────────────────────────────────────────────────
+
 model Question {
   id                String           @id @default(cuid())
   videoId           String

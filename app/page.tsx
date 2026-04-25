@@ -15,7 +15,7 @@ export default function Home() {
 
       <div className="mt-10 flex flex-col gap-3 sm:flex-row">
         <Link
-          href="/topics"
+          href="/learn"
           className="rounded-full bg-[#0F9C00] px-10 py-4 text-base font-bold text-white transition-opacity hover:opacity-90"
         >
           Start Learning

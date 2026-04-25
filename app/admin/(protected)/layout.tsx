@@ -27,7 +27,13 @@ export default async function AdminLayout({
               href="/admin/topics"
               className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
             >
-              Topics
+              WordCatch
+            </Link>
+            <Link
+              href="/admin/question-maker"
+              className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+            >
+              QuestionMaker
             </Link>
             <Link
               href="/"
