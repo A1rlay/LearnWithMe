@@ -99,16 +99,25 @@ export function QuizClient({ topic, sessionId }: Props) {
 
       {/* Nav */}
       <div className="flex items-center justify-between gap-4 pt-2">
-        <Link
-          href="/question-maker"
-          className="text-sm text-[rgba(255,255,255,0.45)] transition-colors hover:text-white"
-        >
-          ← Exit
-        </Link>
+        {step > 0 ? (
+          <button
+            onClick={() => setStep((s) => s - 1)}
+            className="rounded-full border border-[rgba(255,255,255,0.25)] px-5 py-3 text-sm font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white"
+          >
+            ← Previous
+          </button>
+        ) : (
+          <Link
+            href="/question-maker"
+            className="text-sm text-[rgba(255,255,255,0.45)] transition-colors hover:text-white"
+          >
+            ← Exit
+          </Link>
+        )}
         {isLast ? (
           <button
             onClick={handleSubmit}
-            disabled={answers[step] === null || submitting}
+            disabled={!isAnswerReady(current, answers[step]) || submitting}
             className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {submitting ? "Submitting…" : "Submit"}
@@ -116,7 +125,7 @@ export function QuizClient({ topic, sessionId }: Props) {
         ) : (
           <button
             onClick={() => setStep((s) => s + 1)}
-            disabled={answers[step] === null}
+            disabled={!isAnswerReady(current, answers[step])}
             className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Next →
@@ -820,6 +829,17 @@ function ReviewClassifier({ data, answer }: { data: ClassifierData; answer: unkn
 }
 
 // ─── Scoring ──────────────────────────────────────────────────────────────────
+
+function isAnswerReady(question: QMQuestionDetail, answer: unknown): boolean {
+  if (answer === null || answer === undefined) return false;
+  const data = question.data as QMQuestionData;
+  if ("pairs" in data) {
+    if (!Array.isArray(answer)) return false;
+    const arr = answer as (number | null)[];
+    return arr.length >= data.pairs.length && arr.every((v) => v !== null);
+  }
+  return true;
+}
 
 function scoreAnswer(question: QMQuestionDetail, answer: unknown): boolean | null {
   const data = question.data as QMQuestionData;
