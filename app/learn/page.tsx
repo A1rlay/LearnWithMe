@@ -1,7 +1,5 @@
 import Link from "next/link";
 
-import { HomeLink } from "@/components/ui/nav-link";
-
 const modalities = [
   {
     href: "/topics",
@@ -25,9 +23,7 @@ const modalities = [
 
 export default function LearnPage() {
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-col gap-8 px-6 py-12 sm:py-16">
-      <HomeLink />
-
+    <main className="mx-auto flex min-h-screen w-full max-w-lg flex-col gap-8 px-6 pb-20 pt-20 sm:pt-24">
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.32em] text-[rgba(255,255,255,0.55)]">
           Ingles Practico

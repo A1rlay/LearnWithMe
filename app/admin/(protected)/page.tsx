@@ -43,17 +43,17 @@ export default async function AdminDashboardPage() {
         </h1>
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5">
         {stats.map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}
-            className="rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[0_20px_60px_rgba(13,34,66,0.06)] transition-transform duration-200 hover:-translate-y-0.5"
+            className="rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_20px_60px_rgba(13,34,66,0.06)] transition-transform duration-200 hover:-translate-y-0.5 sm:p-6"
           >
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
               {stat.label}
             </p>
-            <p className="mt-3 font-serif text-5xl text-[var(--foreground)]">
+            <p className="mt-3 font-serif text-4xl text-[var(--foreground)] sm:text-5xl">
               {stat.count}
             </p>
           </Link>

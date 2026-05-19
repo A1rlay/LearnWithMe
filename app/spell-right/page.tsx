@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { HomeLogo } from "@/components/ui/home-logo";
 import { SpellRightMode, getSpellRightSets } from "@/server/data/spell-right";
 import type { SpellRightSetSummary } from "@/server/data/spell-right";
 
@@ -10,8 +9,7 @@ export default async function SpellRightPage() {
   const pronSets = sets.filter((s) => s.mode === SpellRightMode.PRONUNCIATION);
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col gap-10 px-6 py-12 sm:py-16">
-      <HomeLogo />
+    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 px-6 pb-20 pt-20 sm:pt-24">
 
       <div>
         <p className="text-xs font-bold uppercase tracking-[0.32em] text-[rgba(255,255,255,0.55)]">
