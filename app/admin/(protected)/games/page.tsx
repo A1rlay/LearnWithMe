@@ -21,7 +21,7 @@ const GAMES: GameEntry[] = [
   {
     href: "/admin/question-maker",
     title: "QuestionMaker",
-    description: "Build quiz sets with multiple choice, fill-in-the-blank, matching, true/false, flashcards and more.",
+    description: "Build quiz sets with multiple choice, open answers, matching, and classification questions.",
     tag: "Quiz",
   },
 ];
