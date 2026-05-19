@@ -17,18 +17,19 @@ enum Role {
 }
 
 model User {
-  id           String         @id @default(cuid())
-  email        String         @unique
-  passwordHash String
-  name         String
-  role         Role           @default(STUDENT)
-  bio          String?
-  sessions     QMSession[]
-  classes      ClassStudent[]
-  teaching     Class[]
-  progress     VideoProgress[]
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id                 String              @id @default(cuid())
+  email              String              @unique
+  passwordHash       String
+  name               String
+  role               Role                @default(STUDENT)
+  bio                String?
+  sessions           QMSession[]
+  classes            ClassStudent[]
+  teaching           Class[]
+  progress           VideoProgress[]
+  spellRightSessions SpellRightSession[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 }
 
 // ─── Classes ──────────────────────────────────────────────────────────────────
@@ -214,4 +215,63 @@ model QuestionOption {
   updatedAt  DateTime @updatedAt
 
   @@unique([questionId, order])
+}
+
+// ─── SpellRight ───────────────────────────────────────────────────────────────
+
+enum SpellRightMode {
+  TERMINATION
+  PRONUNCIATION
+}
+
+model SpellRightSet {
+  id          String              @id @default(cuid())
+  title       String
+  description String?
+  mode        SpellRightMode
+  order       Int                 @default(0)
+  words       SpellRightWord[]
+  sessions    SpellRightSession[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model SpellRightWord {
+  id            String             @id @default(cuid())
+  setId         String
+  set           SpellRightSet      @relation(fields: [setId], references: [id], onDelete: Cascade)
+  word          String
+  correctAnswer String?
+  explanation   String?
+  order         Int                @default(0)
+  answers       SpellRightAnswer[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([setId])
+}
+
+model SpellRightSession {
+  id          String             @id @default(cuid())
+  setId       String
+  userId      String?
+  set         SpellRightSet      @relation(fields: [setId], references: [id], onDelete: Cascade)
+  user        User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  answers     SpellRightAnswer[]
+  completedAt DateTime?
+  createdAt   DateTime           @default(now())
+
+  @@index([setId])
+  @@index([userId])
+}
+
+model SpellRightAnswer {
+  id        String            @id @default(cuid())
+  sessionId String
+  session   SpellRightSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  wordId    String
+  word      SpellRightWord    @relation(fields: [wordId], references: [id], onDelete: Cascade)
+  answer    String
+  isCorrect Boolean
+  createdAt DateTime          @default(now())
 }

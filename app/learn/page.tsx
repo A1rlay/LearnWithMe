@@ -15,6 +15,12 @@ const modalities = [
     description: "Practice with teacher-made quizzes: multiple choice, open answers, matching, and sorting.",
     badge: "Quiz",
   },
+  {
+    href: "/spell-right",
+    title: "SpellRight",
+    description: "Listen to words and identify their ending sound, or practice your pronunciation with the mic.",
+    badge: "Spelling + Audio",
+  },
 ];
 
 export default function LearnPage() {
