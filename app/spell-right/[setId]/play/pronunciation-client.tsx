@@ -70,6 +70,7 @@ export function PronunciationClient({
   const [score, setScore] = useState(0);
   const [scoredThisWord, setScoredThisWord] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const recognitionRef = useRef<SR | null>(null);
   const hasResultRef = useRef(false);
@@ -86,6 +87,7 @@ export function PronunciationClient({
     setIsCorrect(null);
     setScoredThisWord(false);
     setError(null);
+    setIsConnecting(false);
     fetchIPA(current.word).then((result) => {
       setIpa(result);
       setGamePhase("playing");
@@ -151,21 +153,27 @@ export function PronunciationClient({
     recognition.onerror = (event) => {
       // Edge's speech service often returns "network" on the first attempt as a
       // transient init error. Retry once silently before surfacing it to the user.
-      if (event.error === "network" && networkRetryCountRef.current < 1) {
+      if (event.error === "network" && networkRetryCountRef.current < 3) {
+        const attempt = networkRetryCountRef.current;
         networkRetryCountRef.current++;
         isRetryScheduledRef.current = true;
+        setIsConnecting(true);
+        // Progressive delay: 600ms, 1200ms, 2000ms
+        const delay = [600, 1200, 2000][attempt] ?? 2000;
         setTimeout(() => {
           isRetryScheduledRef.current = false;
           hasResultRef.current = false;
+          setIsConnecting(false);
           try {
             recognition.start();
           } catch {
             setError("Could not capture audio. Please try again.");
             setRecordPhase("idle");
           }
-        }, 400);
+        }, delay);
         return;
       }
+      setIsConnecting(false);
       const messages: Record<string, string> = {
         "not-allowed": "Microphone access denied. Please allow microphone access in your browser settings.",
         "no-speech": "No speech detected. Please try again.",
@@ -371,7 +379,7 @@ export function PronunciationClient({
             </button>
           )}
           <p className="text-xs text-[var(--muted)]">
-            {recordPhase === "recording" ? "Recording… tap to stop" : "Tap the mic to start"}
+            {isConnecting ? "Connecting…" : recordPhase === "recording" ? "Recording… tap to stop" : "Tap the mic to start"}
           </p>
           {error && <p className="text-xs text-red-400 text-center max-w-xs">{error}</p>}
         </div>
