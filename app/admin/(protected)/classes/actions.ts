@@ -9,6 +9,8 @@ import {
   adminCreateClass,
   adminDeleteClass,
   adminUpdateClass,
+  assignTopicToClass,
+  removeAssignment,
   removeStudentFromClass,
 } from "@/server/data/classes";
 
@@ -49,5 +51,22 @@ export async function addStudentAction(classId: string, formData: FormData) {
 export async function removeStudentAction(classId: string, studentId: string) {
   await requireRole("ADMIN", "TEACHER");
   await removeStudentFromClass(classId, studentId);
+  revalidatePath(`/admin/classes/${classId}`);
+}
+
+export async function assignTopicAction(classId: string, formData: FormData) {
+  await requireRole("ADMIN", "TEACHER");
+  const topicId = formData.get("topicId")?.toString() ?? "";
+  const note = formData.get("note")?.toString().trim() || undefined;
+  const dueRaw = formData.get("dueAt")?.toString();
+  const dueAt = dueRaw ? new Date(dueRaw) : undefined;
+  if (!topicId) return;
+  await assignTopicToClass(classId, topicId, { note, dueAt });
+  revalidatePath(`/admin/classes/${classId}`);
+}
+
+export async function removeAssignmentAction(classId: string, assignmentId: string) {
+  await requireRole("ADMIN", "TEACHER");
+  await removeAssignment(assignmentId);
   revalidatePath(`/admin/classes/${classId}`);
 }
