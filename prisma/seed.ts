@@ -1,8 +1,33 @@
+import { randomBytes, scrypt } from "crypto";
+import { promisify } from "util";
+
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string): Promise<string> {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${salt}:${buf.toString("hex")}`;
+}
 
 async function main() {
+  // Seed admin user from env vars (upsert so re-running seed is safe)
+  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
+  const adminPassword = process.env.ADMIN_PASSWORD ?? "changeme";
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {},
+    create: {
+      email: adminEmail,
+      passwordHash: await hashPassword(adminPassword),
+      name: "Admin",
+      role: "ADMIN",
+    },
+  });
+  console.log(`Admin user: ${adminEmail}`);
+
   await prisma.questionOption.deleteMany();
   await prisma.question.deleteMany();
   await prisma.video.deleteMany();

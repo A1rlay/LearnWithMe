@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireRole } from "@/lib/auth";
 import {
   adminCreateQMTopic,
   adminDeleteQMTopic,
@@ -18,6 +19,7 @@ import type { QMQuestionData } from "@/server/data/question-maker";
 // ─── Topics ───────────────────────────────────────────────────────────────────
 
 export async function createQMTopicAction(formData: FormData) {
+  await requireRole("ADMIN", "TEACHER");
   const title = formData.get("title")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
@@ -28,6 +30,7 @@ export async function createQMTopicAction(formData: FormData) {
 }
 
 export async function updateQMTopicAction(id: string, formData: FormData) {
+  await requireRole("ADMIN", "TEACHER");
   const title = formData.get("title")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
@@ -38,6 +41,7 @@ export async function updateQMTopicAction(id: string, formData: FormData) {
 }
 
 export async function deleteQMTopicAction(id: string) {
+  await requireRole("ADMIN", "TEACHER");
   await adminDeleteQMTopic(id);
   revalidatePath("/admin/question-maker");
   revalidatePath("/question-maker");
@@ -51,6 +55,7 @@ export async function createQMQuestionAction(
   order: number,
   formData: FormData,
 ) {
+  await requireRole("ADMIN", "TEACHER");
   const type = formData.get("type")?.toString() as QMQuestionType;
   const prompt = formData.get("prompt")?.toString().trim() ?? "";
   const data = parseQuestionData(type, formData);
@@ -65,6 +70,7 @@ export async function updateQMQuestionAction(
   questionId: string,
   formData: FormData,
 ) {
+  await requireRole("ADMIN", "TEACHER");
   const type = formData.get("type")?.toString() as QMQuestionType;
   const prompt = formData.get("prompt")?.toString().trim() ?? "";
   const data = parseQuestionData(type, formData);
@@ -75,6 +81,7 @@ export async function updateQMQuestionAction(
 }
 
 export async function deleteQMQuestionAction(topicId: string, questionId: string) {
+  await requireRole("ADMIN", "TEACHER");
   await adminDeleteQMQuestion(questionId);
   revalidatePath(`/admin/question-maker/${topicId}/questions`);
   redirect(`/admin/question-maker/${topicId}/questions`);
@@ -87,6 +94,7 @@ export async function reviewQMAnswerAction(
   answerId: string,
   isCorrect: boolean,
 ) {
+  await requireRole("ADMIN", "TEACHER");
   await adminReviewQMAnswer(answerId, isCorrect);
   revalidatePath(`/admin/question-maker/sessions/${sessionId}`);
 }
@@ -100,7 +108,10 @@ function parseQuestionData(type: QMQuestionType, formData: FormData): QMQuestion
       const options = Array.from({ length: count }, (_, i) =>
         formData.get(`option_${i}`)?.toString().trim() ?? "",
       );
-      const correctIndex = parseInt(formData.get("correctIndex")?.toString() ?? "0", 10);
+      const correctIndex = parseInt(
+        formData.get("correctIndex")?.toString() ?? "0",
+        10,
+      );
       return { options, correctIndex };
     }
     case QMQuestionType.OPEN_ANSWER: {
@@ -116,13 +127,19 @@ function parseQuestionData(type: QMQuestionType, formData: FormData): QMQuestion
       return { pairs };
     }
     case QMQuestionType.CLASSIFIER: {
-      const catCount = parseInt(formData.get("categoryCount")?.toString() ?? "2", 10);
+      const catCount = parseInt(
+        formData.get("categoryCount")?.toString() ?? "2",
+        10,
+      );
       const categories = Array.from({ length: catCount }, (_, i) =>
         formData.get(`category_${i}`)?.toString().trim() ?? "",
       );
       const itemCount = parseInt(formData.get("itemCount")?.toString() ?? "4", 10);
       const items = Array.from({ length: itemCount }, (_, i) => ({
-        categoryIndex: parseInt(formData.get(`item_cat_${i}`)?.toString() ?? "0", 10),
+        categoryIndex: parseInt(
+          formData.get(`item_cat_${i}`)?.toString() ?? "0",
+          10,
+        ),
         text: formData.get(`item_${i}`)?.toString().trim() ?? "",
       }));
       return { categories, items };

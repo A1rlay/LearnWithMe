@@ -1,7 +1,14 @@
 import { cookies } from "next/headers";
 
-const SESSION_COOKIE = "admin_session";
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const SESSION_COOKIE = "session";
+const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+export type SessionData = {
+  userId: string;
+  email: string;
+  role: string;
+  name: string;
+};
 
 async function getKey(usage: "sign" | "verify"): Promise<CryptoKey> {
   const secret = process.env.AUTH_SECRET;
@@ -33,8 +40,8 @@ async function verifyHmac(payload: string, sig: string): Promise<boolean> {
   return diff === 0;
 }
 
-export async function createSession(email: string): Promise<void> {
-  const payload = JSON.stringify({ email, exp: Date.now() + SESSION_TTL_MS });
+export async function createSession(data: SessionData): Promise<void> {
+  const payload = JSON.stringify({ ...data, exp: Date.now() + SESSION_TTL_MS });
   const encoded = btoa(payload);
   const sig = await sign(payload);
   const value = `${encoded}.${sig}`;
@@ -49,7 +56,7 @@ export async function createSession(email: string): Promise<void> {
   });
 }
 
-export async function getSession(): Promise<{ email: string } | null> {
+export async function getSession(): Promise<SessionData | null> {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(SESSION_COOKIE);
   if (!cookie) return null;
@@ -58,7 +65,7 @@ export async function getSession(): Promise<{ email: string } | null> {
 
 export async function verifySessionValue(
   value: string,
-): Promise<{ email: string } | null> {
+): Promise<SessionData | null> {
   const dotIndex = value.lastIndexOf(".");
   if (dotIndex === -1) return null;
 
@@ -70,10 +77,15 @@ export async function verifySessionValue(
     const valid = await verifyHmac(payload, sig);
     if (!valid) return null;
 
-    const data = JSON.parse(payload) as { email: string; exp: number };
+    const data = JSON.parse(payload) as SessionData & { exp: number };
     if (Date.now() > data.exp) return null;
 
-    return { email: data.email };
+    return {
+      userId: data.userId,
+      email: data.email,
+      role: data.role,
+      name: data.name,
+    };
   } catch {
     return null;
   }

@@ -1,4 +1,4 @@
-# WordCatch
+# LearnWithMe 
 
 Next.js foundation for an English listening platform where students:
 

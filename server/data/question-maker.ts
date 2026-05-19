@@ -95,8 +95,8 @@ export async function getQMTopicDetail(id: string): Promise<QMTopicDetail | null
 
 // ─── Session ──────────────────────────────────────────────────────────────────
 
-export async function createQMSession(topicId: string) {
-  return prisma.qMSession.create({ data: { topicId } });
+export async function createQMSession(topicId: string, userId: string | null = null) {
+  return prisma.qMSession.create({ data: { topicId, userId } });
 }
 
 export async function submitQMAnswers(

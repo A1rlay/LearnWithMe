@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireRole } from "@/lib/auth";
 import {
   adminCreateTopic,
   adminDeleteTopic,
@@ -17,6 +18,7 @@ function parseTags(raw: string): string[] {
 }
 
 export async function createTopicAction(formData: FormData) {
+  await requireRole("ADMIN");
   const title = formData.get("title")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const level = formData.get("level")?.toString().trim() ?? "";
@@ -29,6 +31,7 @@ export async function createTopicAction(formData: FormData) {
 }
 
 export async function updateTopicAction(id: string, formData: FormData) {
+  await requireRole("ADMIN");
   const title = formData.get("title")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() ?? "";
   const level = formData.get("level")?.toString().trim() ?? "";
@@ -41,6 +44,7 @@ export async function updateTopicAction(id: string, formData: FormData) {
 }
 
 export async function deleteTopicAction(id: string) {
+  await requireRole("ADMIN");
   await adminDeleteTopic(id);
   revalidatePath("/admin/topics");
   revalidatePath("/topics");

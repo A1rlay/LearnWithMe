@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireRole } from "@/lib/auth";
 import {
   adminCreateQuestion,
   adminDeleteQuestion,
@@ -25,9 +26,13 @@ export async function createQuestionAction(
   videoId: string,
   formData: FormData,
 ) {
+  await requireRole("ADMIN");
   const prompt = formData.get("prompt")?.toString().trim() ?? "";
   const order = parseInt(formData.get("order")?.toString() ?? "1", 10);
-  const checkpointSeconds = parseInt(formData.get("checkpointSeconds")?.toString() ?? "0", 10);
+  const checkpointSeconds = parseInt(
+    formData.get("checkpointSeconds")?.toString() ?? "0",
+    10,
+  );
   const correct = parseInt(formData.get("correct")?.toString() ?? "1", 10);
   const options = buildOptions(formData, correct);
 
@@ -43,8 +48,12 @@ export async function updateQuestionAction(
   questionId: string,
   formData: FormData,
 ) {
+  await requireRole("ADMIN");
   const prompt = formData.get("prompt")?.toString().trim() ?? "";
-  const checkpointSeconds = parseInt(formData.get("checkpointSeconds")?.toString() ?? "0", 10);
+  const checkpointSeconds = parseInt(
+    formData.get("checkpointSeconds")?.toString() ?? "0",
+    10,
+  );
   const correct = parseInt(formData.get("correct")?.toString() ?? "1", 10);
 
   const options = [1, 2, 3, 4].map((n) => ({
@@ -64,6 +73,7 @@ export async function deleteQuestionAction(
   videoId: string,
   questionId: string,
 ) {
+  await requireRole("ADMIN");
   await adminDeleteQuestion(questionId);
   revalidatePath(`/admin/topics/${topicId}/videos/${videoId}/questions`);
   redirect(`/admin/topics/${topicId}/videos/${videoId}/questions`);

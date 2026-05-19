@@ -13,7 +13,7 @@ import type {
 } from "@/server/data/question-maker";
 import { submitQuizAction } from "./actions";
 
-type Props = { topic: QMTopicDetail; sessionId: string };
+type Props = { topic: QMTopicDetail; topicId: string };
 
 type ScoredAnswer = {
   question: QMQuestionDetail;
@@ -23,7 +23,7 @@ type ScoredAnswer = {
 
 // ─── Main quiz shell ──────────────────────────────────────────────────────────
 
-export function QuizClient({ topic, sessionId }: Props) {
+export function QuizClient({ topic, topicId }: Props) {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<unknown[]>(Array(topic.questions.length).fill(null));
   const [review, setReview] = useState<ScoredAnswer[] | null>(null);
@@ -48,7 +48,7 @@ export function QuizClient({ topic, sessionId }: Props) {
       isCorrect: scoreAnswer(q, answers[i]),
     }));
     await submitQuizAction(
-      sessionId,
+      topicId,
       scored.map((s) => ({
         questionId: s.question.id,
         answer: s.studentAnswer,
@@ -837,6 +837,11 @@ function isAnswerReady(question: QMQuestionDetail, answer: unknown): boolean {
     if (!Array.isArray(answer)) return false;
     const arr = answer as (number | null)[];
     return arr.length >= data.pairs.length && arr.every((v) => v !== null);
+  }
+  if ("categories" in data) {
+    if (!Array.isArray(answer)) return false;
+    const arr = answer as (number | null)[];
+    return arr.length >= data.items.length && arr.every((v) => v !== null);
   }
   return true;
 }
