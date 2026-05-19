@@ -73,6 +73,8 @@ export function PronunciationClient({
   const [answers, setAnswers] = useState<Answer[]>([]);
   const recognitionRef = useRef<SR | null>(null);
   const hasResultRef = useRef(false);
+  const networkRetryCountRef = useRef(0);
+  const isRetryScheduledRef = useRef(false);
 
   const current = words[index];
 
@@ -130,6 +132,8 @@ export function PronunciationClient({
     recognition.lang = "en-US";
     recognitionRef.current = recognition;
     hasResultRef.current = false;
+    networkRetryCountRef.current = 0;
+    isRetryScheduledRef.current = false;
 
     recognition.onresult = (event) => {
       hasResultRef.current = true;
@@ -145,11 +149,28 @@ export function PronunciationClient({
     };
 
     recognition.onerror = (event) => {
+      // Edge's speech service often returns "network" on the first attempt as a
+      // transient init error. Retry once silently before surfacing it to the user.
+      if (event.error === "network" && networkRetryCountRef.current < 1) {
+        networkRetryCountRef.current++;
+        isRetryScheduledRef.current = true;
+        setTimeout(() => {
+          isRetryScheduledRef.current = false;
+          hasResultRef.current = false;
+          try {
+            recognition.start();
+          } catch {
+            setError("Could not capture audio. Please try again.");
+            setRecordPhase("idle");
+          }
+        }, 400);
+        return;
+      }
       const messages: Record<string, string> = {
         "not-allowed": "Microphone access denied. Please allow microphone access in your browser settings.",
         "no-speech": "No speech detected. Please try again.",
         "audio-capture": "No microphone found. Please connect one and try again.",
-        "network": "Network error during speech recognition. Please try again.",
+        "network": "Could not reach the speech recognition service. Please try again.",
       };
       setError(messages[event.error] ?? "Could not capture audio. Please try again.");
       setRecordPhase("idle");
@@ -157,10 +178,11 @@ export function PronunciationClient({
 
     // Edge sometimes fires onend before onresult — use a ref flag instead of
     // checking state (which may not have updated yet at the time onend fires).
+    // Also skip reset when a network retry is about to start.
     recognition.onend = () => {
-      if (!hasResultRef.current) {
-        setRecordPhase("idle");
-      }
+      if (hasResultRef.current) return;
+      if (isRetryScheduledRef.current) return;
+      setRecordPhase("idle");
     };
 
     try {
