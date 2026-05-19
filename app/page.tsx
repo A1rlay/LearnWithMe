@@ -1,11 +1,6 @@
 import Link from "next/link";
 
-import { getSession } from "@/lib/session";
-
-export default async function Home() {
-  const session = await getSession();
-  const isStaff = session && (session.role === "ADMIN" || session.role === "TEACHER");
-
+export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center">
       <p className="text-sm font-bold uppercase tracking-[0.32em] text-[rgba(255,255,255,0.55)]">
@@ -19,31 +14,18 @@ export default async function Home() {
       </p>
 
       <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-        {session ? (
-          <>
-            <Link
-              href="/learn"
-              className="rounded-full bg-[#0F9C00] px-10 py-4 text-base font-bold text-white transition-opacity hover:opacity-90"
-            >
-              Start Learning
-            </Link>
-            {isStaff && (
-              <Link
-                href="/admin"
-                className="rounded-full border border-[rgba(255,255,255,0.3)] px-10 py-4 text-base font-bold text-white transition-colors hover:bg-[rgba(255,255,255,0.1)]"
-              >
-                Admin Panel
-              </Link>
-            )}
-          </>
-        ) : (
-          <Link
-            href="/login"
-            className="rounded-full bg-[#0F9C00] px-10 py-4 text-base font-bold text-white transition-opacity hover:opacity-90"
-          >
-            Sign in to start
-          </Link>
-        )}
+        <Link
+          href="/learn"
+          className="rounded-full bg-[#0F9C00] px-10 py-4 text-base font-bold text-white transition-opacity hover:opacity-90"
+        >
+          Start Learning
+        </Link>
+        <Link
+          href="/admin"
+          className="rounded-full border border-[rgba(255,255,255,0.3)] px-10 py-4 text-base font-bold text-white transition-colors hover:bg-[rgba(255,255,255,0.1)]"
+        >
+          Admin
+        </Link>
       </div>
     </main>
   );

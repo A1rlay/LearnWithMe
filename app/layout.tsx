@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Manrope } from "next/font/google";
 
 import { Providers } from "@/app/providers";
+import { HomeLogo } from "@/components/ui/home-logo";
 import "./globals.css";
 
 const sans = Manrope({
@@ -25,7 +26,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={sans.variable}>
       <body className="min-h-screen antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <HomeLogo />
+          {children}
+        </Providers>
       </body>
     </html>
   );

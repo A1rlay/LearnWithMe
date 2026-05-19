@@ -4,28 +4,11 @@ import { Fragment, useLayoutEffect, useRef, useState } from "react";
 
 import type {
   ClassifierData,
-  FillBlankData,
-  FlashcardData,
   MatcherData,
   MultipleOptionData,
   QMQuestionData,
   QMQuestionType,
-  SentenceOrderData,
-  TrueFalseData,
-  WordScrambleData,
 } from "@/server/data/question-maker";
-
-const TYPE_LABELS: Record<string, string> = {
-  MULTIPLE_OPTION: "Multiple option",
-  OPEN_ANSWER: "Open answer",
-  MATCHER: "Matcher",
-  CLASSIFIER: "Classifier",
-  FILL_BLANK: "Fill in blank",
-  TRUE_FALSE: "True / False",
-  SENTENCE_ORDER: "Sentence order",
-  WORD_SCRAMBLE: "Word scramble",
-  FLASHCARD: "Flashcard",
-};
 
 const inputClass =
   "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
@@ -49,11 +32,6 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
   const oaData = defaults?.type === "OPEN_ANSWER" ? (defaults.data as { referenceAnswer: string }) : null;
   const matcherData = defaults?.type === "MATCHER" ? (defaults.data as MatcherData) : null;
   const classifierData = defaults?.type === "CLASSIFIER" ? (defaults.data as ClassifierData) : null;
-  const fillBlankData = defaults?.type === "FILL_BLANK" ? (defaults.data as FillBlankData) : null;
-  const trueFalseData = defaults?.type === "TRUE_FALSE" ? (defaults.data as TrueFalseData) : null;
-  const sentenceOrderData = defaults?.type === "SENTENCE_ORDER" ? (defaults.data as SentenceOrderData) : null;
-  const wordScrambleData = defaults?.type === "WORD_SCRAMBLE" ? (defaults.data as WordScrambleData) : null;
-  const flashcardData = defaults?.type === "FLASHCARD" ? (defaults.data as FlashcardData) : null;
 
   return (
     <form action={action} className="flex flex-col gap-6 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8">
@@ -62,8 +40,8 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
       {/* Type selector */}
       <div className="flex flex-col gap-2">
         <span className={labelClass}>Question type <span className="text-[var(--accent)]">*</span></span>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {(["MULTIPLE_OPTION","OPEN_ANSWER","MATCHER","CLASSIFIER","FILL_BLANK","TRUE_FALSE","SENTENCE_ORDER","WORD_SCRAMBLE","FLASHCARD"] as QMQuestionType[]).map((t) => (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {(["MULTIPLE_OPTION", "OPEN_ANSWER", "MATCHER", "CLASSIFIER"] as QMQuestionType[]).map((t) => (
             <button
               key={t}
               type="button"
@@ -74,7 +52,7 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
                   : "border-[rgba(255,255,255,0.2)] text-[rgba(255,255,255,0.6)] hover:border-white hover:text-white"
               }`}
             >
-              {TYPE_LABELS[t]}
+              {t === "MULTIPLE_OPTION" ? "Multiple option" : t === "OPEN_ANSWER" ? "Open answer" : t === "MATCHER" ? "Matcher" : "Classifier"}
             </button>
           ))}
         </div>
@@ -91,11 +69,6 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
       {type === "OPEN_ANSWER" && <OpenAnswerFields defaults={oaData ?? undefined} />}
       {type === "MATCHER" && <MatcherFields defaults={matcherData ?? undefined} />}
       {type === "CLASSIFIER" && <ClassifierFields defaults={classifierData ?? undefined} />}
-      {type === "FILL_BLANK" && <FillBlankFields defaults={fillBlankData ?? undefined} />}
-      {type === "TRUE_FALSE" && <TrueFalseFields defaults={trueFalseData ?? undefined} />}
-      {type === "SENTENCE_ORDER" && <SentenceOrderFields defaults={sentenceOrderData ?? undefined} />}
-      {type === "WORD_SCRAMBLE" && <WordScrambleFields defaults={wordScrambleData ?? undefined} />}
-      {type === "FLASHCARD" && <FlashcardFields defaults={flashcardData ?? undefined} />}
 
       <div className="pt-2">
         <button type="submit" className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
@@ -457,125 +430,3 @@ function ClassifierFields({ defaults }: { defaults?: ClassifierData }) {
   );
 }
 
-// ─── Fill in the blank ────────────────────────────────────────────────────────
-
-function FillBlankFields({ defaults }: { defaults?: FillBlankData }) {
-  return (
-    <fieldset className="flex flex-col gap-4 rounded-[20px] border border-[var(--border)] p-5">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">Fill in the blank</legend>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Sentence (use ___ for the blank)</label>
-        <input name="sentence" defaultValue={defaults?.sentence ?? ""} required placeholder='She ___ (go) to school every day.' className={inputClass} />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Correct answer</label>
-        <input name="answer" defaultValue={defaults?.answer ?? ""} required placeholder="goes" className={inputClass} />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Hint (optional)</label>
-        <input name="hint" defaultValue={defaults?.hint ?? ""} placeholder="verb to be" className={inputClass} />
-      </div>
-    </fieldset>
-  );
-}
-
-// ─── True / False ─────────────────────────────────────────────────────────────
-
-function TrueFalseFields({ defaults }: { defaults?: TrueFalseData }) {
-  const [isTrue, setIsTrue] = useState(defaults?.isTrue ?? true);
-  return (
-    <fieldset className="flex flex-col gap-4 rounded-[20px] border border-[var(--border)] p-5">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">True / False</legend>
-      <input type="hidden" name="isTrue" value={isTrue ? "true" : "false"} />
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Statement</label>
-        <input name="statement" defaultValue={defaults?.statement ?? ""} required placeholder="The sun rises in the west." className={inputClass} />
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-[rgba(255,255,255,0.55)]">This statement is:</span>
-        {[true, false].map((v) => (
-          <button key={String(v)} type="button" onClick={() => setIsTrue(v)}
-            className={`rounded-xl border px-4 py-2 text-sm font-bold transition-colors ${isTrue === v ? "border-[#0F9C00] bg-[rgba(15,156,0,0.2)] text-[#0F9C00]" : "border-[rgba(255,255,255,0.2)] text-[rgba(255,255,255,0.6)] hover:border-white"}`}>
-            {v ? "True" : "False"}
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Explanation (optional)</label>
-        <input name="explanation" defaultValue={defaults?.explanation ?? ""} placeholder="The sun rises in the east." className={inputClass} />
-      </div>
-    </fieldset>
-  );
-}
-
-// ─── Sentence Order ───────────────────────────────────────────────────────────
-
-function SentenceOrderFields({ defaults }: { defaults?: SentenceOrderData }) {
-  const [raw, setRaw] = useState(() => defaults?.words.join(" | ") ?? "");
-  const words = raw.split("|").map((w) => w.trim()).filter(Boolean);
-  return (
-    <fieldset className="flex flex-col gap-4 rounded-[20px] border border-[var(--border)] p-5">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">Sentence order</legend>
-      <input type="hidden" name="words" value={words.join(" | ")} />
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Words in correct order (separate with |)</label>
-        <input value={raw} onChange={(e) => setRaw(e.target.value)} required placeholder="She | is | reading | a | book" className={inputClass} />
-      </div>
-      {words.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {words.map((w, i) => (
-            <span key={i} className="rounded-full border border-[rgba(15,156,0,0.5)] px-3 py-1 text-xs font-semibold text-[#0F9C00]">{w}</span>
-          ))}
-        </div>
-      )}
-      <p className="text-xs text-[rgba(255,255,255,0.4)]">Students will receive these words shuffled and must click them in the correct order.</p>
-    </fieldset>
-  );
-}
-
-// ─── Word Scramble ────────────────────────────────────────────────────────────
-
-function WordScrambleFields({ defaults }: { defaults?: WordScrambleData }) {
-  return (
-    <fieldset className="flex flex-col gap-4 rounded-[20px] border border-[var(--border)] p-5">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">Word scramble</legend>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Word (correct spelling)</label>
-        <input name="word" defaultValue={defaults?.word ?? ""} required placeholder="because" className={inputClass} />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Hint (optional)</label>
-        <input name="hint" defaultValue={defaults?.hint ?? ""} placeholder="conjunction" className={inputClass} />
-      </div>
-    </fieldset>
-  );
-}
-
-// ─── Flashcard ────────────────────────────────────────────────────────────────
-
-function FlashcardFields({ defaults }: { defaults?: FlashcardData }) {
-  return (
-    <fieldset className="flex flex-col gap-4 rounded-[20px] border border-[var(--border)] p-5">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">Flashcard</legend>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Front label (optional)</label>
-          <input name="frontLabel" defaultValue={defaults?.frontLabel ?? ""} placeholder="English" className={inputClass} />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Back label (optional)</label>
-          <input name="backLabel" defaultValue={defaults?.backLabel ?? ""} placeholder="Spanish" className={inputClass} />
-        </div>
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Front (what the student sees first)</label>
-        <input name="front" defaultValue={defaults?.front ?? ""} required placeholder="apple" className={inputClass} />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-[0.18em] text-[rgba(255,255,255,0.55)]">Back (the answer)</label>
-        <input name="back" defaultValue={defaults?.back ?? ""} required placeholder="manzana" className={inputClass} />
-      </div>
-      <p className="text-xs text-[rgba(255,255,255,0.4)]">Students flip the card and self-report whether they knew it.</p>
-    </fieldset>
-  );
-}

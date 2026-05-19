@@ -5,16 +5,11 @@ import { useLayoutEffect, useRef, useState } from "react";
 
 import type {
   ClassifierData,
-  FillBlankData,
-  FlashcardData,
   MatcherData,
   MultipleOptionData,
   QMQuestionData,
   QMQuestionDetail,
   QMTopicDetail,
-  SentenceOrderData,
-  TrueFalseData,
-  WordScrambleData,
 } from "@/server/data/question-maker";
 import { submitQuizAction } from "./actions";
 
@@ -52,16 +47,19 @@ export function QuizClient({ topic, topicId }: Props) {
       studentAnswer: answers[i],
       isCorrect: scoreAnswer(q, answers[i]),
     }));
-    await submitQuizAction(
-      topicId,
-      scored.map((s) => ({
-        questionId: s.question.id,
-        answer: s.studentAnswer,
-        isCorrect: s.isCorrect,
-      })),
-    );
-    setReview(scored);
-    setSubmitting(false);
+    try {
+      await submitQuizAction(
+        topicId,
+        scored.map((s) => ({
+          questionId: s.question.id,
+          answer: s.studentAnswer,
+          isCorrect: s.isCorrect,
+        })),
+      );
+      setReview(scored);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (review) return <ReviewScreen topic={topic} scored={review} />;
@@ -161,11 +159,6 @@ function QuestionInput({
     case "OPEN_ANSWER": return <OpenAnswerInput value={value} onChange={onChange} />;
     case "MATCHER": return <MatcherInput data={data as MatcherData} value={value} onChange={onChange} />;
     case "CLASSIFIER": return <ClassifierInput data={data as ClassifierData} value={value} onChange={onChange} />;
-    case "FILL_BLANK": return <FillBlankInput data={data as FillBlankData} value={value} onChange={onChange} />;
-    case "TRUE_FALSE": return <TrueFalseInput data={data as TrueFalseData} value={value} onChange={onChange} />;
-    case "SENTENCE_ORDER": return <SentenceOrderInput data={data as SentenceOrderData} value={value} onChange={onChange} />;
-    case "WORD_SCRAMBLE": return <WordScrambleInput data={data as WordScrambleData} value={value} onChange={onChange} />;
-    case "FLASHCARD": return <FlashcardInput data={data as FlashcardData} value={value} onChange={onChange} />;
     default: return null;
   }
 }
@@ -692,11 +685,6 @@ function QuestionReview({ index, scored }: { index: number; scored: ScoredAnswer
       {question.type === "OPEN_ANSWER" && <ReviewOpenAnswer answer={studentAnswer} />}
       {question.type === "MATCHER" && <ReviewMatcher data={data as MatcherData} answer={studentAnswer} />}
       {question.type === "CLASSIFIER" && <ReviewClassifier data={data as ClassifierData} answer={studentAnswer} />}
-      {question.type === "FILL_BLANK" && <ReviewFillBlank data={data as FillBlankData} answer={studentAnswer} />}
-      {question.type === "TRUE_FALSE" && <ReviewTrueFalse data={data as TrueFalseData} answer={studentAnswer} />}
-      {question.type === "SENTENCE_ORDER" && <ReviewSentenceOrder data={data as SentenceOrderData} answer={studentAnswer} />}
-      {question.type === "WORD_SCRAMBLE" && <ReviewWordScramble data={data as WordScrambleData} answer={studentAnswer} />}
-      {question.type === "FLASHCARD" && <ReviewFlashcard data={data as FlashcardData} answer={studentAnswer} />}
     </div>
   );
 }
@@ -867,16 +855,6 @@ function isAnswerReady(question: QMQuestionDetail, answer: unknown): boolean {
       const arr = answer as (number | null)[];
       return arr.length >= d.items.length && arr.every((v) => v !== null);
     }
-    case "SENTENCE_ORDER": {
-      const d = data as SentenceOrderData;
-      if (!Array.isArray(answer)) return false;
-      return (answer as unknown[]).length === d.words.length;
-    }
-    case "FILL_BLANK":
-    case "WORD_SCRAMBLE":
-      return typeof answer === "string" && answer.trim().length > 0;
-    case "FLASHCARD":
-      return answer === true || answer === false;
     default:
       return true;
   }
@@ -899,239 +877,8 @@ function scoreAnswer(question: QMQuestionDetail, answer: unknown): boolean | nul
       if (!Array.isArray(answer)) return false;
       return d.items.every((item, i) => (answer as (number | null)[])[i] === item.categoryIndex);
     }
-    case "FILL_BLANK": {
-      const d = data as FillBlankData;
-      return typeof answer === "string" && answer.trim().toLowerCase() === d.answer.trim().toLowerCase();
-    }
-    case "TRUE_FALSE": {
-      const d = data as TrueFalseData;
-      return answer === d.isTrue;
-    }
-    case "SENTENCE_ORDER": {
-      const d = data as SentenceOrderData;
-      if (!Array.isArray(answer)) return false;
-      return d.words.every((w, i) => (answer as string[])[i] === w);
-    }
-    case "WORD_SCRAMBLE": {
-      const d = data as WordScrambleData;
-      return typeof answer === "string" && answer.trim().toLowerCase() === d.word.trim().toLowerCase();
-    }
-    case "FLASHCARD":
-      return answer === true ? true : false;
     default:
       return null;
   }
 }
 
-// ─── Fill in the blank ────────────────────────────────────────────────────────
-
-function FillBlankInput({ data, value, onChange }: { data: FillBlankData; value: unknown; onChange: (v: unknown) => void }) {
-  const text = typeof value === "string" ? value : "";
-  const parts = data.sentence.split("___");
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.05)] px-5 py-4 text-base text-white leading-relaxed">
-        {parts[0]}
-        <input
-          value={text}
-          onChange={(e) => onChange(e.target.value || null)}
-          placeholder="?"
-          className="mx-2 inline-block w-28 rounded-lg border-b-2 border-[#0F9C00] bg-transparent px-2 py-0.5 text-center text-white outline-none placeholder:text-[rgba(255,255,255,0.3)]"
-          autoFocus
-        />
-        {parts[1]}
-      </div>
-      {data.hint && <p className="text-xs text-[rgba(255,255,255,0.45)]">Hint: {data.hint}</p>}
-    </div>
-  );
-}
-
-function ReviewFillBlank({ data, answer }: { data: FillBlankData; answer: unknown }) {
-  const student = typeof answer === "string" ? answer.trim() : "";
-  const isCorrect = student.toLowerCase() === data.answer.trim().toLowerCase();
-  return (
-    <div className="flex flex-col gap-2 text-sm">
-      <div className={`flex items-center gap-2 rounded-xl px-4 py-2 ${isCorrect ? "bg-[rgba(15,156,0,0.12)]" : "bg-red-500/10"}`}>
-        <span className="font-bold">{isCorrect ? "✓" : "✗"}</span>
-        <span className={isCorrect ? "text-[#0F9C00]" : "text-red-400"}>Your answer: {student || "—"}</span>
-      </div>
-      {!isCorrect && <div className="flex items-center gap-2 rounded-xl bg-[rgba(15,156,0,0.12)] px-4 py-2"><span className="font-bold text-[#0F9C00]">✓</span><span className="text-[#0F9C00]">Correct: {data.answer}</span></div>}
-    </div>
-  );
-}
-
-// ─── True / False ─────────────────────────────────────────────────────────────
-
-function TrueFalseInput({ data, value, onChange }: { data: TrueFalseData; value: unknown; onChange: (v: unknown) => void }) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.05)] px-5 py-4 text-base font-medium text-white">
-        {data.statement}
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {[true, false].map((v) => (
-          <button key={String(v)} type="button" onClick={() => onChange(v)}
-            className={`rounded-2xl border py-5 text-lg font-extrabold transition-colors ${value === v ? (v ? "border-[#0F9C00] bg-[rgba(15,156,0,0.15)] text-[#0F9C00]" : "border-red-500 bg-red-500/15 text-red-400") : "border-[rgba(255,255,255,0.18)] text-white hover:border-[rgba(255,255,255,0.4)]"}`}>
-            {v ? "True" : "False"}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ReviewTrueFalse({ data, answer }: { data: TrueFalseData; answer: unknown }) {
-  const isCorrect = answer === data.isTrue;
-  return (
-    <div className="flex flex-col gap-2 text-sm">
-      <div className={`flex items-center gap-2 rounded-xl px-4 py-2 ${isCorrect ? "bg-[rgba(15,156,0,0.12)]" : "bg-red-500/10"}`}>
-        <span className="font-bold">{isCorrect ? "✓" : "✗"}</span>
-        <span className={isCorrect ? "text-[#0F9C00]" : "text-red-400"}>You answered: {answer === true ? "True" : answer === false ? "False" : "—"}</span>
-      </div>
-      {!isCorrect && <div className="flex items-center gap-2 rounded-xl bg-[rgba(15,156,0,0.12)] px-4 py-2"><span className="font-bold text-[#0F9C00]">✓</span><span className="text-[#0F9C00]">Correct: {data.isTrue ? "True" : "False"}</span></div>}
-      {data.explanation && <p className="text-xs text-[rgba(255,255,255,0.5)] px-1">Explanation: {data.explanation}</p>}
-    </div>
-  );
-}
-
-// ─── Sentence Order ───────────────────────────────────────────────────────────
-
-function SentenceOrderInput({ data, value, onChange }: { data: SentenceOrderData; value: unknown; onChange: (v: unknown) => void }) {
-  const chosen = Array.isArray(value) ? (value as string[]) : [];
-  const [shuffled] = useState(() => {
-    const arr = [...data.words];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  });
-  const remaining = shuffled.filter((w) => !chosen.includes(w));
-
-  function pick(w: string) { onChange([...chosen, w]); }
-  function remove(i: number) { onChange(chosen.filter((_, idx) => idx !== i)); }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="min-h-14 rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.2)] p-4 flex flex-wrap gap-2 items-start">
-        {chosen.length === 0 && <span className="text-sm text-[rgba(255,255,255,0.3)]">Tap words below to build the sentence…</span>}
-        {chosen.map((w, i) => (
-          <button key={i} type="button" onClick={() => remove(i)}
-            className="rounded-full border border-[#0F9C00] bg-[rgba(15,156,0,0.15)] px-3 py-1.5 text-sm font-semibold text-[#0F9C00] transition-all hover:bg-red-500/20 hover:text-red-400 hover:border-red-400">
-            {w}
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {remaining.map((w, i) => (
-          <button key={i} type="button" onClick={() => pick(w)}
-            className="rounded-full border border-[rgba(255,255,255,0.25)] px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:border-[#0F9C00] hover:text-[#0F9C00]">
-            {w}
-          </button>
-        ))}
-      </div>
-      <p className="text-xs text-[rgba(255,255,255,0.4)]">Tap words to add them to the sentence. Tap a placed word to remove it.</p>
-    </div>
-  );
-}
-
-function ReviewSentenceOrder({ data, answer }: { data: SentenceOrderData; answer: unknown }) {
-  const chosen = Array.isArray(answer) ? (answer as string[]) : [];
-  const isCorrect = data.words.every((w, i) => chosen[i] === w);
-  return (
-    <div className="flex flex-col gap-2 text-sm">
-      <div className={`rounded-xl px-4 py-3 ${isCorrect ? "bg-[rgba(15,156,0,0.12)]" : "bg-red-500/10"}`}>
-        <p className="text-xs uppercase tracking-widest mb-1 text-[rgba(255,255,255,0.5)]">Your order</p>
-        <p className={isCorrect ? "text-[#0F9C00]" : "text-red-400"}>{chosen.join(" ") || "—"}</p>
-      </div>
-      {!isCorrect && <div className="rounded-xl bg-[rgba(15,156,0,0.12)] px-4 py-3"><p className="text-xs uppercase tracking-widest mb-1 text-[rgba(255,255,255,0.5)]">Correct order</p><p className="text-[#0F9C00]">{data.words.join(" ")}</p></div>}
-    </div>
-  );
-}
-
-// ─── Word Scramble ────────────────────────────────────────────────────────────
-
-function WordScrambleInput({ data, value, onChange }: { data: WordScrambleData; value: unknown; onChange: (v: unknown) => void }) {
-  const text = typeof value === "string" ? value : "";
-  const [scrambled] = useState(() => data.word.split("").sort(() => Math.random() - 0.5).join(""));
-  return (
-    <div className="flex flex-col gap-4 items-center">
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.05)] px-8 py-6 text-3xl font-extrabold tracking-[0.3em] text-white text-center">
-        {scrambled}
-      </div>
-      {data.hint && <p className="text-xs text-[rgba(255,255,255,0.45)]">Hint: {data.hint}</p>}
-      <input value={text} onChange={(e) => onChange(e.target.value || null)} placeholder="Type the correct word…"
-        className="w-full rounded-2xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.4)] px-5 py-4 text-center text-lg text-white placeholder:text-[rgba(255,255,255,0.3)] outline-none focus:border-[rgba(255,255,255,0.5)]"
-        autoFocus />
-    </div>
-  );
-}
-
-function ReviewWordScramble({ data, answer }: { data: WordScrambleData; answer: unknown }) {
-  const student = typeof answer === "string" ? answer.trim() : "";
-  const isCorrect = student.toLowerCase() === data.word.trim().toLowerCase();
-  return (
-    <div className="flex flex-col gap-2 text-sm">
-      <div className={`flex items-center gap-2 rounded-xl px-4 py-2 ${isCorrect ? "bg-[rgba(15,156,0,0.12)]" : "bg-red-500/10"}`}>
-        <span className="font-bold">{isCorrect ? "✓" : "✗"}</span>
-        <span className={isCorrect ? "text-[#0F9C00]" : "text-red-400"}>Your answer: {student || "—"}</span>
-      </div>
-      {!isCorrect && <div className="flex items-center gap-2 rounded-xl bg-[rgba(15,156,0,0.12)] px-4 py-2"><span className="font-bold text-[#0F9C00]">✓</span><span className="text-[#0F9C00]">Correct: {data.word}</span></div>}
-    </div>
-  );
-}
-
-// ─── Flashcard ────────────────────────────────────────────────────────────────
-
-function FlashcardInput({ data, value, onChange }: { data: FlashcardData; value: unknown; onChange: (v: unknown) => void }) {
-  const [flipped, setFlipped] = useState(false);
-  return (
-    <div className="flex flex-col gap-6 items-center">
-      <button type="button" onClick={() => setFlipped((f) => !f)}
-        className="w-full rounded-3xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.05)] px-6 py-12 text-center transition-all hover:bg-[rgba(255,255,255,0.08)] active:scale-98">
-        {!flipped ? (
-          <div>
-            {data.frontLabel && <p className="text-xs font-bold uppercase tracking-[0.2em] text-[rgba(255,255,255,0.45)] mb-3">{data.frontLabel}</p>}
-            <p className="text-3xl font-extrabold text-white">{data.front}</p>
-            <p className="mt-4 text-xs text-[rgba(255,255,255,0.35)]">Tap to reveal answer</p>
-          </div>
-        ) : (
-          <div>
-            {data.backLabel && <p className="text-xs font-bold uppercase tracking-[0.2em] text-[rgba(255,255,255,0.45)] mb-3">{data.backLabel}</p>}
-            <p className="text-3xl font-extrabold text-[#0F9C00]">{data.back}</p>
-            <p className="mt-4 text-xs text-[rgba(255,255,255,0.35)]">Tap to flip back</p>
-          </div>
-        )}
-      </button>
-      {flipped && value === null && (
-        <div className="flex gap-4 w-full">
-          <button type="button" onClick={() => onChange(false)} className="flex-1 rounded-2xl border border-red-500/40 bg-red-500/10 py-4 text-sm font-bold text-red-400 transition-colors hover:bg-red-500/20">
-            ✗ Didn't know it
-          </button>
-          <button type="button" onClick={() => onChange(true)} className="flex-1 rounded-2xl border border-[#0F9C00]/40 bg-[rgba(15,156,0,0.1)] py-4 text-sm font-bold text-[#0F9C00] transition-colors hover:bg-[rgba(15,156,0,0.2)]">
-            ✓ Got it!
-          </button>
-        </div>
-      )}
-      {value !== null && (
-        <p className={`text-sm font-bold ${value === true ? "text-[#0F9C00]" : "text-red-400"}`}>
-          {value === true ? "✓ Marked as known" : "✗ Marked for review"}
-          <button type="button" onClick={() => onChange(null)} className="ml-3 text-xs text-[rgba(255,255,255,0.4)] hover:text-white">undo</button>
-        </p>
-      )}
-    </div>
-  );
-}
-
-function ReviewFlashcard({ data, answer }: { data: FlashcardData; answer: unknown }) {
-  return (
-    <div className="flex flex-col gap-2 text-sm">
-      <div className="flex items-center justify-between rounded-xl border border-[var(--border)] px-4 py-3">
-        <span className="text-[rgba(255,255,255,0.6)]">{data.front} → {data.back}</span>
-        <span className={answer === true ? "font-bold text-[#0F9C00]" : "font-bold text-red-400"}>
-          {answer === true ? "✓ Knew it" : "✗ Didn't know"}
-        </span>
-      </div>
-    </div>
-  );
-}
