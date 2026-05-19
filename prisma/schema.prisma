@@ -34,16 +34,31 @@ model User {
 // ─── Classes ──────────────────────────────────────────────────────────────────
 
 model Class {
-  id        String         @id @default(cuid())
-  name      String
-  code      String         @unique
-  teacherId String
-  teacher   User           @relation(fields: [teacherId], references: [id])
-  students  ClassStudent[]
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  id          String            @id @default(cuid())
+  name        String
+  code        String            @unique
+  teacherId   String
+  teacher     User              @relation(fields: [teacherId], references: [id])
+  students    ClassStudent[]
+  assignments ClassAssignment[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   @@index([teacherId])
+}
+
+model ClassAssignment {
+  id          String    @id @default(cuid())
+  classId     String
+  topicId     String
+  note        String?
+  dueAt       DateTime?
+  class       Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  topic       QMTopic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([classId, topicId])
+  @@index([classId])
 }
 
 model ClassStudent {
@@ -119,14 +134,15 @@ enum QMSessionMode {
 }
 
 model QMTopic {
-  id          String       @id @default(cuid())
+  id          String            @id @default(cuid())
   title       String
   description String?
-  order       Int          @default(0)
+  order       Int               @default(0)
   questions   QMQuestion[]
   sessions    QMSession[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  assignments ClassAssignment[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 }
 
 model QMQuestion {
