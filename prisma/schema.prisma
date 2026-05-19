@@ -8,6 +8,8 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+// ─── Users ────────────────────────────────────────────────────────────────────
+
 enum Role {
   ADMIN
   TEACHER
@@ -15,15 +17,46 @@ enum Role {
 }
 
 model User {
-  id           String      @id @default(cuid())
-  email        String      @unique
+  id           String         @id @default(cuid())
+  email        String         @unique
   passwordHash String
   name         String
-  role         Role        @default(STUDENT)
+  role         Role           @default(STUDENT)
+  bio          String?
   sessions     QMSession[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  classes      ClassStudent[]
+  teaching     Class[]
+  progress     VideoProgress[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
+
+// ─── Classes ──────────────────────────────────────────────────────────────────
+
+model Class {
+  id        String         @id @default(cuid())
+  name      String
+  code      String         @unique
+  teacherId String
+  teacher   User           @relation(fields: [teacherId], references: [id])
+  students  ClassStudent[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([teacherId])
+}
+
+model ClassStudent {
+  classId   String
+  studentId String
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+
+  @@id([classId, studentId])
+}
+
+// ─── WordCatch (video lessons) ────────────────────────────────────────────────
 
 model Topic {
   id          String   @id @default(cuid())
@@ -37,18 +70,32 @@ model Topic {
 }
 
 model Video {
-  id              String     @id @default(cuid())
-  topicId         String
-  title           String
-  description     String?
-  videoUrl        String
-  order           Int        @default(0)
-  topic           Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  questions       Question[]
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id          String          @id @default(cuid())
+  topicId     String
+  title       String
+  description String?
+  videoUrl    String
+  order       Int             @default(0)
+  topic       Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  progress    VideoProgress[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@index([topicId])
+}
+
+model VideoProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  videoId     String
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video       Video     @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, videoId])
+  @@index([userId])
 }
 
 // ─── QuestionMaker ────────────────────────────────────────────────────────────
@@ -58,6 +105,17 @@ enum QMQuestionType {
   OPEN_ANSWER
   MATCHER
   CLASSIFIER
+  FILL_BLANK
+  TRUE_FALSE
+  SENTENCE_ORDER
+  WORD_SCRAMBLE
+  FLASHCARD
+}
+
+enum QMSessionMode {
+  PRACTICE
+  TEST
+  GAME
 }
 
 model QMTopic {
@@ -87,14 +145,15 @@ model QMQuestion {
 }
 
 model QMSession {
-  id          String     @id @default(cuid())
+  id          String        @id @default(cuid())
   topicId     String
   userId      String?
-  topic       QMTopic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  mode        QMSessionMode @default(PRACTICE)
+  topic       QMTopic       @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user        User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   answers     QMAnswer[]
   completedAt DateTime?
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime      @default(now())
 
   @@index([topicId])
   @@index([userId])
@@ -112,7 +171,7 @@ model QMAnswer {
   createdAt  DateTime   @default(now())
 }
 
-// ─── Learn With Me────────────────────────────────────────────────────────────────
+// ─── Learn With Me ────────────────────────────────────────────────────────────
 
 model Question {
   id                String           @id @default(cuid())

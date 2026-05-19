@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { VideoList } from "@/components/video/video-list";
+import { BackLink } from "@/components/ui/nav-link";
 import { getTopicById } from "@/server/data/learning";
 
 type TopicPageProps = {
@@ -16,12 +16,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-col gap-6 px-6 py-12 sm:py-16">
-      <Link
-        href="/topics"
-        className="text-sm font-semibold text-[rgba(255,255,255,0.55)] transition-colors hover:text-white"
-      >
-        ← Topics
-      </Link>
+      <BackLink href="/topics">Topics</BackLink>
 
       <div>
         {topic.level && (

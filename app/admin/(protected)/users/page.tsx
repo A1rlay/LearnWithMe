@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { DeleteButton } from "@/components/admin/delete-button";
 import { requireRole } from "@/lib/auth";
@@ -7,7 +6,8 @@ import { adminGetAllUsers } from "@/server/data/users";
 import { deleteUserAction } from "./actions";
 
 export default async function UsersPage() {
-  await requireRole("ADMIN");
+  const session = await requireRole("ADMIN", "TEACHER");
+  const isAdmin = session.role === "ADMIN";
   const users = await adminGetAllUsers();
 
   return (
@@ -21,12 +21,14 @@ export default async function UsersPage() {
             User Management
           </h1>
         </div>
-        <Link
-          href="/admin/users/new"
-          className="rounded-full bg-[#0F9C00] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
-        >
-          New user
-        </Link>
+        {isAdmin && (
+          <Link
+            href="/admin/users/new"
+            className="rounded-full bg-[#0F9C00] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          >
+            New user
+          </Link>
+        )}
       </div>
 
       {users.length === 0 ? (
@@ -78,15 +80,25 @@ export default async function UsersPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-3">
                       <Link
-                        href={`/admin/users/${user.id}/edit`}
-                        className="text-xs font-semibold text-[var(--accent)] hover:underline"
+                        href={`/profile/${user.id}`}
+                        className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)] hover:underline"
                       >
-                        Edit
+                        Profile
                       </Link>
-                      <DeleteButton
-                        action={deleteUserAction.bind(null, user.id)}
-                        label="Delete"
-                      />
+                      {isAdmin && (
+                        <>
+                          <Link
+                            href={`/admin/users/${user.id}/edit`}
+                            className="text-xs font-semibold text-[var(--accent)] hover:underline"
+                          >
+                            Edit
+                          </Link>
+                          <DeleteButton
+                            action={deleteUserAction.bind(null, user.id)}
+                            label="Delete"
+                          />
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

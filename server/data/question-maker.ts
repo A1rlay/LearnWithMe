@@ -24,11 +24,44 @@ export type ClassifierData = {
   items: { text: string; categoryIndex: number }[];
 };
 
+export type FillBlankData = {
+  sentence: string;
+  answer: string;
+  hint?: string;
+};
+
+export type TrueFalseData = {
+  statement: string;
+  isTrue: boolean;
+  explanation?: string;
+};
+
+export type SentenceOrderData = {
+  words: string[];
+};
+
+export type WordScrambleData = {
+  word: string;
+  hint?: string;
+};
+
+export type FlashcardData = {
+  front: string;
+  back: string;
+  frontLabel?: string;
+  backLabel?: string;
+};
+
 export type QMQuestionData =
   | MultipleOptionData
   | OpenAnswerData
   | MatcherData
-  | ClassifierData;
+  | ClassifierData
+  | FillBlankData
+  | TrueFalseData
+  | SentenceOrderData
+  | WordScrambleData
+  | FlashcardData;
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
