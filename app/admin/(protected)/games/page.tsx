@@ -24,6 +24,12 @@ const GAMES: GameEntry[] = [
     description: "Build quiz sets with multiple choice, open answers, matching, and classification questions.",
     tag: "Quiz",
   },
+  {
+    href: "/admin/spell-right",
+    title: "SpellRight",
+    description: "Create word sets for termination practice (ed/t/d) and pronunciation exercises with microphone.",
+    tag: "Spelling + Audio",
+  },
 ];
 
 export default async function GamesHubPage() {
