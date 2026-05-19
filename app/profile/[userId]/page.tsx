@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { requireSession } from "@/lib/auth";
@@ -157,12 +158,13 @@ export default async function ProfilePage({ params }: Props) {
           </h2>
           <div className="overflow-hidden rounded-[28px] border border-[var(--border)] bg-[var(--panel)]">
             {stats.recentSessions.map((s, i) => (
-              <div
+              <Link
                 key={s.id}
-                className={`flex items-center justify-between gap-4 px-6 py-4 ${i < stats.recentSessions.length - 1 ? "border-b border-[var(--border)]" : ""}`}
+                href={`/profile/${userId}/sessions/${s.id}`}
+                className={`group flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-[rgba(255,255,255,0.04)] ${i < stats.recentSessions.length - 1 ? "border-b border-[var(--border)]" : ""}`}
               >
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-semibold text-[var(--foreground)]">
+                  <span className="text-sm font-semibold text-[var(--foreground)] group-hover:underline">
                     {s.topicTitle}
                   </span>
                   <span className="text-xs text-[var(--muted)]">
@@ -173,12 +175,17 @@ export default async function ProfilePage({ params }: Props) {
                     })}
                   </span>
                 </div>
-                <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${s.pct >= 80 ? "bg-[rgba(15,156,0,0.2)] text-[#0F9C00]" : s.pct >= 50 ? "bg-yellow-500/20 text-yellow-300" : "bg-red-500/20 text-red-400"}`}
-                >
-                  {s.total > 0 ? `${s.pct}%` : "submitted"}
-                </span>
-              </div>
+                <div className="flex items-center gap-2.5">
+                  <span
+                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${s.pct >= 80 ? "bg-[rgba(15,156,0,0.2)] text-[#0F9C00]" : s.pct >= 50 ? "bg-yellow-500/20 text-yellow-300" : "bg-red-500/20 text-red-400"}`}
+                  >
+                    {s.total > 0 ? `${s.pct}%` : "submitted"}
+                  </span>
+                  <svg className="shrink-0 text-[rgba(255,255,255,0.2)] transition-colors group-hover:text-[rgba(255,255,255,0.5)]" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
