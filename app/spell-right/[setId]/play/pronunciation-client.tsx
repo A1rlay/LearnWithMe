@@ -22,9 +22,10 @@ type GamePhase = "loading" | "playing" | "done";
 type SR = {
   continuous: boolean;
   interimResults: boolean;
+  maxAlternatives: number;
   lang: string;
   onresult: ((event: { results: { 0: { 0: { transcript: string } } } }) => void) | null;
-  onerror: (() => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
   onend: (() => void) | null;
   start(): void;
   stop(): void;
@@ -71,6 +72,7 @@ export function PronunciationClient({
   const [error, setError] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
   const recognitionRef = useRef<SR | null>(null);
+  const hasResultRef = useRef(false);
 
   const current = words[index];
 
@@ -92,7 +94,24 @@ export function PronunciationClient({
     return () => { recognitionRef.current?.abort(); };
   }, []);
 
-  function startRecording() {
+  async function startRecording() {
+    // Disable the button immediately to prevent double-clicks
+    setRecordPhase("recording");
+    setError(null);
+    setTranscript(null);
+    setIsCorrect(null);
+
+    // Preflight: explicitly request mic permission before starting SpeechRecognition.
+    // Edge silently fails if permission hasn't been granted via getUserMedia first.
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach((t) => t.stop());
+    } catch {
+      setError("Microphone access denied. Please allow microphone access in your browser settings.");
+      setRecordPhase("idle");
+      return;
+    }
+
     type SRCtor = new () => SR;
     const SRCtor: SRCtor | undefined =
       (window as unknown as { SpeechRecognition?: SRCtor }).SpeechRecognition ??
@@ -100,16 +119,20 @@ export function PronunciationClient({
 
     if (!SRCtor) {
       setError("Speech recognition is not supported in this browser. Try Chrome or Edge.");
+      setRecordPhase("idle");
       return;
     }
 
     const recognition = new SRCtor();
     recognition.continuous = false;
     recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
     recognition.lang = "en-US";
     recognitionRef.current = recognition;
+    hasResultRef.current = false;
 
     recognition.onresult = (event) => {
+      hasResultRef.current = true;
       const text = event.results[0][0].transcript.toLowerCase().trim();
       setTranscript(text);
       const correct = text === current.word.toLowerCase().trim();
@@ -121,20 +144,31 @@ export function PronunciationClient({
       setRecordPhase("evaluated");
     };
 
-    recognition.onerror = () => {
-      setError("Could not capture audio. Please try again.");
+    recognition.onerror = (event) => {
+      const messages: Record<string, string> = {
+        "not-allowed": "Microphone access denied. Please allow microphone access in your browser settings.",
+        "no-speech": "No speech detected. Please try again.",
+        "audio-capture": "No microphone found. Please connect one and try again.",
+        "network": "Network error during speech recognition. Please try again.",
+      };
+      setError(messages[event.error] ?? "Could not capture audio. Please try again.");
       setRecordPhase("idle");
     };
 
+    // Edge sometimes fires onend before onresult — use a ref flag instead of
+    // checking state (which may not have updated yet at the time onend fires).
     recognition.onend = () => {
-      setRecordPhase((prev) => (prev === "recording" ? "idle" : prev));
+      if (!hasResultRef.current) {
+        setRecordPhase("idle");
+      }
     };
 
-    recognition.start();
-    setRecordPhase("recording");
-    setError(null);
-    setTranscript(null);
-    setIsCorrect(null);
+    try {
+      recognition.start();
+    } catch {
+      setError("Could not start recording. Please try again.");
+      setRecordPhase("idle");
+    }
   }
 
   function stopRecording() {
