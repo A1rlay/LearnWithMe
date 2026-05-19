@@ -63,13 +63,6 @@ export async function removeStudentFromClass(classId: string, studentId: string)
   });
 }
 
-export async function joinClassByCode(userId: string, code: string) {
-  const cls = await prisma.class.findUnique({ where: { code: code.toUpperCase() } });
-  if (!cls) return null;
-  await addStudentToClass(cls.id, userId);
-  return cls;
-}
-
 export async function getStudentClasses(userId: string) {
   return prisma.classStudent.findMany({
     where: { studentId: userId },
