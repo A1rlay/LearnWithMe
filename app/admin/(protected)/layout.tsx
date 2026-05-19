@@ -30,23 +30,11 @@ export default async function AdminLayout({
             >
               Games
             </Link>
-            <Link
-              href="/admin/classes"
-              className="flex items-center gap-1.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-            >
-              Classes
-            </Link>
-            <Link
+<Link
               href="/admin/users"
               className="flex items-center gap-1.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
             >
               Users
-            </Link>
-            <Link
-              href="/"
-              className="flex items-center gap-1.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-            >
-              View site
             </Link>
           </nav>
 

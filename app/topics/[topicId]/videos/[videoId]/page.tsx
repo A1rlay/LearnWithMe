@@ -6,12 +6,12 @@ import { getVideoLessonById } from "@/server/data/learning";
 import { markVideoCompleteAction } from "./actions";
 
 type VideoPageProps = {
-  params: Promise<{ topicSlug: string; videoSlug: string }>;
+  params: Promise<{ topicId: string; videoId: string }>;
 };
 
 export default async function VideoPage({ params }: VideoPageProps) {
-  const { topicSlug, videoSlug } = await params;
-  const video = await getVideoLessonById(videoSlug);
+  const { videoId } = await params;
+  const video = await getVideoLessonById(videoId);
 
   if (!video) notFound();
 
@@ -21,7 +21,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
 
       <h1 className="text-2xl font-extrabold text-white">{video.title}</h1>
 
-      <VideoPlayer video={video} onComplete={markVideoCompleteAction.bind(null, videoSlug)} />
+      <VideoPlayer video={video} onComplete={markVideoCompleteAction.bind(null, videoId)} />
     </main>
   );
 }

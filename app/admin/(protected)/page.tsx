@@ -70,7 +70,7 @@ export default async function AdminDashboardPage() {
               href="/admin/topics"
               className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
             >
-              Manage Application
+              Manage WordCatch
             </Link>
           )}
           <Link

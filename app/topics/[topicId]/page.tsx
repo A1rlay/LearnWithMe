@@ -5,12 +5,12 @@ import { BackLink } from "@/components/ui/nav-link";
 import { getTopicById } from "@/server/data/learning";
 
 type TopicPageProps = {
-  params: Promise<{ topicSlug: string }>;
+  params: Promise<{ topicId: string }>;
 };
 
 export default async function TopicPage({ params }: TopicPageProps) {
-  const { topicSlug } = await params;
-  const topic = await getTopicById(topicSlug);
+  const { topicId } = await params;
+  const topic = await getTopicById(topicId);
 
   if (!topic) notFound();
 
