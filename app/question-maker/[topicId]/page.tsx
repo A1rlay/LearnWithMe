@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { getQMTopicDetail, createQMSession } from "@/server/data/question-maker";
+import { getQMTopicDetail } from "@/server/data/question-maker";
 import { QuizClient } from "./quiz-client";
 
 type Props = { params: Promise<{ topicId: string }> };
@@ -11,7 +11,5 @@ export default async function QuizPage({ params }: Props) {
   if (!topic) notFound();
   if (topic.questions.length === 0) notFound();
 
-  const session = await createQMSession(topicId);
-
-  return <QuizClient topic={topic} sessionId={session.id} />;
+  return <QuizClient topic={topic} topicId={topicId} />;
 }

@@ -1,10 +1,13 @@
 "use server";
 
-import { submitQMAnswers } from "@/server/data/question-maker";
+import { getSession } from "@/lib/session";
+import { createQMSession, submitQMAnswers } from "@/server/data/question-maker";
 
 export async function submitQuizAction(
-  sessionId: string,
+  topicId: string,
   answers: { questionId: string; answer: unknown; isCorrect: boolean | null }[],
 ) {
-  await submitQMAnswers(sessionId, answers);
+  const session = await getSession();
+  const qmSession = await createQMSession(topicId, session?.userId ?? null);
+  await submitQMAnswers(qmSession.id, answers);
 }

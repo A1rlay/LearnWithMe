@@ -1,9 +1,36 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
+import { getSession } from "@/lib/session";
 import { adminGetDashboardCounts } from "@/server/data/admin";
 
 export default async function AdminDashboardPage() {
-  const { topicCount, videoCount, questionCount } = await adminGetDashboardCounts();
+  const session = await getSession();
+  if (!session) redirect("/login");
+
+  const isAdmin = session.role === "ADMIN";
+  const {
+    topicCount,
+    videoCount,
+    questionCount,
+    qmTopicCount,
+    qmQuestionCount,
+    userCount,
+  } = await adminGetDashboardCounts();
+
+  const stats = isAdmin
+    ? [
+      { label: "WC Topics", count: topicCount, href: "/admin/topics" },
+      { label: "WC Videos", count: videoCount, href: "/admin/topics" },
+      { label: "WC Questions", count: questionCount, href: "/admin/topics" },
+      { label: "QM Topics", count: qmTopicCount, href: "/admin/question-maker" },
+      { label: "QM Questions", count: qmQuestionCount, href: "/admin/question-maker" },
+      { label: "Users", count: userCount, href: "/admin/users" },
+    ]
+    : [
+      { label: "QM Topics", count: qmTopicCount, href: "/admin/question-maker" },
+      { label: "QM Questions", count: qmQuestionCount, href: "/admin/question-maker" },
+    ];
 
   return (
     <div className="flex flex-col gap-8">
@@ -12,16 +39,12 @@ export default async function AdminDashboardPage() {
           Dashboard
         </p>
         <h1 className="mt-3 font-serif text-4xl text-[var(--foreground)]">
-          WordCatch Admin
+          Welcome, {session.name}
         </h1>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-3">
-        {[
-          { label: "Topics", count: topicCount, href: "/admin/topics" },
-          { label: "Videos", count: videoCount, href: "/admin/topics" },
-          { label: "Questions", count: questionCount, href: "/admin/topics" },
-        ].map((stat) => (
+        {stats.map((stat) => (
           <Link
             key={stat.label}
             href={stat.href}
@@ -42,12 +65,28 @@ export default async function AdminDashboardPage() {
           Quick actions
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
+          {isAdmin && (
+            <Link
+              href="/admin/topics"
+              className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            >
+              Manage Application
+            </Link>
+          )}
           <Link
-            href="/admin/topics"
+            href="/admin/question-maker"
             className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
           >
-            Manage topics
+            Manage QuestionMaker
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin/users"
+              className="rounded-full border border-[rgba(255,255,255,0.25)] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[rgba(255,255,255,0.1)]"
+            >
+              Manage Users
+            </Link>
+          )}
         </div>
       </div>
     </div>

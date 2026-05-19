@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { logoutAction } from "@/app/admin/login/actions";
+import { logoutAction } from "@/app/login/actions";
 import { getSession } from "@/lib/session";
 
 export default async function AdminLayout({
@@ -10,7 +10,10 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  if (!session) redirect("/admin/login");
+  if (!session) redirect("/login");
+  if (session.role === "STUDENT") redirect("/learn");
+
+  const isAdmin = session.role === "ADMIN";
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -23,18 +26,28 @@ export default async function AdminLayout({
             >
               Admin
             </Link>
-            <Link
-              href="/admin/topics"
-              className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-            >
-              WordCatch
-            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/topics"
+                className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+              >
+                WordCatch
+              </Link>
+            )}
             <Link
               href="/admin/question-maker"
               className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
             >
               QuestionMaker
             </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/users"
+                className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+              >
+                Users
+              </Link>
+            )}
             <Link
               href="/"
               className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
@@ -43,14 +56,19 @@ export default async function AdminLayout({
             </Link>
           </nav>
 
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="rounded-full border border-[rgba(255,255,255,0.25)] px-4 py-2 text-xs font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white"
-            >
-              Sign out
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <span className="hidden text-xs text-[var(--muted)] sm:block">
+              {session.name}
+            </span>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="rounded-full border border-[rgba(255,255,255,0.25)] px-4 py-2 text-xs font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 

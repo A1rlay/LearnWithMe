@@ -156,11 +156,15 @@ export async function adminDeleteQuestion(id: string) {
 // ─── Dashboard counts ─────────────────────────────────────────────────────────
 
 export async function adminGetDashboardCounts() {
-  const [topicCount, videoCount, questionCount] = await Promise.all([
-    prisma.topic.count(),
-    prisma.video.count(),
-    prisma.question.count(),
-  ]);
+  const [topicCount, videoCount, questionCount, qmTopicCount, qmQuestionCount, userCount] =
+    await Promise.all([
+      prisma.topic.count(),
+      prisma.video.count(),
+      prisma.question.count(),
+      prisma.qMTopic.count(),
+      prisma.qMQuestion.count(),
+      prisma.user.count(),
+    ]);
 
-  return { topicCount, videoCount, questionCount };
+  return { topicCount, videoCount, questionCount, qmTopicCount, qmQuestionCount, userCount };
 }

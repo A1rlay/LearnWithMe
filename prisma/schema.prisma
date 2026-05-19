@@ -8,6 +8,23 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String
+  role         Role        @default(STUDENT)
+  sessions     QMSession[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
 model Topic {
   id          String   @id @default(cuid())
   title       String
@@ -30,6 +47,8 @@ model Video {
   questions       Question[]
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
+
+  @@index([topicId])
 }
 
 // ─── QuestionMaker ────────────────────────────────────────────────────────────
@@ -63,15 +82,22 @@ model QMQuestion {
   answers   QMAnswer[]
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
+
+  @@index([topicId])
 }
 
 model QMSession {
   id          String     @id @default(cuid())
   topicId     String
+  userId      String?
   topic       QMTopic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user        User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
   answers     QMAnswer[]
   completedAt DateTime?
   createdAt   DateTime   @default(now())
+
+  @@index([topicId])
+  @@index([userId])
 }
 
 model QMAnswer {
@@ -86,7 +112,7 @@ model QMAnswer {
   createdAt  DateTime   @default(now())
 }
 
-// ─── WordCatch ────────────────────────────────────────────────────────────────
+// ─── Learn With Me────────────────────────────────────────────────────────────────
 
 model Question {
   id                String           @id @default(cuid())
