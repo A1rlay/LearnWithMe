@@ -66,7 +66,7 @@ type SessionResult = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function VideoPlayer({ video }: { video: VideoLesson }) {
+export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onComplete?: () => Promise<void> }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayer | null>(null);
@@ -138,7 +138,7 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
           setQuizPhase("answering");
         }
       }
-    }, 500);
+    }, 200);
   }
 
   function stopPolling() {
@@ -184,6 +184,7 @@ export function VideoPlayer({ video }: { video: VideoLesson }) {
               setCoverActive(true);
               stopPolling();
               setPhase("done");
+              onComplete?.();
             }
           },
         },

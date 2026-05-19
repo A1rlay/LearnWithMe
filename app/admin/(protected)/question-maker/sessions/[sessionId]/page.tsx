@@ -18,7 +18,7 @@ export default async function QMSessionReviewPage({ params }: Props) {
         href={`/admin/question-maker/sessions?topicId=${session.topicId}`}
         className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
       >
-        ← Back
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
       </Link>
 
       <div>
@@ -187,7 +187,8 @@ function AnswerDisplay({
               >
                 {pair.right}
                 {!isCorrect && studentMatchIdx >= 0 && studentMatchIdx < questionData.pairs.length && (
-                  <span className="ml-2 opacity-60">← {questionData.pairs[studentMatchIdx]?.right}</span>
+                  <span className="ml-2 opacity-60"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              {questionData.pairs[studentMatchIdx]?.right}</span>
                 )}
               </div>
             </>
@@ -235,6 +236,123 @@ function AnswerDisplay({
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if ("sentence" in questionData) {
+    // Fill in blank
+    const answer = typeof studentAnswer === "string" ? studentAnswer : "";
+    const correct = answer.trim().toLowerCase() === questionData.answer.trim().toLowerCase();
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-sm text-[rgba(255,255,255,0.6)]">{questionData.sentence}</p>
+        <div className="flex gap-3">
+          <div className={`flex-1 rounded-xl border px-4 py-3 text-sm ${correct ? "border-[rgba(15,156,0,0.4)] bg-[rgba(15,156,0,0.08)] text-[#0F9C00]" : "border-red-500/30 bg-red-500/08 text-red-400"}`}>
+            <span className="text-xs font-semibold uppercase tracking-widest opacity-60 block mb-1">Student</span>
+            {answer || <span className="opacity-40">(empty)</span>}
+          </div>
+          {!correct && (
+            <div className="flex-1 rounded-xl border border-[rgba(15,156,0,0.4)] bg-[rgba(15,156,0,0.08)] px-4 py-3 text-sm text-[#0F9C00]">
+              <span className="text-xs font-semibold uppercase tracking-widest opacity-60 block mb-1">Correct</span>
+              {questionData.answer}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if ("statement" in questionData) {
+    // True / False
+    const studentBool = studentAnswer === true || studentAnswer === "true";
+    const correct = studentBool === questionData.isTrue;
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-sm text-[rgba(255,255,255,0.6)]">{questionData.statement}</p>
+        <div className="flex gap-3">
+          <div className={`rounded-xl border px-4 py-3 text-sm font-semibold ${correct ? "border-[rgba(15,156,0,0.4)] bg-[rgba(15,156,0,0.08)] text-[#0F9C00]" : "border-red-500/30 bg-red-500/08 text-red-400"}`}>
+            Student: {studentBool ? "True" : "False"}
+          </div>
+          {!correct && (
+            <div className="rounded-xl border border-[rgba(15,156,0,0.4)] bg-[rgba(15,156,0,0.08)] px-4 py-3 text-sm font-semibold text-[#0F9C00]">
+              Correct: {questionData.isTrue ? "True" : "False"}
+            </div>
+          )}
+        </div>
+        {questionData.explanation && (
+          <p className="text-xs text-[rgba(255,255,255,0.45)] mt-1">{questionData.explanation}</p>
+        )}
+      </div>
+    );
+  }
+
+  if ("words" in questionData) {
+    // Sentence order
+    const studentOrder = Array.isArray(studentAnswer) ? (studentAnswer as number[]) : [];
+    const correctOrder = questionData.words.map((_, i) => i);
+    const isCorrect = JSON.stringify(studentOrder) === JSON.stringify(correctOrder);
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap gap-2">
+          {studentOrder.map((wi, pos) => {
+            const expectedWord = questionData.words[correctOrder[pos]];
+            const studentWord = questionData.words[wi];
+            const wordCorrect = wi === correctOrder[pos];
+            return (
+              <span
+                key={pos}
+                className={`rounded-full px-3 py-1 text-sm font-semibold ${wordCorrect ? "bg-[rgba(15,156,0,0.2)] text-[#0F9C00]" : "bg-red-500/20 text-red-400"}`}
+                title={wordCorrect ? undefined : `Expected: ${expectedWord}`}
+              >
+                {studentWord}
+              </span>
+            );
+          })}
+        </div>
+        {!isCorrect && (
+          <div className="flex flex-wrap gap-2 mt-1">
+            <span className="text-xs text-[rgba(255,255,255,0.4)] self-center">Correct:</span>
+            {questionData.words.map((w, i) => (
+              <span key={i} className="rounded-full bg-[rgba(15,156,0,0.12)] px-3 py-1 text-sm text-[#0F9C00]">{w}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if ("word" in questionData) {
+    // Word scramble
+    const answer = typeof studentAnswer === "string" ? studentAnswer : "";
+    const correct = answer.trim().toLowerCase() === questionData.word.trim().toLowerCase();
+    return (
+      <div className="flex gap-3">
+        <div className={`flex-1 rounded-xl border px-4 py-3 text-sm ${correct ? "border-[rgba(15,156,0,0.4)] bg-[rgba(15,156,0,0.08)] text-[#0F9C00]" : "border-red-500/30 bg-red-500/08 text-red-400"}`}>
+          <span className="text-xs font-semibold uppercase tracking-widest opacity-60 block mb-1">Student</span>
+          {answer || <span className="opacity-40">(empty)</span>}
+        </div>
+        {!correct && (
+          <div className="flex-1 rounded-xl border border-[rgba(15,156,0,0.4)] bg-[rgba(15,156,0,0.08)] px-4 py-3 text-sm text-[#0F9C00]">
+            <span className="text-xs font-semibold uppercase tracking-widest opacity-60 block mb-1">Correct</span>
+            {questionData.word}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if ("front" in questionData) {
+    // Flashcard — self-assessed
+    const knew = studentAnswer === true || studentAnswer === "true";
+    return (
+      <div className="flex items-center gap-3">
+        <div className="rounded-xl border border-[var(--border)] px-4 py-3 text-sm text-[var(--foreground)]">
+          {questionData.front} → {questionData.back}
+        </div>
+        <span className={`rounded-full px-3 py-1 text-xs font-bold ${knew ? "bg-[rgba(15,156,0,0.2)] text-[#0F9C00]" : "bg-red-500/20 text-red-400"}`}>
+          {knew ? "Knew it" : "Didn't know"}
+        </span>
       </div>
     );
   }

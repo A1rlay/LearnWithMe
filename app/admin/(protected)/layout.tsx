@@ -13,8 +13,6 @@ export default async function AdminLayout({
   if (!session) redirect("/login");
   if (session.role === "STUDENT") redirect("/learn");
 
-  const isAdmin = session.role === "ADMIN";
-
   return (
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-[var(--border)] bg-[var(--panel)] px-6 py-4">
@@ -26,31 +24,27 @@ export default async function AdminLayout({
             >
               Admin
             </Link>
-            {isAdmin && (
-              <Link
-                href="/admin/topics"
-                className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-              >
-                WordCatch
-              </Link>
-            )}
             <Link
-              href="/admin/question-maker"
-              className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+              href="/admin/games"
+              className="flex items-center gap-1.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
             >
-              QuestionMaker
+              Games
             </Link>
-            {isAdmin && (
-              <Link
-                href="/admin/users"
-                className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-              >
-                Users
-              </Link>
-            )}
+            <Link
+              href="/admin/classes"
+              className="flex items-center gap-1.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+            >
+              Classes
+            </Link>
+            <Link
+              href="/admin/users"
+              className="flex items-center gap-1.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+            >
+              Users
+            </Link>
             <Link
               href="/"
-              className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
+              className="flex items-center gap-1.5 text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
             >
               View site
             </Link>

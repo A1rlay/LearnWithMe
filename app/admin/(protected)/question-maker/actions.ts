@@ -144,5 +144,39 @@ function parseQuestionData(type: QMQuestionType, formData: FormData): QMQuestion
       }));
       return { categories, items };
     }
+    case QMQuestionType.FILL_BLANK: {
+      const sentence = formData.get("sentence")?.toString().trim() ?? "";
+      const answer = formData.get("answer")?.toString().trim() ?? "";
+      const hint = formData.get("hint")?.toString().trim() ?? "";
+      return { sentence, answer, ...(hint ? { hint } : {}) };
+    }
+    case QMQuestionType.TRUE_FALSE: {
+      const statement = formData.get("statement")?.toString().trim() ?? "";
+      const isTrue = formData.get("isTrue") === "true";
+      const explanation = formData.get("explanation")?.toString().trim() ?? "";
+      return { statement, isTrue, ...(explanation ? { explanation } : {}) };
+    }
+    case QMQuestionType.SENTENCE_ORDER: {
+      const raw = formData.get("words")?.toString().trim() ?? "";
+      const words = raw.split("|").map((w) => w.trim()).filter(Boolean);
+      return { words };
+    }
+    case QMQuestionType.WORD_SCRAMBLE: {
+      const word = formData.get("word")?.toString().trim() ?? "";
+      const hint = formData.get("hint")?.toString().trim() ?? "";
+      return { word, ...(hint ? { hint } : {}) };
+    }
+    case QMQuestionType.FLASHCARD: {
+      const front = formData.get("front")?.toString().trim() ?? "";
+      const back = formData.get("back")?.toString().trim() ?? "";
+      const frontLabel = formData.get("frontLabel")?.toString().trim() ?? "";
+      const backLabel = formData.get("backLabel")?.toString().trim() ?? "";
+      return {
+        front,
+        back,
+        ...(frontLabel ? { frontLabel } : {}),
+        ...(backLabel ? { backLabel } : {}),
+      };
+    }
   }
 }

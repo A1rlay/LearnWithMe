@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const STUDENT_PREFIXES = ["/learn", "/topics", "/question-maker"];
+const STUDENT_PREFIXES = ["/learn", "/topics", "/question-maker", "/profile"];
 
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -29,5 +29,6 @@ export const config = {
     "/learn/:path*",
     "/topics/:path*",
     "/question-maker/:path*",
+    "/profile/:path*",
   ],
 };

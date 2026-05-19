@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackLink } from "@/components/ui/nav-link";
 import { VideoPlayer } from "@/components/video/video-player";
 import { getVideoLessonById } from "@/server/data/learning";
+import { markVideoCompleteAction } from "./actions";
 
 type VideoPageProps = {
   params: Promise<{ topicSlug: string; videoSlug: string }>;
@@ -16,16 +17,11 @@ export default async function VideoPage({ params }: VideoPageProps) {
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-4 px-6 py-12 sm:py-16">
-      <Link
-        href={`/topics/${video.topic.id}`}
-        className="text-sm font-semibold text-[rgba(255,255,255,0.55)] transition-colors hover:text-white"
-      >
-        ← {video.topic.title}
-      </Link>
+      <BackLink href={`/topics/${video.topic.id}`}>{video.topic.title}</BackLink>
 
       <h1 className="text-2xl font-extrabold text-white">{video.title}</h1>
 
-      <VideoPlayer video={video} />
+      <VideoPlayer video={video} onComplete={markVideoCompleteAction.bind(null, videoSlug)} />
     </main>
   );
 }
