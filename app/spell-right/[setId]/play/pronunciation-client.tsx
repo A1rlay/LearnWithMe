@@ -127,78 +127,87 @@ export function PronunciationClient({
       return;
     }
 
-    const recognition = new SRCtor();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    recognition.lang = "en-US";
-    recognitionRef.current = recognition;
     hasResultRef.current = false;
     networkRetryCountRef.current = 0;
     isRetryScheduledRef.current = false;
 
-    recognition.onresult = (event) => {
-      hasResultRef.current = true;
-      const text = event.results[0][0].transcript.toLowerCase().trim();
-      setTranscript(text);
-      const correct = text === current.word.toLowerCase().trim();
-      setIsCorrect(correct);
-      if (correct && !scoredThisWord) {
-        setScore((s) => s + 1);
-        setScoredThisWord(true);
-      }
-      setRecordPhase("evaluated");
-    };
+    // Creates a fresh SpeechRecognition instance and starts it.
+    // Edge requires a new instance on each retry — reusing the same object after
+    // onend fires causes InvalidStateError or a broken Azure WebSocket connection.
+    function attemptRecognition() {
+      const recognition = new SRCtor();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      recognition.lang = "en-US";
+      recognitionRef.current = recognition;
 
-    recognition.onerror = (event) => {
-      // Edge's speech service often returns "network" on the first attempt as a
-      // transient init error. Retry once silently before surfacing it to the user.
-      if (event.error === "network" && networkRetryCountRef.current < 3) {
-        const attempt = networkRetryCountRef.current;
-        networkRetryCountRef.current++;
-        isRetryScheduledRef.current = true;
-        setIsConnecting(true);
-        // Progressive delay: 600ms, 1200ms, 2000ms
-        const delay = [600, 1200, 2000][attempt] ?? 2000;
-        setTimeout(() => {
-          isRetryScheduledRef.current = false;
-          hasResultRef.current = false;
-          setIsConnecting(false);
-          try {
-            recognition.start();
-          } catch {
-            setError("Could not capture audio. Please try again.");
-            setRecordPhase("idle");
-          }
-        }, delay);
-        return;
-      }
-      setIsConnecting(false);
-      const messages: Record<string, string> = {
-        "not-allowed": "Microphone access denied. Please allow microphone access in your browser settings.",
-        "no-speech": "No speech detected. Please try again.",
-        "audio-capture": "No microphone found. Please connect one and try again.",
-        "network": "Could not reach the speech recognition service. Please try again.",
+      recognition.onresult = (event) => {
+        hasResultRef.current = true;
+        const raw = event.results[0][0].transcript;
+        // Edge's speech service often appends a period or other punctuation to
+        // single-word utterances. Strip non-letter chars (keep apostrophes/hyphens
+        // for words like "can't" or "well-known") before comparing.
+        const normalize = (s: string) =>
+          s.toLowerCase().replace(/[^\p{L}\p{N}'-]/gu, " ").replace(/\s+/g, " ").trim();
+        const text = normalize(raw);
+        setTranscript(text);
+        const correct = text === normalize(current.word);
+        setIsCorrect(correct);
+        if (correct && !scoredThisWord) {
+          setScore((s) => s + 1);
+          setScoredThisWord(true);
+        }
+        setRecordPhase("evaluated");
       };
-      setError(messages[event.error] ?? "Could not capture audio. Please try again.");
-      setRecordPhase("idle");
-    };
 
-    // Edge sometimes fires onend before onresult — use a ref flag instead of
-    // checking state (which may not have updated yet at the time onend fires).
-    // Also skip reset when a network retry is about to start.
-    recognition.onend = () => {
-      if (hasResultRef.current) return;
-      if (isRetryScheduledRef.current) return;
-      setRecordPhase("idle");
-    };
+      recognition.onerror = (event) => {
+        // Edge's speech service returns "network" as a transient init error.
+        // Retry with a brand-new instance — the old one's connection is dead.
+        if (event.error === "network" && networkRetryCountRef.current < 3) {
+          const attempt = networkRetryCountRef.current;
+          networkRetryCountRef.current++;
+          isRetryScheduledRef.current = true;
+          setIsConnecting(true);
+          // Progressive delay: 600ms, 1200ms, 2000ms
+          const delay = [600, 1200, 2000][attempt] ?? 2000;
+          setTimeout(() => {
+            isRetryScheduledRef.current = false;
+            hasResultRef.current = false;
+            setIsConnecting(false);
+            attemptRecognition();
+          }, delay);
+          return;
+        }
+        setIsConnecting(false);
+        const messages: Record<string, string> = {
+          "not-allowed": "Microphone access denied. Please allow microphone access in your browser settings.",
+          "no-speech": "No speech detected. Please try again.",
+          "audio-capture": "No microphone found. Please connect one and try again.",
+          "network": "Could not reach the speech recognition service. Please try again.",
+        };
+        setError(messages[event.error] ?? "Could not capture audio. Please try again.");
+        setRecordPhase("idle");
+      };
 
-    try {
-      recognition.start();
-    } catch {
-      setError("Could not start recording. Please try again.");
-      setRecordPhase("idle");
+      // Edge sometimes fires onend before onresult — use a ref flag instead of
+      // checking state (which may not have updated yet at the time onend fires).
+      // Also skip reset when a network retry is about to start.
+      recognition.onend = () => {
+        if (hasResultRef.current) return;
+        if (isRetryScheduledRef.current) return;
+        setRecordPhase("idle");
+      };
+
+      try {
+        recognition.start();
+      } catch {
+        setError("Could not start recording. Please try again.");
+        setRecordPhase("idle");
+      }
     }
+
+    attemptRecognition();
   }
 
   function stopRecording() {
