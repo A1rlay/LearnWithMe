@@ -117,15 +117,16 @@ export function PronunciationClient({
     }
 
     type SRCtor = new () => SR;
-    const SRCtor: SRCtor | undefined =
+    const SRCtorMaybe: SRCtor | undefined =
       (window as unknown as { SpeechRecognition?: SRCtor }).SpeechRecognition ??
       (window as unknown as { webkitSpeechRecognition?: SRCtor }).webkitSpeechRecognition;
 
-    if (!SRCtor) {
+    if (!SRCtorMaybe) {
       setError("Speech recognition is not supported in this browser. Try Chrome or Edge.");
       setRecordPhase("idle");
       return;
     }
+    const Ctor: SRCtor = SRCtorMaybe;
 
     hasResultRef.current = false;
     networkRetryCountRef.current = 0;
@@ -135,7 +136,7 @@ export function PronunciationClient({
     // Edge requires a new instance on each retry — reusing the same object after
     // onend fires causes InvalidStateError or a broken Azure WebSocket connection.
     function attemptRecognition() {
-      const recognition = new SRCtor();
+      const recognition = new Ctor();
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
