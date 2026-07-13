@@ -164,7 +164,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
       if (!containerRef.current) return;
       playerRef.current = new window.YT.Player(containerRef.current, {
         videoId: videoId!,
-        playerVars: { controls: 0, disablekb: 1, modestbranding: 1, rel: 0 },
+        playerVars: { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, cc_load_policy: 0 },
         events: {
           onReady: (e) => {
             setVolume(e.target.getVolume());
