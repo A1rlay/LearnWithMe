@@ -40,6 +40,7 @@ interface YTPlayer {
   pauseVideo(): void;
   playVideo(): void;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
+  unloadModule(moduleName: string): void;
   destroy(): void;
 }
 
@@ -169,10 +170,12 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
           onReady: (e) => {
             setVolume(e.target.getVolume());
             setMuted(e.target.isMuted());
+            e.target.unloadModule("captions");
           },
           onStateChange: (e) => {
             const YTState = window.YT.PlayerState;
             if (e.data === YTState.PLAYING) {
+              playerRef.current?.unloadModule("captions");
               setCoverActive(false);
               setPhase("playing");
               startPolling();
