@@ -14,6 +14,8 @@ const topicCatalogArgs = Prisma.validator<Prisma.TopicDefaultArgs>()({
 
 const topicDetailArgs = Prisma.validator<Prisma.TopicDefaultArgs>()({
   include: {
+    subject: { select: { id: true, name: true } },
+    skills: { include: { skill: { select: { name: true } } } },
     videos: {
       include: {
         _count: {
@@ -70,6 +72,8 @@ export type TopicVideoSummary = {
 export type TopicDetail = {
   description: string | null;
   id: string;
+  subject: { id: string; name: string };
+  skills: string[];
   level: string | null;
   tags: string[];
   title: string;
@@ -89,11 +93,13 @@ export type QuizQuestion = {
 
 export type VideoLesson = {
   description: string | null;
+  subtitlesEnabled: boolean;
   questions: QuizQuestion[];
   title: string;
   topic: {
     id: string;
     title: string;
+    subjectId: string;
   };
   videoUrl: string;
 };
@@ -118,6 +124,8 @@ function mapTopicDetail(topic: TopicDetailRecord): TopicDetail {
   return {
     description: topic.description,
     id: topic.id,
+    subject: topic.subject,
+    skills: topic.skills.map((s) => s.skill.name),
     level: topic.level,
     tags: topic.tags,
     title: topic.title,
@@ -143,10 +151,12 @@ function mapVideoLesson(video: VideoLessonRecord): VideoLesson {
       order: question.order,
       prompt: question.prompt,
     })),
+    subtitlesEnabled: video.subtitlesEnabled,
     title: video.title,
     topic: {
       id: video.topic.id,
       title: video.topic.title,
+      subjectId: video.topic.subjectId,
     },
     videoUrl: video.videoUrl,
   };
@@ -184,6 +194,7 @@ export async function getVideoLessonById(videoId: string) {
 export async function submitSingleAnswer(
   questionId: string,
   optionId: string,
+  userId: string | null,
 ): Promise<SingleAnswerResult | null> {
   const question = await prisma.question.findUnique({
     where: { id: questionId },
@@ -191,11 +202,30 @@ export async function submitSingleAnswer(
   });
 
   if (!question) return null;
+  // The chosen option must belong to this question (the DB enforces the same
+  // with a composite FK on VideoAnswer).
+  if (!question.options.some((o) => o.id === optionId)) return null;
 
   const correctOption = question.options.find((o) => o.isCorrect) ?? null;
+  const correct = optionId === correctOption?.id;
+
+  // Signed-in learners' answers feed their skill radar. Guests still get feedback.
+  // Throttle: one stored answer per question per 30 s. Scoring additionally counts
+  // each question once per day, so bursts can't inflate a skill.
+  if (userId) {
+    const recent = await prisma.videoAnswer.findFirst({
+      where: { userId, questionId, createdAt: { gte: new Date(Date.now() - 30_000) } },
+      select: { id: true },
+    });
+    if (!recent) {
+      await prisma.videoAnswer.create({
+        data: { userId, questionId, optionId, isCorrect: correct },
+      });
+    }
+  }
 
   return {
-    correct: optionId === correctOption?.id,
+    correct,
     correctOptionId: correctOption?.id ?? null,
   };
 }

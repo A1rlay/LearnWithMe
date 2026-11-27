@@ -101,6 +101,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
   );
 
   const videoId = extractYouTubeId(video.videoUrl);
+  const subtitles = video.subtitlesEnabled;
 
   const trpc = useTRPC();
   const submitMutation = useMutation({
@@ -165,17 +166,24 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
       if (!containerRef.current) return;
       playerRef.current = new window.YT.Player(containerRef.current, {
         videoId: videoId!,
-        playerVars: { controls: 0, disablekb: 1, modestbranding: 1, rel: 0, cc_load_policy: 0 },
+        // Subtitles are the expert's call per video (e.g. on for A1–B1, off for advanced).
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          modestbranding: 1,
+          rel: 0,
+          cc_load_policy: subtitles ? 1 : 0,
+        },
         events: {
           onReady: (e) => {
             setVolume(e.target.getVolume());
             setMuted(e.target.isMuted());
-            e.target.unloadModule("captions");
+            if (!subtitles) e.target.unloadModule("captions");
           },
           onStateChange: (e) => {
             const YTState = window.YT.PlayerState;
             if (e.data === YTState.PLAYING) {
-              playerRef.current?.unloadModule("captions");
+              if (!subtitles) playerRef.current?.unloadModule("captions");
               setCoverActive(false);
               setPhase("playing");
               startPolling();
@@ -210,7 +218,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
       playerRef.current?.destroy();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [videoId]);
+  }, [videoId, subtitles]);
 
   function handleRelisten() {
     const idx = activeCheckpointIdxRef.current;
@@ -302,7 +310,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
 
   if (!videoId) {
     return (
-      <div className="mt-8 rounded-[28px] border border-[var(--border)] bg-[rgba(255,255,255,0.76)] p-6 text-sm text-[var(--muted)]">
+      <div className="mt-8 rounded-[28px] border border-line bg-fg/76 p-6 text-sm text-muted">
         Invalid video URL — please update the URL in the admin panel.
       </div>
     );
@@ -311,7 +319,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
   return (
     <div ref={wrapperRef} className="flex flex-col gap-3">
       {/* YouTube iframe + overlay */}
-      <div className="overflow-hidden rounded-[28px] border border-[var(--border)] bg-black">
+      <div className="overflow-hidden rounded-[28px] border border-line bg-black">
         <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
           {/* iframe */}
           <div ref={containerRef} className="absolute inset-0 h-full w-full" />
@@ -332,8 +340,8 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
             }}
           >
             {coverActive && playerPhase !== "checkpoint" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm transition-transform hover:scale-105">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-fg/20 backdrop-blur-sm transition-transform hover:scale-105">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </div>
@@ -343,20 +351,20 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
       </div>
 
       {/* Controls bar */}
-      <div className="rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.1)] px-5 py-3 backdrop-blur-sm">
+      <div className="rounded-2xl border border-fg/18 bg-fg/10 px-5 py-3 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-3">
           {/* Progress bar + question counter */}
           <div className="min-w-0 flex-1">
             {progressPct !== null && (
-              <div className="h-1 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.15)]">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-fg/15">
                 <div
-                  className="h-full rounded-full bg-[#0F9C00] transition-all duration-500"
+                  className="h-full rounded-full bg-accent transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
             )}
             {totalQuestions > 0 && (
-              <p className="mt-1.5 text-xs text-[rgba(255,255,255,0.55)]">
+              <p className="mt-1.5 text-xs text-fg/55">
                 {completedCount} / {totalQuestions} questions answered
               </p>
             )}
@@ -367,7 +375,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
             {/* Mute toggle */}
             <button
               onClick={handleToggleMute}
-              className="text-[rgba(255,255,255,0.7)] transition-colors hover:text-white"
+              className="text-fg/70 transition-colors hover:text-fg"
               aria-label={muted ? "Unmute" : "Mute"}
             >
               {muted || volume === 0 ? (
@@ -392,14 +400,14 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
               max={100}
               value={muted ? 0 : volume}
               onChange={(e) => handleVolumeChange(Number(e.target.value))}
-              className="w-20 accent-[#0F9C00]"
+              className="w-20 accent-accent-text"
               aria-label="Volume"
             />
 
             {/* Fullscreen */}
             <button
               onClick={handleFullscreen}
-              className="text-[rgba(255,255,255,0.7)] transition-colors hover:text-white"
+              className="text-fg/70 transition-colors hover:text-fg"
               aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
             >
               {isFullscreen ? (
@@ -418,14 +426,14 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
 
       {/* Checkpoint modal */}
       {playerPhase === "checkpoint" && activeQuestion !== null && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-7 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-canvas/70 p-4 backdrop-blur-md sm:items-center">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto card p-7 shadow-2xl">
             {quizPhase === "answering" && (
               <>
-                <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#0F9C00]">
+                <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-text">
                   Question {activeQuestion.order}
                 </p>
-                <h2 className="mt-3 text-xl font-extrabold text-[#000D71]">
+                <h2 className="mt-3 font-display text-2xl text-fg">
                   {activeQuestion.prompt}
                 </h2>
 
@@ -437,8 +445,8 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                         key={option.id}
                         className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-colors ${
                           selected
-                            ? "border-[#000D71] bg-[#000D71] text-white"
-                            : "border-gray-200 text-gray-700 hover:border-[#000D71]"
+                            ? "border-accent-text bg-accent/20 text-fg"
+                            : "border-line-strong text-fg/85 hover:border-accent-text/60 hover:bg-surface-2"
                         }`}
                       >
                         <input
@@ -459,13 +467,13 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                   <button
                     onClick={handleSubmit}
                     disabled={selectedOptionId === null}
-                    className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                    className="btn btn-primary"
                   >
                     Submit
                   </button>
                   <button
                     onClick={handleRelisten}
-                    className="rounded-full border-2 border-gray-200 px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:border-gray-400"
+                    className="btn btn-ghost"
                   >
                     Re-watch
                   </button>
@@ -475,17 +483,17 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
 
             {quizPhase === "submitting" && (
               <div className="flex flex-col items-center gap-4 py-8 text-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-200 border-t-[#0F9C00]" />
-                <p className="text-sm text-gray-500">Checking…</p>
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-line-strong border-t-accent-text" />
+                <p className="text-sm text-muted">Checking…</p>
               </div>
             )}
 
             {quizPhase === "result" && result !== null && (
               <>
-                <p className={`text-xs font-bold uppercase tracking-[0.28em] ${result.correct ? "text-[#0F9C00]" : "text-red-500"}`}>
+                <p className={`text-xs font-bold uppercase tracking-[0.28em] ${result.correct ? "text-success" : "text-danger"}`}>
                   {result.correct ? "Correct!" : "Wrong"}
                 </p>
-                <h2 className="mt-3 text-xl font-extrabold text-[#000D71]">
+                <h2 className="mt-3 font-display text-2xl text-fg">
                   {activeQuestion.prompt}
                 </h2>
 
@@ -498,10 +506,10 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                         key={option.id}
                         className={`rounded-xl border-2 px-4 py-3 text-sm font-semibold ${
                           isCorrect
-                            ? "border-[#0F9C00] bg-green-50 text-[#0F9C00]"
+                            ? "border-success bg-success/10 text-success"
                             : isSelected
-                              ? "border-red-400 bg-red-50 text-red-600 line-through"
-                              : "border-gray-100 text-gray-400"
+                              ? "border-danger bg-danger/10 text-danger line-through"
+                              : "border-line text-subtle"
                         }`}
                       >
                         {option.text}
@@ -513,13 +521,13 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button
                     onClick={handleContinue}
-                    className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+                    className="btn btn-primary"
                   >
                     Continue
                   </button>
                   <button
                     onClick={handleRelisten}
-                    className="rounded-full border-2 border-gray-200 px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:border-gray-400"
+                    className="btn btn-ghost"
                   >
                     Re-watch
                   </button>
@@ -532,27 +540,27 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
 
       {/* End-of-video summary modal */}
       {playerPhase === "done" && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center">
-          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-7 shadow-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#0F9C00]">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-canvas/70 p-4 backdrop-blur-md sm:items-center">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto card p-7 shadow-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-text">
               Lesson complete
             </p>
-            <h2 className="mt-2 text-xl font-extrabold text-[#000D71]">
+            <h2 className="mt-2 font-display text-2xl text-fg">
               {video.title}
             </h2>
 
             {summaryResults.length > 0 ? (
               <>
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                  <div className="rounded-2xl bg-green-50 p-4 text-center">
-                    <p className="text-4xl font-extrabold text-[#0F9C00]">{correctCount}</p>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-[#0F9C00]">
+                  <div className="rounded-2xl bg-success/10 p-4 text-center">
+                    <p className="text-4xl font-extrabold text-success">{correctCount}</p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-success">
                       Correct
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-red-50 p-4 text-center">
-                    <p className="text-4xl font-extrabold text-red-500">{wrongCount}</p>
-                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-red-500">
+                  <div className="rounded-2xl bg-danger/10 p-4 text-center">
+                    <p className="text-4xl font-extrabold text-danger">{wrongCount}</p>
+                    <p className="mt-1 text-xs font-bold uppercase tracking-widest text-danger">
                       Wrong
                     </p>
                   </div>
@@ -562,12 +570,12 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                   {summaryResults.map(({ correct, correctOptionId, question, selectedOptionId: chosen }) => (
                     <div
                       key={question.id}
-                      className={`rounded-2xl p-4 ${correct ? "bg-green-50" : "bg-red-50"}`}
+                      className={`rounded-2xl p-4 ${correct ? "bg-success/10" : "bg-danger/10"}`}
                     >
-                      <p className={`text-xs font-bold uppercase tracking-widest ${correct ? "text-[#0F9C00]" : "text-red-500"}`}>
+                      <p className={`text-xs font-bold uppercase tracking-widest ${correct ? "text-success" : "text-danger"}`}>
                         Q{question.order}
                       </p>
-                      <p className="mt-1 text-sm font-semibold text-[#000D71]">
+                      <p className="mt-1 text-sm font-semibold text-fg">
                         {question.prompt}
                       </p>
                       <div className="mt-3 space-y-1.5">
@@ -579,10 +587,10 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                               key={option.id}
                               className={`rounded-xl border-2 px-3 py-2 text-sm font-semibold ${
                                 isCorrect
-                                  ? "border-[#0F9C00] bg-white text-[#0F9C00]"
+                                  ? "border-success bg-surface text-success"
                                   : isSelected
-                                    ? "border-red-400 bg-white text-red-500 line-through"
-                                    : "border-transparent text-gray-400"
+                                    ? "border-danger bg-surface text-danger line-through"
+                                    : "border-transparent text-subtle"
                               }`}
                             >
                               {option.text}
@@ -595,14 +603,14 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                 </div>
               </>
             ) : (
-              <p className="mt-4 text-sm text-gray-400">No questions answered.</p>
+              <p className="mt-4 text-sm text-muted">No questions answered.</p>
             )}
 
             <Link
-              href="/topics"
-              className="mt-6 flex items-center justify-center rounded-full bg-[#000D71] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+              href={`/topics/${video.topic.id}`}
+              className="mt-6 flex items-center justify-center btn btn-primary"
             >
-              ← Back to Topics
+              ← Back to topic
             </Link>
           </div>
         </div>

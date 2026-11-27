@@ -30,7 +30,12 @@ export async function adminUpdateUser(
   id: string,
   data: { email: string; name: string; role: Role; passwordHash?: string },
 ) {
-  return prisma.user.update({ where: { id }, data });
+  // Leaving the expert role ends every subject assignment in the same transaction.
+  return prisma.$transaction(async (tx) => {
+    const user = await tx.user.update({ where: { id }, data });
+    if (user.role !== "TEACHER") await tx.subjectExpert.deleteMany({ where: { userId: id } });
+    return user;
+  });
 }
 
 export async function adminDeleteUser(id: string) {

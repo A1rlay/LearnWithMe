@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import { TopicFields } from "../../new/page";
 import { updateTopicAction } from "../../actions";
 import { adminGetTopic } from "@/server/data/admin";
+import { requireEditorPage } from "@/lib/auth";
+import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
+import { pickerSubjects } from "@/lib/studio";
+
 
 type EditTopicPageProps = {
   params: Promise<{ id: string }>;
@@ -11,7 +15,8 @@ type EditTopicPageProps = {
 
 export default async function EditTopicPage({ params }: EditTopicPageProps) {
   const { id } = await params;
-  const topic = await adminGetTopic(id);
+  await requireEditorPage({ kind: "topic", id });
+  const [topic, subjects] = await Promise.all([adminGetTopic(id), pickerSubjects()]);
   if (!topic) notFound();
 
   const update = updateTopicAction.bind(null, id);
@@ -21,30 +26,35 @@ export default async function EditTopicPage({ params }: EditTopicPageProps) {
       <div>
         <Link
           href="/admin/topics"
-          className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+          className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
         </Link>
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-          Admin · Topics
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          Studio · Video lessons
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">
+        <h1 className="mt-2 font-serif text-4xl text-fg">
           Edit topic
         </h1>
       </div>
 
       <form
         action={update}
-        className="flex flex-col gap-5 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8"
+        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
       >
         <TopicFields defaults={topic} />
+        <SubjectSkillPicker
+          subjects={subjects}
+          defaultSubjectId={topic.subjectId}
+          defaultSkillIds={topic.skills.map((k) => k.skillId)}
+        />
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
           >
             Save changes
           </button>

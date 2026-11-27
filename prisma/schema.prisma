@@ -28,8 +28,93 @@ model User {
   teaching           Class[]
   progress           VideoProgress[]
   spellRightSessions SpellRightSession[]
+  expertIn           SubjectExpert[]
+  videoAnswers       VideoAnswer[]
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+}
+
+// ─── Subjects & skills ────────────────────────────────────────────────────────
+// A Subject (English, Math, Guitar…) is the top level learners browse. It is only
+// listed while at least one expert (SubjectExpert) is assigned.
+
+model Subject {
+  id             String          @id @default(cuid())
+  name           String          @unique
+  description    String?
+  order          Int             @default(0)
+  experts        SubjectExpert[]
+  skills         Skill[]
+  topics         Topic[]
+  qmTopics       QMTopic[]
+  spellRightSets SpellRightSet[]
+  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+}
+
+model SubjectExpert {
+  subjectId  String
+  userId     String
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([subjectId, userId])
+  @@index([userId])
+}
+
+// Skills are defined per subject by its experts. Activities are tagged with the
+// skills they train; the join tables carry subjectId in BOTH composite FKs so the
+// database refuses a tag whose skill belongs to another subject.
+model Skill {
+  id             String               @id @default(cuid())
+  subjectId      String
+  name           String
+  order          Int                  @default(0)
+  subject        Subject              @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topics         TopicSkill[]
+  qmTopics       QMTopicSkill[]
+  spellRightSets SpellRightSetSkill[]
+  createdAt      DateTime             @default(now()) @db.Timestamptz(3)
+
+  @@unique([subjectId, name])
+  @@unique([id, subjectId])
+}
+
+model TopicSkill {
+  topicId   String
+  skillId   String
+  subjectId String
+  topic     Topic  @relation(fields: [topicId, subjectId], references: [id, subjectId], onDelete: Cascade, onUpdate: Cascade)
+  skill     Skill  @relation(fields: [skillId, subjectId], references: [id, subjectId], onDelete: Cascade)
+
+  @@id([topicId, skillId])
+  @@index([skillId, subjectId])
+  @@index([topicId, subjectId])
+}
+
+model QMTopicSkill {
+  topicId   String
+  skillId   String
+  subjectId String
+  topic     QMTopic @relation(fields: [topicId, subjectId], references: [id, subjectId], onDelete: Cascade, onUpdate: Cascade)
+  skill     Skill   @relation(fields: [skillId, subjectId], references: [id, subjectId], onDelete: Cascade)
+
+  @@id([topicId, skillId])
+  @@index([skillId, subjectId])
+  @@index([topicId, subjectId])
+}
+
+model SpellRightSetSkill {
+  setId     String
+  skillId   String
+  subjectId String
+  set       SpellRightSet @relation(fields: [setId, subjectId], references: [id, subjectId], onDelete: Cascade, onUpdate: Cascade)
+  skill     Skill         @relation(fields: [skillId, subjectId], references: [id, subjectId], onDelete: Cascade)
+
+  @@id([setId, skillId])
+  @@index([skillId, subjectId])
+  @@index([setId, subjectId])
 }
 
 // ─── Classes ──────────────────────────────────────────────────────────────────
@@ -49,17 +134,17 @@ model Class {
 }
 
 model ClassAssignment {
-  id          String    @id @default(cuid())
-  classId     String
-  topicId     String
-  note        String?
-  dueAt       DateTime?
-  class       Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
-  topic       QMTopic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
+  id        String    @id @default(cuid())
+  classId   String
+  topicId   String
+  note      String?
+  dueAt     DateTime?
+  class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  topic     QMTopic   @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
 
   @@unique([classId, topicId])
-  @@index([classId])
+  @@index([topicId])
 }
 
 model ClassStudent {
@@ -70,33 +155,42 @@ model ClassStudent {
   joinedAt  DateTime @default(now())
 
   @@id([classId, studentId])
+  @@index([studentId])
 }
 
 // ─── WordCatch (video lessons) ────────────────────────────────────────────────
 
 model Topic {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
+  subjectId   String
+  subject     Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  skills      TopicSkill[]
   title       String
   description String?
   level       String?
   tags        String[]
   videos      Video[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([id, subjectId])
+  @@index([subjectId])
 }
 
 model Video {
-  id          String          @id @default(cuid())
-  topicId     String
-  title       String
-  description String?
-  videoUrl    String
-  order       Int             @default(0)
-  topic       Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  questions   Question[]
-  progress    VideoProgress[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id               String          @id @default(cuid())
+  topicId          String
+  title            String
+  description      String?
+  videoUrl         String
+  // Expert-controlled: on for beginner material, off when listening is the point.
+  subtitlesEnabled Boolean         @default(false)
+  order            Int             @default(0)
+  topic            Topic           @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  questions        Question[]
+  progress         VideoProgress[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
   @@index([topicId])
 }
@@ -136,6 +230,9 @@ enum QMSessionMode {
 
 model QMTopic {
   id          String            @id @default(cuid())
+  subjectId   String
+  subject     Subject           @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  skills      QMTopicSkill[]
   title       String
   description String?
   order       Int               @default(0)
@@ -144,6 +241,9 @@ model QMTopic {
   assignments ClassAssignment[]
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
+
+  @@unique([id, subjectId])
+  @@index([subjectId])
 }
 
 model QMQuestion {
@@ -186,6 +286,9 @@ model QMAnswer {
   isCorrect  Boolean?
   reviewedAt DateTime?
   createdAt  DateTime   @default(now())
+
+  @@index([sessionId])
+  @@index([questionId])
 }
 
 // ─── Learn With Me ────────────────────────────────────────────────────────────
@@ -198,6 +301,7 @@ model Question {
   checkpointSeconds Int              @default(0)
   video             Video            @relation(fields: [videoId], references: [id], onDelete: Cascade)
   options           QuestionOption[]
+  answers           VideoAnswer[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -205,16 +309,36 @@ model Question {
 }
 
 model QuestionOption {
-  id         String   @id @default(cuid())
+  id         String        @id @default(cuid())
   questionId String
   text       String
-  isCorrect  Boolean  @default(false)
+  isCorrect  Boolean       @default(false)
   order      Int
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  question   Question      @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers    VideoAnswer[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   @@unique([questionId, order])
+  @@unique([id, questionId])
+}
+
+// One row per checkpoint answer a signed-in learner gives; graded on the server.
+model VideoAnswer {
+  id         String         @id @default(cuid())
+  userId     String
+  questionId String
+  optionId   String
+  isCorrect  Boolean
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question   Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  // Composite FK: the chosen option must belong to the answered question.
+  option     QuestionOption @relation(fields: [optionId, questionId], references: [id, questionId], onDelete: Cascade)
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+  @@index([questionId])
+  @@index([optionId, questionId])
 }
 
 // ─── SpellRight ───────────────────────────────────────────────────────────────
@@ -225,15 +349,21 @@ enum SpellRightMode {
 }
 
 model SpellRightSet {
-  id          String              @id @default(cuid())
+  id          String               @id @default(cuid())
+  subjectId   String
+  subject     Subject              @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  skills      SpellRightSetSkill[]
   title       String
   description String?
   mode        SpellRightMode
-  order       Int                 @default(0)
+  order       Int                  @default(0)
   words       SpellRightWord[]
   sessions    SpellRightSession[]
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@unique([id, subjectId])
+  @@index([subjectId])
 }
 
 model SpellRightWord {
@@ -274,4 +404,7 @@ model SpellRightAnswer {
   answer    String
   isCorrect Boolean
   createdAt DateTime          @default(now())
+
+  @@index([sessionId])
+  @@index([wordId])
 }

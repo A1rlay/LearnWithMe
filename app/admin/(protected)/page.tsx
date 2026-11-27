@@ -1,94 +1,113 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
-import { getSession } from "@/lib/session";
+import { editableSubjectIds, requireRole } from "@/lib/auth";
 import { adminGetDashboardCounts } from "@/server/data/admin";
+import { adminGetSubjects } from "@/server/data/subjects";
 
-export default async function AdminDashboardPage() {
-  const session = await getSession();
-  if (!session) redirect("/login");
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
+export default async function StudioOverviewPage() {
+  const session = await requireRole("ADMIN", "TEACHER");
   const isAdmin = session.role === "ADMIN";
-  const {
-    topicCount,
-    videoCount,
-    questionCount,
-    qmTopicCount,
-    qmQuestionCount,
-    userCount,
-  } = await adminGetDashboardCounts();
+  const [counts, subjects] = await Promise.all([
+    adminGetDashboardCounts(),
+    adminGetSubjects(await editableSubjectIds(session)),
+  ]);
 
-  const stats = isAdmin
-    ? [
-      { label: "WC Topics", count: topicCount, href: "/admin/topics" },
-      { label: "WC Videos", count: videoCount, href: "/admin/topics" },
-      { label: "WC Questions", count: questionCount, href: "/admin/topics" },
-      { label: "QM Topics", count: qmTopicCount, href: "/admin/question-maker" },
-      { label: "QM Questions", count: qmQuestionCount, href: "/admin/question-maker" },
-      { label: "Users", count: userCount, href: "/admin/users" },
-    ]
-    : [
-      { label: "QM Topics", count: qmTopicCount, href: "/admin/question-maker" },
-      { label: "QM Questions", count: qmQuestionCount, href: "/admin/question-maker" },
-    ];
+  const hidden = subjects.filter((s) => s.experts.length === 0);
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-          Dashboard
-        </p>
-        <h1 className="mt-3 font-serif text-4xl text-[var(--foreground)]">
-          Welcome, {session.name}
+        <p className="eyebrow">Studio</p>
+        <h1 className="mt-2 font-display text-4xl text-fg sm:text-5xl">
+          Welcome back, <span className="italic text-accent-text">{session.name.split(" ")[0]}</span>
         </h1>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5">
-        {stats.map((stat) => (
-          <Link
-            key={stat.label}
-            href={stat.href}
-            className="rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-4 shadow-[0_20px_60px_rgba(13,34,66,0.06)] transition-transform duration-200 hover:-translate-y-0.5 sm:p-6"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-              {stat.label}
-            </p>
-            <p className="mt-3 font-serif text-4xl text-[var(--foreground)] sm:text-5xl">
-              {stat.count}
-            </p>
-          </Link>
-        ))}
-      </div>
-
-      <div className="rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-          Quick actions
+        <p className="mt-2 max-w-xl text-sm text-muted">
+          {isAdmin
+            ? "Create subjects, invite experts, and keep an eye on what learners see."
+            : "Build activities for your subjects and tag them with the skills they train."}
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          {isAdmin && (
-            <Link
-              href="/admin/topics"
-              className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-            >
-              Manage WordCatch
-            </Link>
-          )}
-          <Link
-            href="/admin/question-maker"
-            className="rounded-full bg-[#0F9C00] px-5 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
-          >
-            Manage QuestionMaker
+      </div>
+
+      {isAdmin && hidden.length > 0 && (
+        <div role="status" className="card flex flex-wrap items-center justify-between gap-3 border-warning/30 p-5">
+          <p className="text-sm text-fg">
+            <span className="font-semibold text-warning">Hidden from learners:</span>{" "}
+            {hidden.map((s) => s.name).join(", ")} — no expert assigned yet.
+          </p>
+          <Link href="/admin/subjects" className="btn btn-ghost">
+            Assign experts
           </Link>
+        </div>
+      )}
+
+      <section aria-labelledby="subjects-h" className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 id="subjects-h" className="text-sm font-semibold text-fg">
+            {isAdmin ? "Subjects" : "Your subjects"}
+          </h2>
           {isAdmin && (
-            <Link
-              href="/admin/users"
-              className="rounded-full border border-[rgba(255,255,255,0.25)] px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-[rgba(255,255,255,0.1)]"
-            >
-              Manage Users
+            <Link href="/admin/subjects/new" className="btn btn-primary px-4 py-2">
+              New subject
             </Link>
           )}
         </div>
-      </div>
+        {subjects.length === 0 ? (
+          <div className="card p-8 text-center text-sm text-muted">
+            {isAdmin
+              ? "No subjects yet. Create one, then assign an expert so learners can find it."
+              : "You're not assigned to a subject yet. Ask the owner to add you as an expert."}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {subjects.map((s) => (
+              <Link key={s.id} href={`/admin/subjects/${s.id}`} className="card card-interactive flex flex-col gap-3 p-5">
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="font-display text-2xl text-fg">{s.name}</h3>
+                  {s.experts.length === 0 ? (
+                    <span className="chip border-warning/30 text-warning">Hidden</span>
+                  ) : (
+                    <span className="chip border-success/30 text-success">Live</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted">
+                  {[
+                    plural(s._count.topics, "video topic"),
+                    plural(s._count.qmTopics, "quiz", "quizzes"),
+                    plural(s._count.spellRightSets, "spelling set"),
+                    plural(s._count.skills, "skill"),
+                  ].join(" · ")}
+                </p>
+                <p className="text-xs text-subtle">
+                  {s.experts.length > 0 ? `Experts: ${s.experts.map((e) => e.user.name).join(", ")}` : "No experts"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {isAdmin && (
+        <section aria-labelledby="totals-h" className="flex flex-col gap-4">
+          <h2 id="totals-h" className="text-sm font-semibold text-fg">
+            Platform totals
+          </h2>
+          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              ["Subjects", counts.subjectCount],
+              ["Videos", counts.videoCount],
+              ["Quiz questions", counts.qmQuestionCount],
+              ["People", counts.userCount],
+            ].map(([label, n]) => (
+              <div key={label} className="card p-4">
+                <dt className="text-xs text-muted">{label}</dt>
+                <dd className="mt-1 font-mono text-2xl text-fg">{n}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
     </div>
   );
 }

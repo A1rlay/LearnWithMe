@@ -3,12 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireRole } from "@/lib/auth";
-import {
-  adminCreateTopic,
-  adminDeleteTopic,
-  adminUpdateTopic,
-} from "@/server/data/admin";
+import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
+import { str, subjectAndSkills } from "@/lib/form";
+import { adminCreateTopic, adminDeleteTopic, adminUpdateTopic } from "@/server/data/admin";
+import { setActivitySubjectAndSkills } from "@/server/data/subjects";
 
 function parseTags(raw: string): string[] {
   return raw
@@ -17,36 +15,45 @@ function parseTags(raw: string): string[] {
     .filter(Boolean);
 }
 
-export async function createTopicAction(formData: FormData) {
-  await requireRole("ADMIN");
-  const title = formData.get("title")?.toString().trim() ?? "";
-  const description = formData.get("description")?.toString().trim() ?? "";
-  const level = formData.get("level")?.toString().trim() ?? "";
-  const tags = parseTags(formData.get("tags")?.toString() ?? "");
-
-  await adminCreateTopic({ title, description, level, tags });
+function revalidateLearner() {
   revalidatePath("/admin/topics");
-  revalidatePath("/topics");
+  revalidatePath("/", "layout");
+}
+
+export async function createTopicAction(formData: FormData) {
+  const { subjectId, skillIds } = subjectAndSkills(formData);
+  await requireSubjectEditor(subjectId);
+  const topic = await adminCreateTopic({
+    title: str(formData, "title"),
+    description: str(formData, "description"),
+    level: str(formData, "level"),
+    tags: parseTags(str(formData, "tags")),
+    subjectId,
+  });
+  await setActivitySubjectAndSkills("topic", topic.id, subjectId, skillIds);
+  revalidateLearner();
   redirect("/admin/topics");
 }
 
 export async function updateTopicAction(id: string, formData: FormData) {
-  await requireRole("ADMIN");
-  const title = formData.get("title")?.toString().trim() ?? "";
-  const description = formData.get("description")?.toString().trim() ?? "";
-  const level = formData.get("level")?.toString().trim() ?? "";
-  const tags = parseTags(formData.get("tags")?.toString() ?? "");
-
-  await adminUpdateTopic(id, { title, description, level, tags });
-  revalidatePath("/admin/topics");
-  revalidatePath("/topics");
+  const { subjectId, skillIds } = subjectAndSkills(formData);
+  // Must be allowed on the topic's current subject AND the destination subject.
+  await requireEditorOf({ kind: "topic", id });
+  await requireSubjectEditor(subjectId);
+  await adminUpdateTopic(id, {
+    title: str(formData, "title"),
+    description: str(formData, "description"),
+    level: str(formData, "level"),
+    tags: parseTags(str(formData, "tags")),
+  });
+  await setActivitySubjectAndSkills("topic", id, subjectId, skillIds);
+  revalidateLearner();
   redirect("/admin/topics");
 }
 
 export async function deleteTopicAction(id: string) {
-  await requireRole("ADMIN");
+  await requireEditorOf({ kind: "topic", id });
   await adminDeleteTopic(id);
-  revalidatePath("/admin/topics");
-  revalidatePath("/topics");
+  revalidateLearner();
   redirect("/admin/topics");
 }

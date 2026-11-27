@@ -5,24 +5,33 @@ import type { TopicDetail } from "@/server/data/learning";
 export function VideoList({ topic }: { topic: TopicDetail }) {
   if (topic.videos.length === 0) {
     return (
-      <p className="text-sm text-[rgba(255,255,255,0.55)]">No videos yet.</p>
+      <p className="card p-8 text-center text-sm text-muted">
+        No videos yet — the expert is still recording this topic.
+      </p>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
+    <ol className="flex flex-col gap-3">
       {topic.videos.map((video, index) => (
-        <Link
-          key={video.id}
-          href={`/topics/${topic.id}/videos/${video.id}`}
-          className="flex items-center justify-between rounded-2xl border border-[rgba(255,255,255,0.18)] bg-[rgba(255,255,255,0.1)] px-6 py-5 font-bold text-white backdrop-blur-sm transition-colors hover:bg-[rgba(255,255,255,0.18)]"
-        >
-          <span className="text-base">{video.title}</span>
-          <span className="ml-4 shrink-0 rounded-full border border-[rgba(255,255,255,0.25)] px-3 py-1 text-xs font-semibold text-[rgba(255,255,255,0.7)]">
-            {index + 1}
-          </span>
-        </Link>
+        <li key={video.id}>
+          <Link
+            href={`/topics/${topic.id}/videos/${video.id}`}
+            className="card card-interactive group flex items-center gap-4 px-5 py-4"
+          >
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line-strong font-mono text-xs text-muted transition-colors group-hover:border-accent-text group-hover:text-accent-text">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate font-medium text-fg">{video.title}</span>
+              <span className="text-xs text-subtle">
+                {video.questionCount} checkpoint{video.questionCount === 1 ? "" : "s"}
+              </span>
+            </span>
+            <span aria-hidden="true" className="text-subtle transition-colors group-hover:text-accent-text">▶</span>
+          </Link>
+        </li>
       ))}
-    </div>
+    </ol>
   );
 }

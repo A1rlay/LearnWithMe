@@ -16,21 +16,21 @@ export function DeleteButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-full bg-red-500/15 px-4 py-2 text-xs font-bold text-red-400 ring-1 ring-inset ring-red-500/30 transition-colors hover:bg-red-500/25 hover:text-red-300"
+        className="rounded-full bg-danger/15 px-4 py-2 text-xs font-bold text-danger ring-1 ring-inset ring-danger/30 transition-colors hover:bg-danger/25 hover:text-danger"
       >
         Delete
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-7 shadow-2xl">
-            <h2 className="text-xl font-extrabold text-[#000D71]">Delete {label}?</h2>
-            <p className="mt-2 text-sm text-gray-500">This action cannot be undone.</p>
+        <div role="dialog" aria-modal="true" aria-label={`Delete ${label}`} className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-md">
+          <div className="w-full max-w-sm card p-7 shadow-2xl">
+            <h2 className="font-display text-2xl text-fg">Delete {label}?</h2>
+            <p className="mt-2 text-sm text-muted">This action cannot be undone.</p>
             <div className="mt-6 flex gap-3">
               <form action={action}>
                 <button
                   type="submit"
-                  className="rounded-full bg-red-500 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-red-600"
+                  className="btn bg-danger text-canvas hover:bg-danger/85"
                 >
                   Yes, delete
                 </button>
@@ -38,7 +38,7 @@ export function DeleteButton({
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full border-2 border-gray-200 px-6 py-3 text-sm font-bold text-gray-500 transition-colors hover:border-gray-400"
+                className="btn btn-ghost"
               >
                 Cancel
               </button>

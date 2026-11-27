@@ -3,81 +3,91 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireRole } from "@/lib/auth";
+import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
+import { int, str, subjectAndSkills } from "@/lib/form";
 import {
   SpellRightMode,
   adminCreateSpellRightSet,
-  adminDeleteSpellRightSet,
-  adminUpdateSpellRightSet,
   adminCreateSpellRightWord,
+  adminDeleteSpellRightSet,
   adminDeleteSpellRightWord,
+  adminUpdateSpellRightSet,
   adminUpdateSpellRightWord,
 } from "@/server/data/spell-right";
+import { setActivitySubjectAndSkills } from "@/server/data/subjects";
+
+function revalidateSR(setId?: string) {
+  revalidatePath("/admin/spell-right");
+  if (setId) revalidatePath(`/admin/spell-right/${setId}/words`);
+  revalidatePath("/", "layout");
+}
 
 // ─── Sets ─────────────────────────────────────────────────────────────────────
 
 export async function createSpellRightSetAction(formData: FormData) {
-  await requireRole("ADMIN", "TEACHER");
-  const title = formData.get("title")?.toString().trim() ?? "";
-  const description = formData.get("description")?.toString().trim() ?? "";
+  const { subjectId, skillIds } = subjectAndSkills(formData);
+  await requireSubjectEditor(subjectId);
   const mode = formData.get("mode")?.toString() as SpellRightMode;
-  const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
-  const set = await adminCreateSpellRightSet({ title, description, mode, order });
-  revalidatePath("/admin/spell-right");
-  revalidatePath("/spell-right");
+  if (!Object.values(SpellRightMode).includes(mode)) throw new Error("Unknown mode.");
+  const set = await adminCreateSpellRightSet({
+    title: str(formData, "title"),
+    description: str(formData, "description"),
+    mode,
+    order: int(formData, "order"),
+    subjectId,
+  });
+  await setActivitySubjectAndSkills("spellSet", set.id, subjectId, skillIds);
+  revalidateSR();
   redirect(`/admin/spell-right/${set.id}/words`);
 }
 
 export async function updateSpellRightSetAction(id: string, formData: FormData) {
-  await requireRole("ADMIN", "TEACHER");
-  const title = formData.get("title")?.toString().trim() ?? "";
-  const description = formData.get("description")?.toString().trim() ?? "";
-  const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
-  await adminUpdateSpellRightSet(id, { title, description, order });
-  revalidatePath("/admin/spell-right");
-  revalidatePath("/spell-right");
+  const { subjectId, skillIds } = subjectAndSkills(formData);
+  await requireEditorOf({ kind: "spellSet", id });
+  await requireSubjectEditor(subjectId);
+  await adminUpdateSpellRightSet(id, {
+    title: str(formData, "title"),
+    description: str(formData, "description"),
+    order: int(formData, "order"),
+  });
+  await setActivitySubjectAndSkills("spellSet", id, subjectId, skillIds);
+  revalidateSR(id);
   redirect("/admin/spell-right");
 }
 
 export async function deleteSpellRightSetAction(id: string) {
-  await requireRole("ADMIN", "TEACHER");
+  await requireEditorOf({ kind: "spellSet", id });
   await adminDeleteSpellRightSet(id);
-  revalidatePath("/admin/spell-right");
-  revalidatePath("/spell-right");
+  revalidateSR();
   redirect("/admin/spell-right");
 }
 
 // ─── Words ────────────────────────────────────────────────────────────────────
 
+function readWord(formData: FormData) {
+  return {
+    word: str(formData, "word"),
+    correctAnswer: str(formData, "correctAnswer") || null,
+    explanation: str(formData, "explanation") || null,
+  };
+}
+
 export async function createSpellRightWordAction(setId: string, order: number, formData: FormData) {
-  await requireRole("ADMIN", "TEACHER");
-  const word = formData.get("word")?.toString().trim() ?? "";
-  const correctAnswer = formData.get("correctAnswer")?.toString().trim() || null;
-  const explanation = formData.get("explanation")?.toString().trim() || null;
-  await adminCreateSpellRightWord({ setId, word, correctAnswer, explanation, order });
-  revalidatePath(`/admin/spell-right/${setId}/words`);
-  revalidatePath("/spell-right");
+  await requireEditorOf({ kind: "spellSet", id: setId });
+  await adminCreateSpellRightWord({ setId, order, ...readWord(formData) });
+  revalidateSR(setId);
   redirect(`/admin/spell-right/${setId}/words`);
 }
 
-export async function updateSpellRightWordAction(
-  setId: string,
-  wordId: string,
-  formData: FormData,
-) {
-  await requireRole("ADMIN", "TEACHER");
-  const word = formData.get("word")?.toString().trim() ?? "";
-  const correctAnswer = formData.get("correctAnswer")?.toString().trim() || null;
-  const explanation = formData.get("explanation")?.toString().trim() || null;
-  await adminUpdateSpellRightWord(wordId, { word, correctAnswer, explanation });
-  revalidatePath(`/admin/spell-right/${setId}/words`);
-  revalidatePath("/spell-right");
-  redirect(`/admin/spell-right/${setId}/words`);
+export async function updateSpellRightWordAction(_setId: string, wordId: string, formData: FormData) {
+  await requireEditorOf({ kind: "spellWord", id: wordId });
+  const w = await adminUpdateSpellRightWord(wordId, readWord(formData));
+  revalidateSR(w.setId);
+  redirect(`/admin/spell-right/${w.setId}/words`);
 }
 
-export async function deleteSpellRightWordAction(setId: string, wordId: string) {
-  await requireRole("ADMIN", "TEACHER");
-  await adminDeleteSpellRightWord(wordId);
-  revalidatePath(`/admin/spell-right/${setId}/words`);
-  revalidatePath("/spell-right");
+export async function deleteSpellRightWordAction(_setId: string, wordId: string) {
+  await requireEditorOf({ kind: "spellWord", id: wordId });
+  const w = await adminDeleteSpellRightWord(wordId);
+  revalidateSR(w.setId);
 }

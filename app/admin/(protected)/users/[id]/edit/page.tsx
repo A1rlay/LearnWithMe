@@ -20,21 +20,21 @@ export default async function EditUserPage({ params }: Props) {
     <div className="flex flex-col gap-6">
       <Link
         href="/admin/users"
-        className="flex items-center gap-1.5 text-sm font-semibold text-[rgba(255,255,255,0.55)] transition-colors hover:text-white"
+        className="flex items-center gap-1.5 text-sm font-semibold text-fg/55 transition-colors hover:text-fg"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Users
       </Link>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
           Admin · Users
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">Edit user</h1>
+        <h1 className="mt-2 font-serif text-4xl text-fg">Edit user</h1>
       </div>
 
       <form
         action={action}
-        className="flex flex-col gap-5 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8"
+        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
       >
         <UserFields
           defaults={{ name: user.name, email: user.email, role: user.role }}
@@ -42,7 +42,7 @@ export default async function EditUserPage({ params }: Props) {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="password"
-            className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+            className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
           >
             New password
           </label>
@@ -51,13 +51,13 @@ export default async function EditUserPage({ params }: Props) {
             name="password"
             type="password"
             placeholder="Leave blank to keep current"
-            className="rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white"
+            className="rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text"
           />
         </div>
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
           >
             Save changes
           </button>

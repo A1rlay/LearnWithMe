@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { recordSpellRightRunAction } from "./actions";
+
 type Word = {
   id: string;
   word: string;
@@ -54,10 +56,13 @@ async function fetchIPA(word: string): Promise<string | null> {
 }
 
 export function PronunciationClient({
+  setId,
+  subjectId,
   setTitle,
   words,
 }: {
   setId: string;
+  subjectId: string;
   setTitle: string;
   words: Word[];
 }) {
@@ -217,18 +222,24 @@ export function PronunciationClient({
 
   function handleNext() {
     // Capture the final attempt for this word before advancing
-    setAnswers((prev) => [
-      ...prev,
+    const nextAnswers = [
+      ...answers,
       {
         ipa,
         isCorrect: isCorrect ?? false,
         transcript,
         word: current,
       },
-    ]);
+    ];
+    setAnswers(nextAnswers);
 
     if (index + 1 >= words.length) {
       setGamePhase("done");
+      // Fire-and-forget: the server re-grades from the transcript.
+      void recordSpellRightRunAction(
+        setId,
+        nextAnswers.map((a) => ({ wordId: a.word.id, answer: a.transcript ?? "" })),
+      );
     } else {
       setIndex((i) => i + 1);
     }
@@ -254,11 +265,11 @@ export function PronunciationClient({
       <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12">
         {/* Score */}
         <div className="flex flex-col gap-1">
-          <p className="text-xs font-bold uppercase tracking-[0.32em] text-[var(--accent)]">
-            SpellRight · Pronunciation
+          <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent-text">
+            Sounds · Speaking
           </p>
-          <h1 className="font-serif text-4xl text-[var(--foreground)]">Results</h1>
-          <p className="mt-1 text-lg text-[var(--muted)]">
+          <h1 className="font-serif text-4xl text-fg">Results</h1>
+          <p className="mt-1 text-lg text-muted">
             {score} / {words.length} correct
           </p>
         </div>
@@ -270,33 +281,33 @@ export function PronunciationClient({
               key={i}
               className={`flex flex-col gap-2 rounded-[20px] border px-5 py-4 ${
                 a.isCorrect
-                  ? "border-[rgba(15,156,0,0.35)] bg-[rgba(15,156,0,0.06)]"
-                  : "border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.06)]"
+                  ? "border-accent/35 bg-accent/6"
+                  : "border-danger/35 bg-danger/6"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-bold text-[var(--foreground)]">{a.word.word}</p>
+                  <p className="font-bold text-fg">{a.word.word}</p>
                   {a.ipa && (
-                    <p className="mt-0.5 text-sm text-[var(--muted)]">{a.ipa}</p>
+                    <p className="mt-0.5 text-sm text-muted">{a.ipa}</p>
                   )}
                 </div>
-                <span className={`shrink-0 text-xl ${a.isCorrect ? "text-[#0F9C00]" : "text-red-400"}`}>
+                <span className={`shrink-0 text-xl ${a.isCorrect ? "text-success" : "text-danger"}`}>
                   {a.isCorrect ? "✓" : "✗"}
                 </span>
               </div>
 
               {a.transcript && (
-                <p className="text-xs text-[var(--muted)]">
+                <p className="text-xs text-muted">
                   You said:{" "}
-                  <span className={`font-semibold ${a.isCorrect ? "text-[#0F9C00]" : "text-red-400"}`}>
+                  <span className={`font-semibold ${a.isCorrect ? "text-success" : "text-danger"}`}>
                     "{a.transcript}"
                   </span>
                 </p>
               )}
 
               {!a.isCorrect && a.word.explanation && (
-                <p className="text-xs text-[var(--muted)] leading-relaxed border-t border-[rgba(255,255,255,0.08)] pt-2">
+                <p className="text-xs text-muted leading-relaxed border-t border-fg/8 pt-2">
                   {a.word.explanation}
                 </p>
               )}
@@ -309,13 +320,13 @@ export function PronunciationClient({
           <button
             type="button"
             onClick={handlePlayAgain}
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
           >
             Play again
           </button>
           <Link
-            href="/spell-right"
-            className="rounded-full border border-[rgba(255,255,255,0.25)] px-6 py-3 text-sm font-semibold text-[rgba(255,255,255,0.6)] hover:border-white hover:text-white transition-colors"
+            href={`/subjects/${subjectId}`}
+            className="rounded-full border border-fg/25 px-6 py-3 text-sm font-semibold text-fg/60 hover:border-fg hover:text-fg transition-colors"
           >
             All sets
           </Link>
@@ -328,10 +339,10 @@ export function PronunciationClient({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-6 py-12">
       {/* Header */}
-      <div className="w-full max-w-md flex items-center justify-between text-xs text-[var(--muted)]">
+      <div className="w-full max-w-md flex items-center justify-between text-xs text-muted">
         <Link
-          href="/spell-right"
-          className="flex items-center gap-1.5 font-semibold hover:text-white transition-colors"
+          href={`/subjects/${subjectId}`}
+          className="flex items-center gap-1.5 font-semibold hover:text-fg transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -342,18 +353,18 @@ export function PronunciationClient({
       </div>
 
       {/* Word card */}
-      <div className="w-full max-w-md rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-10 flex flex-col items-center gap-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+      <div className="w-full max-w-md rounded-[28px] border border-line bg-surface p-10 flex flex-col items-center gap-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
           Pronounce this word
         </p>
 
         {gamePhase === "loading" ? (
-          <div className="h-20 flex items-center text-sm text-[var(--muted)]">Loading…</div>
+          <div className="h-20 flex items-center text-sm text-muted">Loading…</div>
         ) : (
           <>
-            <p className="text-5xl font-extrabold text-white">{current.word}</p>
+            <p className="text-5xl font-extrabold text-fg">{current.word}</p>
             {ipa ? (
-              <p className="text-lg text-[var(--muted)]">{ipa}</p>
+              <p className="text-lg text-muted">{ipa}</p>
             ) : null}
           </>
         )}
@@ -366,7 +377,7 @@ export function PronunciationClient({
             <button
               type="button"
               onClick={startRecording}
-              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0F9C00] bg-[rgba(15,156,0,0.12)] text-[#0F9C00] hover:bg-[rgba(15,156,0,0.22)] transition-colors"
+              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-accent-text bg-accent/12 text-accent-text hover:bg-accent/22 transition-colors"
               aria-label="Start recording"
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -380,7 +391,7 @@ export function PronunciationClient({
             <button
               type="button"
               onClick={stopRecording}
-              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-red-500 bg-[rgba(239,68,68,0.15)] text-red-400 animate-pulse"
+              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-danger bg-danger/15 text-danger animate-pulse"
               aria-label="Stop recording"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -388,28 +399,28 @@ export function PronunciationClient({
               </svg>
             </button>
           )}
-          <p className="text-xs text-[var(--muted)]">
+          <p className="text-xs text-muted">
             {isConnecting ? "Connecting…" : recordPhase === "recording" ? "Recording… tap to stop" : "Tap the mic to start"}
           </p>
-          {error && <p className="text-xs text-red-400 text-center max-w-xs">{error}</p>}
+          {error && <p className="text-xs text-danger text-center max-w-xs">{error}</p>}
         </div>
       )}
 
       {/* Result panel */}
       {recordPhase === "evaluated" && (
-        <div className="w-full max-w-md rounded-[20px] border border-[var(--border)] bg-[var(--panel)] p-6 flex flex-col gap-4">
+        <div className="w-full max-w-md rounded-[20px] border border-line bg-surface p-6 flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <span className={`text-3xl ${isCorrect ? "text-[#0F9C00]" : "text-red-400"}`}>
+            <span className={`text-3xl ${isCorrect ? "text-success" : "text-danger"}`}>
               {isCorrect ? "✓" : "✗"}
             </span>
             <div>
-              <p className={`font-bold text-lg ${isCorrect ? "text-[#0F9C00]" : "text-red-400"}`}>
+              <p className={`font-bold text-lg ${isCorrect ? "text-success" : "text-danger"}`}>
                 {isCorrect ? "Correct!" : "Not quite"}
               </p>
               {transcript && (
-                <p className="text-xs text-[var(--muted)]">
+                <p className="text-xs text-muted">
                   You said:{" "}
-                  <span className="text-[var(--foreground)]">"{transcript}"</span>
+                  <span className="text-fg">"{transcript}"</span>
                 </p>
               )}
             </div>
@@ -417,8 +428,8 @@ export function PronunciationClient({
 
           {current.explanation && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)] mb-1">Tip</p>
-              <p className="text-sm text-[var(--foreground)] leading-relaxed">{current.explanation}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted mb-1">Tip</p>
+              <p className="text-sm text-fg leading-relaxed">{current.explanation}</p>
             </div>
           )}
 
@@ -427,7 +438,7 @@ export function PronunciationClient({
               <button
                 type="button"
                 onClick={handleTryAgain}
-                className="flex-1 rounded-full border border-[rgba(255,255,255,0.25)] py-3 text-sm font-semibold text-[rgba(255,255,255,0.7)] hover:border-white hover:text-white transition-colors"
+                className="flex-1 rounded-full border border-fg/25 py-3 text-sm font-semibold text-fg/70 hover:border-fg hover:text-fg transition-colors"
               >
                 Try again
               </button>
@@ -435,7 +446,7 @@ export function PronunciationClient({
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 rounded-full bg-[#0F9C00] py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+              className="flex-1 rounded-full bg-accent py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
             >
               {index + 1 < words.length ? "Next word" : "See results"}
             </button>

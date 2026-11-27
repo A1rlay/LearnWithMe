@@ -1,61 +1,33 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { logoutAction } from "@/app/login/actions";
+import { StudioNav } from "@/components/studio/studio-nav";
 import { getSession } from "@/lib/session";
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
   if (!session) redirect("/login");
-  if (session.role === "STUDENT") redirect("/learn");
+  if (session.role === "STUDENT") redirect("/");
+
+  const isAdmin = session.role === "ADMIN";
+  const items = [
+    { href: "/admin", label: "Overview", exact: true },
+    { href: "/admin/subjects", label: isAdmin ? "Subjects & experts" : "My subjects" },
+    { href: "/admin/games", label: "Activities" },
+    { href: "/admin/classes", label: "Classes" },
+    ...(isAdmin ? [{ href: "/admin/users", label: "People" }] : []),
+  ];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b border-[var(--border)] bg-[var(--panel)] px-4 py-3 sm:px-6 sm:py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-2">
-          <nav className="flex items-center gap-4 pl-14 sm:gap-6 sm:pl-36">
-            <Link
-              href="/admin"
-              className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]"
-            >
-              Admin
-            </Link>
-            <Link
-              href="/admin/games"
-              className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-            >
-              Games
-            </Link>
-            <Link
-              href="/admin/users"
-              className="text-sm font-semibold text-[var(--muted)] transition-colors hover:text-[var(--foreground)]"
-            >
-              Users
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <span className="hidden text-xs text-[var(--muted)] sm:block">
-              {session.name}
-            </span>
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="rounded-full border border-[rgba(255,255,255,0.25)] px-3 py-1.5 text-xs font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white sm:px-4 sm:py-2"
-              >
-                <span className="sm:hidden">Out</span>
-                <span className="hidden sm:inline">Sign out</span>
-              </button>
-            </form>
-          </div>
+    <div className="flex min-h-[calc(100vh-3.5rem)] flex-col">
+      <div className="border-b border-line bg-surface/40">
+        <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-4 sm:px-6">
+          <StudioNav items={items} />
+          <span className="hidden pb-3 text-xs text-subtle sm:block">
+            Studio · {isAdmin ? "Owner" : "Expert"}
+          </span>
         </div>
-      </header>
-
-      <div className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</div>
+      </div>
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</div>
     </div>
   );
 }

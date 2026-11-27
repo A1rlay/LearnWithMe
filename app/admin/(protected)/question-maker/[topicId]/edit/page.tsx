@@ -2,30 +2,40 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { adminGetQMTopic } from "@/server/data/question-maker";
+import { requireEditorPage } from "@/lib/auth";
+import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
+import { pickerSubjects } from "@/lib/studio";
+
 import { updateQMTopicAction } from "../../actions";
 
 type Props = { params: Promise<{ topicId: string }> };
 
 export default async function EditQMTopicPage({ params }: Props) {
   const { topicId } = await params;
-  const topic = await adminGetQMTopic(topicId);
+  await requireEditorPage({ kind: "qmTopic", id: topicId });
+  const [topic, subjects] = await Promise.all([adminGetQMTopic(topicId), pickerSubjects()]);
   if (!topic) notFound();
 
   const update = updateQMTopicAction.bind(null, topicId);
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href="/admin/question-maker" className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]">
+      <Link href="/admin/question-maker" className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
       </Link>
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">Admin · QuestionMaker</p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">Edit topic</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">Studio · Quizzes</p>
+        <h1 className="mt-2 font-serif text-4xl text-fg">Edit topic</h1>
       </div>
-      <form action={update} className="flex flex-col gap-5 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8">
+      <form action={update} className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8">
         <QMTopicFields defaults={topic} />
+        <SubjectSkillPicker
+          subjects={subjects}
+          defaultSubjectId={topic.subjectId}
+          defaultSkillIds={topic.skills.map((k) => k.skillId)}
+        />
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
+          <button type="submit" className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90">
             Save changes
           </button>
         </div>
@@ -34,24 +44,24 @@ export default async function EditQMTopicPage({ params }: Props) {
   );
 }
 
-const inputClass = "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
+const inputClass = "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
 
 export function QMTopicFields({ defaults }: { defaults?: { title?: string; description?: string | null; order?: number } } = {}) {
   return (
     <>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="title" className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-          Title <span className="text-[var(--accent)]">*</span>
+        <label htmlFor="title" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+          Title <span className="text-accent-text">*</span>
         </label>
         <input id="title" name="title" defaultValue={defaults?.title} required className={inputClass} />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="description" className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Description</label>
+        <label htmlFor="description" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Description</label>
         <textarea id="description" name="description" defaultValue={defaults?.description ?? ""} rows={2} className={inputClass} />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="order" className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">Order</label>
-        <input id="order" name="order" defaultValue={defaults?.order ?? 0} className={inputClass} />
+        <label htmlFor="order" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Order</label>
+        <input id="order" name="order" type="number" defaultValue={defaults?.order ?? 0} className={inputClass} />
       </div>
     </>
   );

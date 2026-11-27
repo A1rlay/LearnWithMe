@@ -11,6 +11,8 @@ import type {
   QMQuestionDetail,
   QMTopicDetail,
 } from "@/server/data/question-maker";
+import { scoreQMAnswer } from "@/lib/qm-scoring";
+
 import { submitQuizAction } from "./actions";
 
 type Props = { topic: QMTopicDetail; topicId: string };
@@ -50,11 +52,8 @@ export function QuizClient({ topic, topicId }: Props) {
     try {
       await submitQuizAction(
         topicId,
-        scored.map((s) => ({
-          questionId: s.question.id,
-          answer: s.studentAnswer,
-          isCorrect: s.isCorrect,
-        })),
+        // Only raw answers are sent; the server grades them.
+        scored.map((s) => ({ questionId: s.question.id, answer: s.studentAnswer })),
       );
       setReview(scored);
     } finally {
@@ -69,16 +68,16 @@ export function QuizClient({ topic, topicId }: Props) {
       {/* Progress */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[rgba(255,255,255,0.55)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-fg/55">
             {topic.title}
           </p>
-          <p className="text-xs text-[rgba(255,255,255,0.45)]">
+          <p className="text-xs text-fg/45">
             {step + 1} / {topic.questions.length}
           </p>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-[rgba(255,255,255,0.1)]">
+        <div className="h-1.5 w-full rounded-full bg-fg/10">
           <div
-            className="h-full rounded-full bg-[#0F9C00] transition-all duration-300"
+            className="h-full rounded-full bg-accent transition-all duration-300"
             style={{ width: `${((step + 1) / topic.questions.length) * 100}%` }}
           />
         </div>
@@ -86,10 +85,10 @@ export function QuizClient({ topic, topicId }: Props) {
 
       {/* Question */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
           Question {step + 1}
         </p>
-        <h2 className="mt-2 text-2xl font-bold text-white">{current.prompt}</h2>
+        <h2 className="mt-2 text-2xl font-bold text-fg">{current.prompt}</h2>
       </div>
 
       {/* Answer input — keyed by question id so state resets between questions */}
@@ -105,15 +104,15 @@ export function QuizClient({ topic, topicId }: Props) {
         {step > 0 ? (
           <button
             onClick={() => setStep((s) => s - 1)}
-            className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.25)] px-5 py-3 text-sm font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white"
+            className="flex items-center gap-1.5 rounded-full border border-fg/25 px-5 py-3 text-sm font-semibold text-fg/70 transition-colors hover:border-fg hover:text-fg"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             Previous
           </button>
         ) : (
           <Link
-            href="/question-maker"
-            className="flex items-center gap-1.5 text-sm text-[rgba(255,255,255,0.45)] transition-colors hover:text-white"
+            href={`/subjects/${topic.subjectId}`}
+            className="flex items-center gap-1.5 text-sm text-fg/45 transition-colors hover:text-fg"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             Exit
@@ -123,7 +122,7 @@ export function QuizClient({ topic, topicId }: Props) {
           <button
             onClick={handleSubmit}
             disabled={!isAnswerReady(current, answers[step]) || submitting}
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {submitting ? "Submitting…" : "Submit"}
           </button>
@@ -131,7 +130,7 @@ export function QuizClient({ topic, topicId }: Props) {
           <button
             onClick={() => setStep((s) => s + 1)}
             disabled={!isAnswerReady(current, answers[step])}
-            className="flex items-center gap-1.5 rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-1.5 rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Next
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -184,8 +183,8 @@ function MultipleOptionInput({
           onClick={() => onChange(i)}
           className={`rounded-2xl border px-5 py-4 text-left text-sm font-medium transition-colors ${
             selected === i
-              ? "border-[#0F9C00] bg-[rgba(15,156,0,0.15)] text-white"
-              : "border-[rgba(255,255,255,0.18)] text-[rgba(255,255,255,0.8)] hover:border-[rgba(255,255,255,0.4)]"
+              ? "border-accent-text bg-accent/15 text-fg"
+              : "border-fg/18 text-fg/80 hover:border-fg/40"
           }`}
         >
           {opt}
@@ -212,9 +211,9 @@ function OpenAnswerInput({
         value={text}
         onChange={(e) => onChange(e.target.value || null)}
         placeholder="Type your answer here…"
-        className="rounded-2xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.4)] px-5 py-4 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-[rgba(255,255,255,0.5)] resize-none"
+        className="rounded-2xl border border-fg/20 bg-surface-2 px-5 py-4 text-sm text-fg placeholder:text-fg/35 outline-none focus:border-accent-text resize-none"
       />
-      <p className="text-xs text-[rgba(255,255,255,0.4)]">Your teacher will review this answer.</p>
+      <p className="text-xs text-fg/40">Your teacher will review this answer.</p>
     </div>
   );
 }
@@ -305,7 +304,7 @@ function MatcherInput({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-[rgba(255,255,255,0.45)]">
+      <p className="text-xs text-fg/45">
         {allMatched
           ? "All pairs connected. Click any item to change a match."
           : activeLeft !== null
@@ -337,10 +336,10 @@ function MatcherInput({
                   }}
                   className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
                     isActive
-                      ? "border-white bg-white/10 text-white ring-1 ring-white/30"
+                      ? "border-fg bg-fg/10 text-fg ring-1 ring-fg/30"
                       : isMatched
-                      ? "border-[rgba(15,156,0,0.55)] text-white"
-                      : "border-[rgba(255,255,255,0.18)] text-[rgba(255,255,255,0.8)] hover:border-white"
+                      ? "border-accent/55 text-fg"
+                      : "border-fg/18 text-fg/80 hover:border-fg"
                   }`}
                 >
                   {pair.left}
@@ -364,10 +363,10 @@ function MatcherInput({
                   }}
                   className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
                     isMatched
-                      ? "border-[rgba(15,156,0,0.55)] text-white"
+                      ? "border-accent/55 text-fg"
                       : clickable
-                      ? "border-[rgba(255,255,255,0.35)] text-white hover:border-[#0F9C00] hover:bg-[rgba(15,156,0,0.08)] cursor-pointer"
-                      : "border-[rgba(255,255,255,0.18)] text-[rgba(255,255,255,0.6)]"
+                      ? "border-fg/35 text-fg hover:border-accent-text hover:bg-accent/8 cursor-pointer"
+                      : "border-fg/18 text-fg/60"
                   }`}
                 >
                   {data.pairs[actualIdx].right}
@@ -387,11 +386,11 @@ function MatcherInput({
               <line
                 x1={line.x1} y1={line.y1}
                 x2={line.x2} y2={line.y2}
-                stroke="rgba(15,156,0,0.7)"
+                stroke="var(--color-success)" strokeOpacity={0.7}
                 strokeWidth="2"
                 strokeLinecap="round"
               />
-              <circle cx={(line.x1 + line.x2) / 2} cy={(line.y1 + line.y2) / 2} r="3" fill="#0F9C00" />
+              <circle cx={(line.x1 + line.x2) / 2} cy={(line.y1 + line.y2) / 2} r="3" fill="var(--color-success)" />
             </g>
           ))}
         </svg>
@@ -472,7 +471,7 @@ function ClassifierInput({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xs text-[rgba(255,255,255,0.45)]">
+      <p className="text-xs text-fg/45">
         {hasTapSelection
           ? `Tap a category to place "${data.items[activeItem!].text}" — or tap it again to cancel.`
           : "Drag items into a category, or tap to select and then tap a category."}
@@ -482,10 +481,10 @@ function ClassifierInput({
       <div
         className={`min-h-12 rounded-2xl border-2 border-dashed p-4 transition-colors ${
           dragOver === "bank"
-            ? "border-[rgba(255,255,255,0.45)] bg-[rgba(255,255,255,0.05)]"
+            ? "border-fg/45 bg-fg/5"
             : hasTapSelection
-            ? "border-[rgba(255,255,255,0.2)]"
-            : "border-[rgba(255,255,255,0.15)]"
+            ? "border-fg/20"
+            : "border-fg/15"
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragOver("bank"); }}
         onDragLeave={() => setDragOver(null)}
@@ -498,7 +497,7 @@ function ClassifierInput({
       >
         <div className="flex flex-wrap gap-2 min-h-8">
           {unplaced.length === 0 ? (
-            <span className="text-xs text-[rgba(255,255,255,0.3)]">All items placed</span>
+            <span className="text-xs text-fg/30">All items placed</span>
           ) : (
             unplaced.map((ii) => (
               <div
@@ -507,12 +506,12 @@ function ClassifierInput({
                 onDragStart={(e) => onDragStartItem(ii, e)}
                 onDragEnd={onDragEndItem}
                 onClick={() => tapBankItem(ii)}
-                className={`cursor-grab rounded-full border px-3 py-1.5 text-sm font-semibold text-white select-none transition-all active:scale-95 ${
+                className={`cursor-grab rounded-full border px-3 py-1.5 text-sm font-semibold text-fg select-none transition-all active:scale-95 ${
                   activeItem === ii
-                    ? "border-[#0F9C00] bg-[rgba(15,156,0,0.25)] ring-2 ring-[#0F9C00] scale-105"
+                    ? "border-accent-text bg-accent/25 ring-2 ring-accent-text scale-105"
                     : dragItem === ii
-                    ? "opacity-40 border-[rgba(255,255,255,0.3)]"
-                    : "border-[rgba(255,255,255,0.3)] hover:border-white"
+                    ? "opacity-40 border-fg/30"
+                    : "border-fg/30 hover:border-fg"
                 }`}
               >
                 {data.items[ii].text}
@@ -544,11 +543,11 @@ function ClassifierInput({
               onClick={() => tapCategory(ci)}
               className={`min-h-24 rounded-2xl border-2 p-4 transition-colors ${
                 highlight
-                  ? "cursor-pointer border-[#0F9C00] bg-[rgba(15,156,0,0.06)]"
-                  : "border-[rgba(255,255,255,0.18)]"
+                  ? "cursor-pointer border-accent-text bg-accent/6"
+                  : "border-fg/18"
               }`}
             >
-              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-[var(--accent)]">
+              <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent-text">
                 {cat}
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -561,10 +560,10 @@ function ClassifierInput({
                     onClick={(e) => tapPlacedItem(ii, e)}
                     className={`cursor-grab rounded-full px-3 py-1 text-xs font-semibold select-none transition-all active:scale-95 ${
                       activeItem === ii
-                        ? "bg-[rgba(15,156,0,0.4)] text-[#0F9C00] ring-2 ring-[#0F9C00] scale-105"
+                        ? "bg-accent/40 text-accent-text ring-2 ring-accent-text scale-105"
                         : dragItem === ii
-                        ? "opacity-40 bg-[rgba(15,156,0,0.2)] text-[#0F9C00]"
-                        : "bg-[rgba(15,156,0,0.2)] text-[#0F9C00] hover:bg-red-500/20 hover:text-red-400"
+                        ? "opacity-40 bg-accent/20 text-accent-text"
+                        : "bg-accent/20 text-accent-text hover:bg-danger/20 hover:text-danger"
                     }`}
                     title="Drag or tap to move"
                   >
@@ -577,7 +576,7 @@ function ClassifierInput({
         })}
       </div>
 
-      <p className="text-xs text-[rgba(255,255,255,0.4)]">
+      <p className="text-xs text-fg/40">
         Mobile: tap an item to select it, tap a category to place it, tap a placed item twice to return it.
       </p>
     </div>
@@ -603,18 +602,18 @@ function ReviewScreen({
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12 sm:py-16">
       {/* Score card */}
       <div className="text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.32em] text-[rgba(255,255,255,0.55)]">
+        <p className="text-xs font-bold uppercase tracking-[0.32em] text-fg/55">
           {topic.title}
         </p>
-        <h1 className="mt-2 text-4xl font-extrabold text-white">Quiz complete!</h1>
+        <h1 className="mt-2 text-4xl font-extrabold text-fg">Quiz complete!</h1>
       </div>
 
-      <div className="flex flex-col items-center gap-2 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] px-10 py-8 text-center">
-        <p className="text-6xl font-extrabold text-[#0F9C00]">{pct}%</p>
-        <p className="text-sm text-[rgba(255,255,255,0.6)]">
+      <div className="flex flex-col items-center gap-2 rounded-[28px] border border-line bg-surface px-10 py-8 text-center">
+        <p className="text-6xl font-extrabold text-success">{pct}%</p>
+        <p className="text-sm text-fg/60">
           {correct} correct out of {autoGraded} auto-graded
           {pending > 0 && (
-            <span className="ml-1 text-yellow-300">
+            <span className="ml-1 text-warning">
               · {pending} pending teacher review
             </span>
           )}
@@ -623,7 +622,7 @@ function ReviewScreen({
 
       {/* Per-question review */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-base font-bold uppercase tracking-[0.2em] text-[rgba(255,255,255,0.55)]">
+        <h2 className="text-base font-bold uppercase tracking-[0.2em] text-fg/55">
           Review
         </h2>
         {scored.map((s, i) => (
@@ -635,13 +634,13 @@ function ReviewScreen({
       <div className="flex flex-wrap gap-3">
         <Link
           href={`/question-maker/${topic.id}`}
-          className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+          className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
         >
           Try again
         </Link>
         <Link
-          href="/question-maker"
-          className="flex items-center gap-1.5 rounded-full border border-[rgba(255,255,255,0.25)] px-6 py-3 text-sm font-semibold text-[rgba(255,255,255,0.7)] transition-colors hover:border-white hover:text-white"
+          href={`/subjects/${topic.subjectId}`}
+          className="flex items-center gap-1.5 rounded-full border border-fg/25 px-6 py-3 text-sm font-semibold text-fg/70 transition-colors hover:border-fg hover:text-fg"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           Back to topics
@@ -656,26 +655,26 @@ function QuestionReview({ index, scored }: { index: number; scored: ScoredAnswer
   const data = question.data as QMQuestionData;
 
   return (
-    <div className="flex flex-col gap-3 rounded-[24px] border border-[var(--border)] bg-[var(--panel)] p-5">
+    <div className="flex flex-col gap-3 rounded-[24px] border border-line bg-surface p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-text">
             {index + 1}. {question.type.replace("_", " ")}
           </p>
-          <p className="mt-1 font-semibold text-white">{question.prompt}</p>
+          <p className="mt-1 font-semibold text-fg">{question.prompt}</p>
         </div>
         {isCorrect === true && (
-          <span className="shrink-0 rounded-full bg-[rgba(15,156,0,0.2)] px-3 py-1 text-xs font-bold text-[#0F9C00]">
+          <span className="shrink-0 rounded-full bg-accent/20 px-3 py-1 text-xs font-bold text-accent-text">
             Correct ✓
           </span>
         )}
         {isCorrect === false && (
-          <span className="shrink-0 rounded-full bg-red-500/20 px-3 py-1 text-xs font-bold text-red-400">
+          <span className="shrink-0 rounded-full bg-danger/20 px-3 py-1 text-xs font-bold text-danger">
             Wrong ✗
           </span>
         )}
         {isCorrect === null && (
-          <span className="shrink-0 rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-bold text-yellow-300">
+          <span className="shrink-0 rounded-full bg-warning/20 px-3 py-1 text-xs font-bold text-warning">
             Pending
           </span>
         )}
@@ -698,10 +697,10 @@ function ReviewMultipleOption({ data, answer }: { data: MultipleOptionData; answ
           key={i}
           className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
             i === data.correctIndex
-              ? "bg-[rgba(15,156,0,0.12)] text-[#0F9C00]"
+              ? "bg-accent/12 text-accent-text"
               : i === chosen
-              ? "bg-red-500/10 text-red-400"
-              : "text-[rgba(255,255,255,0.45)]"
+              ? "bg-danger/10 text-danger"
+              : "text-fg/45"
           }`}
         >
           <span className="w-4 shrink-0 text-center font-bold text-xs">
@@ -724,15 +723,15 @@ function ReviewOpenAnswer({ answer }: { answer: unknown }) {
   const text = typeof answer === "string" ? answer : "";
   return (
     <div className="flex flex-col gap-2">
-      <div className="rounded-xl border border-[var(--border)] px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[rgba(255,255,255,0.4)]">
+      <div className="rounded-xl border border-line px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-fg/40">
           Your answer
         </p>
-        <p className="mt-1 text-sm text-white">
+        <p className="mt-1 text-sm text-fg">
           {text || <em className="opacity-40">No answer given</em>}
         </p>
       </div>
-      <p className="text-xs text-yellow-300/70">
+      <p className="text-xs text-warning/70">
         Your teacher will review this and mark it as correct or incorrect.
       </p>
     </div>
@@ -754,18 +753,18 @@ function ReviewMatcher({ data, answer }: { data: MatcherData; answer: unknown })
           <div
             key={i}
             className={`grid grid-cols-[1fr_16px_1fr] items-center gap-2 rounded-xl px-3 py-2 text-sm ${
-              isCorrect ? "bg-[rgba(15,156,0,0.1)]" : "bg-red-500/8"
+              isCorrect ? "bg-success/10" : "bg-danger/8"
             }`}
           >
-            <span className="text-white">{pair.left}</span>
-            <span className={`text-center text-xs font-bold ${isCorrect ? "text-[#0F9C00]" : "text-red-400"}`}>
+            <span className="text-fg">{pair.left}</span>
+            <span className={`text-center text-xs font-bold ${isCorrect ? "text-success" : "text-danger"}`}>
               {isCorrect ? "→" : "✗"}
             </span>
             <div className="flex flex-col gap-0.5">
               {!isCorrect && studentRightLabel && (
-                <span className="text-xs text-red-400 line-through">{studentRightLabel}</span>
+                <span className="text-xs text-danger line-through">{studentRightLabel}</span>
               )}
-              <span className={isCorrect ? "text-[#0F9C00]" : "text-xs text-[rgba(15,156,0,0.7)]"}>
+              <span className={isCorrect ? "text-success" : "text-xs text-success/70"}>
                 {pair.right}
                 {!isCorrect && " (correct)"}
               </span>
@@ -793,8 +792,8 @@ function ReviewClassifier({ data, answer }: { data: ClassifierData; answer: unkn
           .filter(({ item, ii }) => item.categoryIndex === ci || arr[ii] === ci);
 
         return (
-          <div key={ci} className="rounded-xl border border-[var(--border)] p-3">
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-[var(--accent)]">
+          <div key={ci} className="rounded-xl border border-line p-3">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.15em] text-accent-text">
               {cat}
             </p>
             <div className="flex flex-wrap gap-1.5">
@@ -810,10 +809,10 @@ function ReviewClassifier({ data, answer }: { data: ClassifierData; answer: unkn
                     key={ii}
                     className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                       isCorrect
-                        ? "bg-[rgba(15,156,0,0.2)] text-[#0F9C00]"
+                        ? "bg-accent/20 text-accent-text"
                         : placedHere && !belongsHere
-                        ? "bg-red-500/20 text-red-400"    // wrong placement
-                        : "border border-dashed border-[rgba(15,156,0,0.35)] text-[rgba(15,156,0,0.55)]" // missed (belongs here but not placed)
+                        ? "bg-danger/20 text-danger"    // wrong placement
+                        : "border border-dashed border-success/35 text-success/55" // missed (belongs here but not placed)
                     }`}
                     title={
                       placedHere && !belongsHere
@@ -860,25 +859,5 @@ function isAnswerReady(question: QMQuestionDetail, answer: unknown): boolean {
   }
 }
 
-function scoreAnswer(question: QMQuestionDetail, answer: unknown): boolean | null {
-  const data = question.data as QMQuestionData;
-  switch (question.type) {
-    case "MULTIPLE_OPTION":
-      return answer === (data as MultipleOptionData).correctIndex;
-    case "OPEN_ANSWER":
-      return null;
-    case "MATCHER": {
-      const d = data as MatcherData;
-      if (!Array.isArray(answer)) return false;
-      return d.pairs.every((_, i) => (answer as (number | null)[])[i] === i);
-    }
-    case "CLASSIFIER": {
-      const d = data as ClassifierData;
-      if (!Array.isArray(answer)) return false;
-      return d.items.every((item, i) => (answer as (number | null)[])[i] === item.categoryIndex);
-    }
-    default:
-      return null;
-  }
-}
+const scoreAnswer = scoreQMAnswer;
 

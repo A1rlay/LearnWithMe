@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { recordSpellRightRunAction } from "./actions";
+
 type Word = {
   id: string;
   word: string;
@@ -47,10 +49,13 @@ function playUrl(url: string) {
 }
 
 export function TerminationClient({
+  setId,
+  subjectId,
   setTitle,
   words,
 }: {
   setId: string;
+  subjectId: string;
   setTitle: string;
   words: Word[];
 }) {
@@ -94,6 +99,11 @@ export function TerminationClient({
   function handleNext() {
     if (index + 1 >= words.length) {
       setPhase("done");
+      // Fire-and-forget: results feed the learner's skill radar.
+      void recordSpellRightRunAction(
+        setId,
+        answers.map((a) => ({ wordId: a.word.id, answer: a.selected })),
+      );
     } else {
       setIndex((i) => i + 1);
     }
@@ -112,11 +122,11 @@ export function TerminationClient({
       <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12">
         {/* Score */}
         <div className="flex flex-col gap-1">
-          <p className="text-xs font-bold uppercase tracking-[0.32em] text-[var(--accent)]">
-            SpellRight · Termination
+          <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent-text">
+            Sounds · Word endings
           </p>
-          <h1 className="font-serif text-4xl text-[var(--foreground)]">Results</h1>
-          <p className="mt-1 text-lg text-[var(--muted)]">
+          <h1 className="font-serif text-4xl text-fg">Results</h1>
+          <p className="mt-1 text-lg text-muted">
             {score} / {words.length} correct
           </p>
         </div>
@@ -129,8 +139,8 @@ export function TerminationClient({
               <div
                 key={i}
                 className={`flex items-center gap-4 rounded-[20px] border px-5 py-4 ${correct
-                    ? "border-[rgba(15,156,0,0.35)] bg-[rgba(15,156,0,0.06)]"
-                    : "border-[rgba(239,68,68,0.35)] bg-[rgba(239,68,68,0.06)]"
+                    ? "border-accent/35 bg-accent/6"
+                    : "border-danger/35 bg-danger/6"
                   }`}
               >
                 {/* Play button */}
@@ -139,7 +149,7 @@ export function TerminationClient({
                     <button
                       type="button"
                       onClick={() => playUrl(a.audioUrl!)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(255,255,255,0.2)] text-[rgba(255,255,255,0.6)] hover:border-white hover:text-white transition-colors"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-fg/20 text-fg/60 hover:border-fg hover:text-fg transition-colors"
                       aria-label={`Play ${a.word.word}`}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -152,26 +162,26 @@ export function TerminationClient({
                 </div>
 
                 {/* Word */}
-                <p className="flex-1 font-bold text-[var(--foreground)]">{a.word.word}</p>
+                <p className="flex-1 font-bold text-fg">{a.word.word}</p>
 
                 {/* Correct answer */}
                 <div className="flex flex-col items-end gap-0.5 text-right">
-                  <span className="text-xs text-[var(--muted)]">correct</span>
-                  <span className="text-sm font-bold text-[#0F9C00]">
+                  <span className="text-xs text-muted">correct</span>
+                  <span className="text-sm font-bold text-accent-text">
                     /{a.word.correctAnswer}/
                   </span>
                 </div>
 
                 {/* Student answer */}
                 <div className="flex flex-col items-end gap-0.5 text-right">
-                  <span className="text-xs text-[var(--muted)]">your answer</span>
-                  <span className={`text-sm font-bold ${correct ? "text-[#0F9C00]" : "text-red-400"}`}>
+                  <span className="text-xs text-muted">your answer</span>
+                  <span className={`text-sm font-bold ${correct ? "text-success" : "text-danger"}`}>
                     /{a.selected}/
                   </span>
                 </div>
 
                 {/* Result icon */}
-                <span className={`shrink-0 text-xl ${correct ? "text-[#0F9C00]" : "text-red-400"}`}>
+                <span className={`shrink-0 text-xl ${correct ? "text-success" : "text-danger"}`}>
                   {correct ? "✓" : "✗"}
                 </span>
               </div>
@@ -184,13 +194,13 @@ export function TerminationClient({
           <button
             type="button"
             onClick={handlePlayAgain}
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
           >
             Play again
           </button>
           <Link
-            href="/spell-right"
-            className="rounded-full border border-[rgba(255,255,255,0.25)] px-6 py-3 text-sm font-semibold text-[rgba(255,255,255,0.6)] hover:border-white hover:text-white transition-colors"
+            href={`/subjects/${subjectId}`}
+            className="rounded-full border border-fg/25 px-6 py-3 text-sm font-semibold text-fg/60 hover:border-fg hover:text-fg transition-colors"
           >
             All sets
           </Link>
@@ -203,10 +213,10 @@ export function TerminationClient({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-6 py-12">
       {/* Header */}
-      <div className="w-full max-w-md flex items-center justify-between text-xs text-[var(--muted)]">
+      <div className="w-full max-w-md flex items-center justify-between text-xs text-muted">
         <Link
-          href="/spell-right"
-          className="flex items-center gap-1.5 font-semibold hover:text-white transition-colors"
+          href={`/subjects/${subjectId}`}
+          className="flex items-center gap-1.5 font-semibold hover:text-fg transition-colors"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -217,32 +227,32 @@ export function TerminationClient({
       </div>
 
       {/* Audio card */}
-      <div className="w-full max-w-md rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-10 flex flex-col items-center gap-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+      <div className="w-full max-w-md rounded-[28px] border border-line bg-surface p-10 flex flex-col items-center gap-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
           Listen, then choose the ending sound
         </p>
 
         {phase === "loading" ? (
-          <div className="h-20 flex items-center text-sm text-[var(--muted)]">Loading audio…</div>
+          <div className="h-20 flex items-center text-sm text-muted">Loading audio…</div>
         ) : audioUrl ? (
           <>
             <audio ref={audioRef} src={audioUrl} />
             <button
               type="button"
               onClick={playAudio}
-              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#0F9C00] bg-[rgba(15,156,0,0.12)] text-[#0F9C00] hover:bg-[rgba(15,156,0,0.22)] transition-colors"
+              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-accent-text bg-accent/12 text-accent-text hover:bg-accent/22 transition-colors"
               aria-label="Play audio"
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                 <polygon points="5,3 19,12 5,21" />
               </svg>
             </button>
-            <p className="text-xs text-[var(--muted)]">Tap to hear the word</p>
+            <p className="text-xs text-muted">Tap to hear the word</p>
           </>
         ) : (
           <div className="flex flex-col items-center gap-2 py-2">
-            <p className="text-xs text-[var(--muted)]">No audio found — word shown instead</p>
-            <p className="text-2xl font-bold text-[var(--foreground)]">{current.word}</p>
+            <p className="text-xs text-muted">No audio found — word shown instead</p>
+            <p className="text-2xl font-bold text-fg">{current.word}</p>
           </div>
         )}
       </div>
@@ -265,11 +275,11 @@ export function TerminationClient({
                   "flex flex-col items-center gap-1 rounded-[20px] border px-4 py-5 text-center transition-all",
                   phase === "answered"
                     ? isCorrect
-                      ? "border-[#0F9C00] bg-[rgba(15,156,0,0.12)] text-[#0F9C00]"
+                      ? "border-accent-text bg-accent/12 text-accent-text"
                       : isWrong
-                        ? "border-red-500 bg-[rgba(239,68,68,0.1)] text-red-400"
-                        : "border-[var(--border)] text-[var(--muted)] opacity-40"
-                    : "cursor-pointer border-[var(--border)] bg-[var(--panel)] text-[var(--foreground)] hover:border-[rgba(255,255,255,0.5)] hover:bg-[rgba(255,255,255,0.05)]",
+                        ? "border-danger bg-danger/10 text-danger"
+                        : "border-line text-muted opacity-40"
+                    : "cursor-pointer border-line bg-surface text-fg hover:border-fg/50 hover:bg-fg/5",
                 ].join(" ")}
               >
                 <span className="text-2xl font-extrabold">{c.label}</span>
@@ -282,29 +292,29 @@ export function TerminationClient({
 
       {/* Result panel */}
       {phase === "answered" && (
-        <div className="w-full max-w-md rounded-[20px] border border-[var(--border)] bg-[var(--panel)] p-6 flex flex-col gap-4">
+        <div className="w-full max-w-md rounded-[20px] border border-line bg-surface p-6 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             {selected === current.correctAnswer ? (
-              <span className="text-2xl text-[#0F9C00]">✓</span>
+              <span className="text-2xl text-success">✓</span>
             ) : (
-              <span className="text-2xl text-red-400">✗</span>
+              <span className="text-2xl text-danger">✗</span>
             )}
             <div>
-              <p className={`font-bold ${selected === current.correctAnswer ? "text-[#0F9C00]" : "text-red-400"}`}>
+              <p className={`font-bold ${selected === current.correctAnswer ? "text-success" : "text-danger"}`}>
                 {selected === current.correctAnswer ? "Correct!" : "Not quite"}
               </p>
-              <p className="text-sm text-[var(--foreground)] font-semibold">{current.word}</p>
+              <p className="text-sm text-fg font-semibold">{current.word}</p>
             </div>
           </div>
 
           {current.explanation && (
-            <p className="text-sm text-[var(--muted)] leading-relaxed">{current.explanation}</p>
+            <p className="text-sm text-muted leading-relaxed">{current.explanation}</p>
           )}
 
           <button
             type="button"
             onClick={handleNext}
-            className="rounded-full bg-[#0F9C00] py-3 text-sm font-bold text-white hover:opacity-90 transition-opacity"
+            className="rounded-full bg-accent py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
           >
             {index + 1 < words.length ? "Next word" : "See results"}
           </button>

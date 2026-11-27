@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export default function middleware(request: NextRequest) {
+// Next 16: `middleware` is now `proxy`. Cheap cookie-presence gate only —
+// every Studio page and action re-verifies the session and subject access.
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Redirect old admin login URL to the unified login page

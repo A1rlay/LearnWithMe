@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { updateVideoAction } from "../../actions";
 import { adminGetVideo } from "@/server/data/admin";
+import { requireEditorPage } from "@/lib/auth";
 
 type EditVideoPageProps = {
   params: Promise<{ id: string; videoId: string }>;
@@ -10,6 +11,7 @@ type EditVideoPageProps = {
 
 export default async function EditVideoPage({ params }: EditVideoPageProps) {
   const { id, videoId } = await params;
+  await requireEditorPage({ kind: "video", id: videoId });
   const video = await adminGetVideo(videoId);
   if (!video) notFound();
 
@@ -20,30 +22,30 @@ export default async function EditVideoPage({ params }: EditVideoPageProps) {
       <div>
         <Link
           href={`/admin/topics/${id}/videos`}
-          className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+          className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
         </Link>
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-          Admin · {video.topic.title}
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          Studio · {video.topic.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">
+        <h1 className="mt-2 font-serif text-4xl text-fg">
           Edit video
         </h1>
       </div>
 
       <form
         action={update}
-        className="flex flex-col gap-5 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8"
+        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
       >
         <VideoFields defaults={video} />
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
           >
             Save changes
           </button>
@@ -59,6 +61,7 @@ export function VideoFields({
   defaults?: {
     description?: string | null;
     order?: number;
+    subtitlesEnabled?: boolean;
     title?: string;
     videoUrl?: string;
   };
@@ -86,6 +89,21 @@ export function VideoFields({
         defaultValue={defaults?.description ?? ""}
         multiline
       />
+      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-line p-4 transition-colors hover:bg-surface-2">
+        <input
+          type="checkbox"
+          name="subtitlesEnabled"
+          defaultChecked={defaults?.subtitlesEnabled ?? false}
+          className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]"
+        />
+        <span className="flex flex-col gap-0.5">
+          <span className="text-sm font-medium text-fg">Show subtitles</span>
+          <span className="text-xs text-muted">
+            Turn on for beginner material (e.g. A1–B1). Leave off when understanding by ear is the
+            point of the lesson.
+          </span>
+        </span>
+      </label>
     </>
   );
 }
@@ -106,16 +124,16 @@ function Field({
   required?: boolean;
 }) {
   const inputClass =
-    "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
+    "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
 
   return (
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={name}
-        className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+        className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
       >
         {label}
-        {required && <span className="ml-1 text-[var(--accent)]">*</span>}
+        {required && <span className="ml-1 text-accent-text">*</span>}
       </label>
       {multiline ? (
         <textarea
@@ -134,7 +152,7 @@ function Field({
           className={inputClass}
         />
       )}
-      {hint && <p className="text-xs text-[var(--muted)]">{hint}</p>}
+      {hint && <p className="text-xs text-muted">{hint}</p>}
     </div>
   );
 }

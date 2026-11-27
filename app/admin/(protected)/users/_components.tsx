@@ -1,5 +1,5 @@
 const inputClass =
-  "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
+  "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
 
 export function UserFields({
   defaults,
@@ -11,9 +11,9 @@ export function UserFields({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="name"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
         >
-          Full name <span className="text-[var(--accent)]">*</span>
+          Full name <span className="text-accent-text">*</span>
         </label>
         <input
           id="name"
@@ -27,9 +27,9 @@ export function UserFields({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="email"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
         >
-          Email <span className="text-[var(--accent)]">*</span>
+          Email <span className="text-accent-text">*</span>
         </label>
         <input
           id="email"
@@ -44,9 +44,9 @@ export function UserFields({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="role"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
         >
-          Role <span className="text-[var(--accent)]">*</span>
+          Role <span className="text-accent-text">*</span>
         </label>
         <select
           id="role"
@@ -54,8 +54,8 @@ export function UserFields({
           defaultValue={defaults?.role ?? "STUDENT"}
           className={inputClass}
         >
-          <option value="STUDENT">Student</option>
-          <option value="TEACHER">Teacher</option>
+          <option value="STUDENT">Learner</option>
+          <option value="TEACHER">Expert (teaches subjects)</option>
           <option value="ADMIN">Admin</option>
         </select>
       </div>
