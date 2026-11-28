@@ -1,11 +1,14 @@
 import { cookies } from "next/headers";
+import { cache } from "react";
+
+import { prisma } from "@/server/db";
 
 const SESSION_COOKIE = "session";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export type SessionData = {
   userId: string;
-  email: string;
+  username: string;
   role: string;
   name: string;
 };
@@ -56,12 +59,19 @@ export async function createSession(data: SessionData): Promise<void> {
   });
 }
 
-export async function getSession(): Promise<SessionData | null> {
+/**
+ * Valid signature + not expired + the account still exists (a deleted user's cookie is
+ * treated as signed out everywhere). Memoised per request.
+ */
+export const getSession = cache(async (): Promise<SessionData | null> => {
   const cookieStore = await cookies();
   const cookie = cookieStore.get(SESSION_COOKIE);
   if (!cookie) return null;
-  return verifySessionValue(cookie.value);
-}
+  const session = await verifySessionValue(cookie.value);
+  if (!session) return null;
+  const exists = await prisma.user.count({ where: { id: session.userId } });
+  return exists ? session : null;
+});
 
 export async function verifySessionValue(
   value: string,
@@ -82,7 +92,7 @@ export async function verifySessionValue(
 
     return {
       userId: data.userId,
-      email: data.email,
+      username: data.username ?? "",
       role: data.role,
       name: data.name,
     };

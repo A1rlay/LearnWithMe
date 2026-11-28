@@ -177,7 +177,7 @@ export async function adminGetSubject(id: string) {
     include: {
       experts: {
         where: { user: { role: { in: ["TEACHER", "ADMIN"] } } },
-        include: { user: { select: { id: true, name: true, email: true } } },
+        include: { user: { select: { id: true, name: true, username: true } } },
         orderBy: { assignedAt: "asc" },
       },
       skills: { orderBy: [{ order: "asc" }, { name: "asc" }] },
@@ -296,6 +296,6 @@ export async function getExpertCandidates() {
   return prisma.user.findMany({
     where: { role: { in: ["TEACHER", "ADMIN"] } },
     orderBy: { name: "asc" },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, username: true },
   });
 }

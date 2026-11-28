@@ -38,12 +38,12 @@ export default async function HomePage() {
             Browse subjects
           </a>
           {session ? (
-            <Link href={`/profile/${session.userId}`} className="btn btn-ghost px-6 py-3">
+            <Link href="/me" className="btn btn-ghost px-6 py-3">
               See my skills
             </Link>
           ) : (
-            <Link href="/login" className="btn btn-ghost px-6 py-3">
-              Sign in to track progress
+            <Link href="/signup" className="btn btn-ghost px-6 py-3">
+              Join free — just a username
             </Link>
           )}
         </div>
@@ -114,7 +114,7 @@ export default async function HomePage() {
           {[
             ["Pick a subject", "Each one is taught by an expert who builds its activities."],
             ["Practise a skill", "Every activity says which skills it trains, so you know why you're doing it."],
-            ["Watch yourself grow", "Your skill chart compares today with 30 days ago."],
+            ["Find study buddies", "Learn alongside people studying the same things — and watch your skill chart grow."],
           ].map(([title, body], i) => (
             <li key={title} className="card flex flex-col gap-2 p-5">
               <span className="font-mono text-xs text-subtle">0{i + 1}</span>

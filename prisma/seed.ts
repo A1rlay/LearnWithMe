@@ -17,16 +17,17 @@ async function main() {
   const adminEmail = process.env.ADMIN_EMAIL ?? "admin@example.com";
   const adminPassword = process.env.ADMIN_PASSWORD ?? "changeme";
   await prisma.user.upsert({
-    where: { email: adminEmail },
+    where: { username: "admin" },
     update: {},
     create: {
+      username: "admin",
       email: adminEmail,
       passwordHash: await hashPassword(adminPassword),
       name: "Admin",
       role: "ADMIN",
     },
   });
-  console.log(`Admin user: ${adminEmail}`);
+  console.log(`Admin user: admin (${adminEmail})`);
 
   await prisma.questionOption.deleteMany();
   await prisma.question.deleteMany();
@@ -57,9 +58,10 @@ async function main() {
 
   const expertEmail = process.env.EXPERT_EMAIL ?? "expert@example.com";
   const expert = await prisma.user.upsert({
-    where: { email: expertEmail },
+    where: { username: "expert" },
     update: {},
     create: {
+      username: "expert",
       email: expertEmail,
       passwordHash: await hashPassword(process.env.EXPERT_PASSWORD ?? "changeme"),
       name: "Sample Expert",

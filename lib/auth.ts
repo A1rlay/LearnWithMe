@@ -3,10 +3,13 @@ import { notFound, redirect } from "next/navigation";
 import { getSession, type SessionData } from "@/lib/session";
 import { getExpertSubjectIds, getUserRole, isSubjectExpert, isSubjectVisible, subjectIdOf } from "@/server/data/subjects";
 
+/** Signed in AND the account still exists (cookies of deleted users are rejected). */
 export async function requireSession(): Promise<SessionData> {
   const session = await getSession();
   if (!session) redirect("/login");
-  return session;
+  const role = await getUserRole(session.userId);
+  if (!role) redirect("/login");
+  return { ...session, role };
 }
 
 /**

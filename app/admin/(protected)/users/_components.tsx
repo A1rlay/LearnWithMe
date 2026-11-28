@@ -4,7 +4,7 @@ const inputClass =
 export function UserFields({
   defaults,
 }: {
-  defaults?: { name?: string; email?: string; role?: string };
+  defaults?: { name?: string; username?: string; email?: string | null; role?: string };
 } = {}) {
   return (
     <>
@@ -13,32 +13,37 @@ export function UserFields({
           htmlFor="name"
           className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
         >
-          Full name <span className="text-accent-text">*</span>
+          Display name
         </label>
         <input
           id="name"
           name="name"
-          required
           defaultValue={defaults?.name}
           className={inputClass}
         />
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor="email"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
-        >
-          Email <span className="text-accent-text">*</span>
+        <label htmlFor="username" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+          Username <span className="text-accent-text">*</span>
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
+          id="username"
+          name="username"
           required
-          defaultValue={defaults?.email}
+          pattern="[a-z0-9_.]{3,20}"
+          title="3–20 characters: lowercase letters, numbers, _ or ."
+          defaultValue={defaults?.username}
           className={inputClass}
         />
+        <p className="text-xs text-subtle">Used to sign in. 3–20 characters: a–z, 0–9, _ or .</p>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+          Email <span className="normal-case tracking-normal text-subtle">(optional)</span>
+        </label>
+        <input id="email" name="email" type="email" defaultValue={defaults?.email ?? ""} className={inputClass} />
       </div>
 
       <div className="flex flex-col gap-1.5">

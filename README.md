@@ -12,6 +12,12 @@ an expert who builds its activities, and learners see their progress as a skill 
 - **Skill chart.** Answers count toward the tagged skills; the profile and subject pages show a
   radar of % correct now vs 30 days ago.
 - **Subtitles** are set per video by the expert (on for beginners, off for listening practice).
+- **Accounts** — anyone can join at `/signup` with just a username and password (email optional,
+  for recovery later). Login accepts username or email.
+- **Study buddies** — learners who opt in on their **Me** page are suggested to each other by shared
+  subjects and interests. After a request is accepted they can message in-app and see each other's
+  Discord username. Block and report are on every person and message; reports land in
+  **Studio → Reports**.
 
 ## Stack
 Next.js 16 (App Router, `proxy.ts`), React 19, Prisma 6 + PostgreSQL, tRPC (video checkpoints),
@@ -32,14 +38,20 @@ The existing database was managed with `db push`, so apply this one migration ex
 npx prisma db execute --schema prisma/schema.prisma --file prisma/migrations/20261127_subjects_skills/migration.sql
 npx prisma migrate resolve --applied 20261127_subjects_skills
 ```
-It creates the **English** subject and moves all existing content into it. Then assign an expert
-to English in Studio — until you do, English is hidden from learners.
+It creates the **English** subject and moves all existing content into it; existing teachers become
+its experts. Then apply the study-buddies migration the same way:
+```bash
+npx prisma db execute --schema prisma/schema.prisma --file prisma/migrations/20261128_study_buddies/migration.sql
+npx prisma migrate resolve --applied 20261128_study_buddies
+```
+It gives every existing account a username derived from its email (e.g. `ana.lopez`), shown in
+Studio → People.
 
 ## Commands
 `npm run dev` · `npm run build` · `npm run lint` · `npm run typecheck` · `npm run db:seed` · `npm run db:studio`
 
 ## Project map
-- `app/` — routes. Learner: `/`, `/subjects/[id]`, `/topics/…`, `/question-maker/…`, `/spell-right/…`, `/profile/[id]`. Studio: `/admin/…`.
+- `app/` — routes. Learner: `/`, `/subjects/[id]`, `/me`, `/buddies`, `/messages`, `/signup`, `/topics/…`, `/question-maker/…`, `/spell-right/…`. Studio: `/admin/…`.
 - `server/data/` — all database access (`subjects.ts`, `skill-progress.ts`, …).
 - `lib/auth.ts` — session + subject-scoped authorization helpers.
 - `components/` — UI (`progress/skill-radar.tsx`, `studio/`, `brand/`).

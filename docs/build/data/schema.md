@@ -56,3 +56,26 @@ The migration also makes every existing TEACHER an expert of English so the site
 live after deploy; with no teachers, the owner must assign one in Studio first.
 Verified: on a db-push'd + seeded local DB, applying the migration leaves
 `prisma migrate diff --from-url … --to-schema-datamodel` empty.
+
+## Accounts & study buddies (20261128_study_buddies)
+- Login: username, or email compared case-insensitively. Usernames are backfilled oldest-first in a
+  loop that skips taken candidates (`ana`, `ana2`, then `ana22` if `ana2` already exists).
+- `User.username` is the login handle: lowercase, `CHECK ~ '^[a-z0-9_.]{3,20}$'`, unique. `email` is
+  now optional (unique when present). Backfill: email local part → lowercase, disallowed chars → `_`,
+  ≤16 chars, padded to 3, de-duplicated with a numeric suffix.
+- `BuddyConnection` stores each pair once: `CHECK (userAId < userBId)` + unique `(userAId, userBId)`,
+  so A→B and B→A can't both exist even under concurrency; `CHECK requesterId IN (userAId, userBId)`.
+  Status `PENDING → ACCEPTED | DECLINED`; `closedById` records who declined/ended/blocked and
+  `acceptedAt` whether it was ever accepted. **Declines are silent**: to the requester a declined
+  request still reads "waiting" (`viewOf()` in `server/data/buddies.ts`). Only the closer may reopen
+  (a new request resets the row to PENDING); the other side's re-request is a silent no-op.
+  Cancelling a real PENDING request deletes the row; cancelling a silently-declined one hands
+  `requesterId` to the closer so it disappears without becoming re-sendable.
+- `Message.body` 1–2000 chars (CHECK). `Report.messageId` is `ON DELETE SET NULL` (evidence survives).
+- `Block(blockerId, blockedId)` with `CHECK blocker <> blocked`; every buddy query filters both directions.
+- `RateEvent(key, createdAt)` backs sliding-window limits (sign-up per IP, failed logins per
+  account/IP, requests, messages, reports). App-level, not atomic under bursts.
+- Privacy rule (app-enforced): `discordHandle` and `email` are never selected for strangers;
+  Discord is returned only for ACCEPTED connections.
+- Deferred (app-enforced only): a message's sender belongs to its connection; a reported message
+  was written by the reported user. Needs triggers; revisit if another write path appears.

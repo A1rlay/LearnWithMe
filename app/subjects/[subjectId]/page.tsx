@@ -71,8 +71,8 @@ export default async function SubjectPage({ params }: Props) {
       <h2 id="my-skills-h" className="mb-3 text-sm font-semibold text-fg">Your skills in {subject.name}</h2>
       {!session ? (
         <div className="flex flex-col items-start gap-3 text-sm text-muted">
-          <p>Sign in and your answers will build a skill chart you can watch grow.</p>
-          <Link href="/login" className="btn btn-ghost px-4 py-2">Sign in</Link>
+          <p>Create a free account and your answers will build a skill chart you can watch grow.</p>
+          <Link href="/signup" className="btn btn-ghost px-4 py-2">Join — just a username</Link>
         </div>
       ) : progress && subject.skills.length > 0 ? (
         <SkillRadar

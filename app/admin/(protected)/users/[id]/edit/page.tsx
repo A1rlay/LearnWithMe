@@ -27,7 +27,7 @@ export default async function EditUserPage({ params }: Props) {
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
-          Admin · Users
+          Studio · People
         </p>
         <h1 className="mt-2 font-serif text-4xl text-fg">Edit user</h1>
       </div>
@@ -37,7 +37,7 @@ export default async function EditUserPage({ params }: Props) {
         className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
       >
         <UserFields
-          defaults={{ name: user.name, email: user.email, role: user.role }}
+          defaults={{ name: user.name, username: user.username, email: user.email, role: user.role }}
         />
         <div className="flex flex-col gap-1.5">
           <label

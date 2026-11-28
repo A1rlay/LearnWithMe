@@ -18,11 +18,29 @@ enum Role {
 
 model User {
   id                 String              @id @default(cuid())
-  email              String              @unique
+  /// Login handle, stored lowercase: [a-z0-9_.]{3,20}.
+  username           String              @unique
+  /// Optional (sign-up asks only for username + password); used for recovery later.
+  email              String?             @unique
   passwordHash       String
   name               String
   role               Role                @default(STUDENT)
   bio                String?
+  /// Free-text interest tags, lowercase, max 10.
+  interests          String[]            @default([])
+  discordHandle      String?
+  /// Opt-in: discoverable as a study buddy and allowed to send requests.
+  lookingForBuddies  Boolean             @default(false)
+  learning           LearnerSubject[]
+  buddyRequestsSent  BuddyConnection[]   @relation("BuddyRequester")
+  buddyPairsClosed   BuddyConnection[]   @relation("BuddyClosedBy")
+  buddyPairsA        BuddyConnection[]   @relation("BuddyA")
+  buddyPairsB        BuddyConnection[]   @relation("BuddyB")
+  messagesSent       Message[]
+  blocksMade         Block[]             @relation("Blocker")
+  blocksReceived     Block[]             @relation("Blocked")
+  reportsMade        Report[]            @relation("Reporter")
+  reportsReceived    Report[]            @relation("Reported")
   sessions           QMSession[]
   classes            ClassStudent[]
   teaching           Class[]
@@ -39,17 +57,18 @@ model User {
 // listed while at least one expert (SubjectExpert) is assigned.
 
 model Subject {
-  id             String          @id @default(cuid())
-  name           String          @unique
+  id             String           @id @default(cuid())
+  name           String           @unique
   description    String?
-  order          Int             @default(0)
+  order          Int              @default(0)
   experts        SubjectExpert[]
   skills         Skill[]
   topics         Topic[]
   qmTopics       QMTopic[]
   spellRightSets SpellRightSet[]
-  createdAt      DateTime        @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime        @updatedAt @db.Timestamptz(3)
+  learners       LearnerSubject[]
+  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
 }
 
 model SubjectExpert {
@@ -407,4 +426,105 @@ model SpellRightAnswer {
 
   @@index([sessionId])
   @@index([wordId])
+}
+
+// ─── Study buddies ────────────────────────────────────────────────────────────
+
+/// Subjects a learner says they're studying (drives buddy suggestions).
+model LearnerSubject {
+  userId    String
+  subjectId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, subjectId])
+  @@index([subjectId])
+}
+
+enum BuddyStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+/// One row per pair, stored canonically (userAId < userBId, CHECK in migration) so
+/// A→B and B→A can never both exist. requesterId is one of the two.
+model BuddyConnection {
+  id          String      @id @default(cuid())
+  userAId     String
+  userBId     String
+  requesterId String
+  status      BuddyStatus @default(PENDING)
+  /// Who moved it to DECLINED (decline, end or block). Declines stay silent: the other
+  /// side keeps seeing "waiting", and only the closer may re-open it with a new request.
+  closedById  String?
+  /// Set when ever accepted — distinguishes "ended" from "declined".
+  acceptedAt  DateTime?   @db.Timestamptz(3)
+  userA       User        @relation("BuddyA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB       User        @relation("BuddyB", fields: [userBId], references: [id], onDelete: Cascade)
+  requester   User        @relation("BuddyRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  closedBy    User?       @relation("BuddyClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  messages    Message[]
+  createdAt   DateTime    @default(now()) @db.Timestamptz(3)
+  respondedAt DateTime?   @db.Timestamptz(3)
+
+  @@unique([userAId, userBId])
+  @@index([userBId])
+  @@index([requesterId, createdAt])
+  @@index([closedById])
+}
+
+model Message {
+  id           String          @id @default(cuid())
+  connectionId String
+  senderId     String
+  body         String
+  connection   BuddyConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  sender       User            @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  reports      Report[]
+  createdAt    DateTime        @default(now()) @db.Timestamptz(3)
+  readAt       DateTime?       @db.Timestamptz(3)
+
+  @@index([connectionId, createdAt])
+  @@index([senderId, createdAt])
+}
+
+model Block {
+  blockerId String
+  blockedId String
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
+
+model Report {
+  id         String    @id @default(cuid())
+  reporterId String
+  reportedId String
+  messageId  String?
+  reason     String
+  reporter   User      @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported   User      @relation("Reported", fields: [reportedId], references: [id], onDelete: Cascade)
+  /// Kept if the message is deleted later (evidence), hence SetNull.
+  message    Message?  @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  resolvedAt DateTime? @db.Timestamptz(3)
+
+  @@index([resolvedAt, createdAt])
+  @@index([reporterId])
+  @@index([reportedId])
+  @@index([messageId])
+}
+
+/// Generic sliding-window rate limiting (serverless-safe: state lives in Postgres).
+model RateEvent {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([key, createdAt])
 }

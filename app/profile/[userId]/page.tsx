@@ -21,6 +21,7 @@ function avatarColors(name: string) {
 export default async function ProfilePage({ params }: Props) {
   const viewer = await requireSession();
   const { userId } = await params;
+  if (viewer.userId === userId) redirect("/me");
 
   // Only the owner, teachers, and admins can view a profile
   // Role from the DB, not the cookie, so a demoted expert loses access at once.
@@ -67,7 +68,7 @@ export default async function ProfilePage({ params }: Props) {
             <h1 className="font-display text-4xl text-fg">{user.name}</h1>
             <span className={`chip ${ROLE_BADGE[user.role]}`}>{ROLE_LABEL[user.role]}</span>
           </div>
-          <p className="text-sm text-muted">{user.email}</p>
+          <p className="font-mono text-sm text-muted">@{user.username}</p>
           {user.bio && <p className="mt-1 text-sm text-fg/70">{user.bio}</p>}
 
           {/* Classes the student belongs to */}

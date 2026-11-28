@@ -14,7 +14,12 @@ export default async function StudioLayout({ children }: { children: React.React
     { href: "/admin/subjects", label: isAdmin ? "Subjects & experts" : "My subjects" },
     { href: "/admin/games", label: "Activities" },
     { href: "/admin/classes", label: "Classes" },
-    ...(isAdmin ? [{ href: "/admin/users", label: "People" }] : []),
+    ...(isAdmin
+      ? [
+          { href: "/admin/users", label: "People" },
+          { href: "/admin/reports", label: "Reports" },
+        ]
+      : []),
   ];
 
   return (

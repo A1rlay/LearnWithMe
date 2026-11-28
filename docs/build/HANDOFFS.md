@@ -54,3 +54,38 @@ Radar numbers matched hand-computed values for a seeded learner.
 **Next:** product — choose the "study peers" solution to test (PRD: opt-in buddies / small groups /
 pair challenge) after answering: what may one learner see of another, how do they contact each
 other, are minors on the platform?
+
+### tech-lead — Study buddies (PRD-study-buddies) — Frame → Build → Harden — 2026-11-27
+**Did:** Open sign-up (username + password; email optional, case-insensitive), Me page (profile,
+interests, subjects, Discord, recovery email, password change, blocks, skill charts), study buddies
+(opt-in suggestions by shared subjects/interests, request → accept/decline, silent declines),
+in-app messages (polling every 5 s, read receipts, unread badge), block/report everywhere,
+Studio → Reports, DB-backed rate limits. Migration `20261128_study_buddies`.
+
+**Decisions**
+- Username + password only (user) — rejected: required email (friction), email verification (needs a
+  provider + domain). Cost: no self-service recovery; owner resets passwords.
+- Discord as a plain username field — rejected: Discord OAuth now (app + callback). Revisit on demand.
+- Polling instead of websockets — rejected: realtime infra at stage 0. Cost: ≤5 s message latency.
+- Silent declines, and blocks look like declines to the blocked side — rejected: explicit "declined"
+  (pressure/retaliation risk with possibly-minor users). Cost: more state (`closedById`, `acceptedAt`).
+- Rate limits in Postgres (`RateEvent`) — rejected: in-memory (useless on serverless) / Redis (new infra).
+
+**Verification (non-author):** red-team pass 1: 13 proved (2 high: migration username collision,
+legacy mixed-case email lockout). Pass 2: 8 fixed, 3 partial, 0 regressions, 1 new leak (cancel
+revealed a decline). Author then fixed N1 (verified: cancel/re-request indistinguishable for pending vs
+declined; decliner never re-notified), N2 (deleted-user cookies = signed out; tRPC hides internals),
+N3 (blocks silent), #2 edge (email login tries each case-variant account). E2E in Chromium: sign-up →
+profile → suggestion (no Discord) → request → accept (Discord shown) → messages both ways via polling →
+report → admin Reports. Migration verified on PR-1-schema copies with collisions → zero drift.
+
+**Risks / deferred**
+- MEDIUM — IP-based limits trust `x-vercel-forwarded-for`/`x-real-ip`/last XFF hop: safe on Vercel,
+  spoofable if self-hosted without a header-rewriting proxy.
+- LOW — Profile-save email check is a (rate-limited, 20/h) oracle for "is this email registered".
+- LOW — Rate limits overshoot by ~1 under concurrent bursts (count-then-insert).
+- LOW — Look-alike usernames (`sofia.r` vs `sofia.r.`) allowed.
+- Deferred (app-enforced only): message sender ∈ connection; reported message authored by reported user.
+
+**Next:** product — forum (owner to discuss with partner); consider Discord OAuth and email recovery
+once there are real users.
