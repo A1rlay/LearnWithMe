@@ -33,6 +33,46 @@ async function main() {
   await prisma.video.deleteMany();
   await prisma.topic.deleteMany();
 
+  // Subject + skills. Learners only see a subject once an expert is assigned,
+  // so the seed adds a sample expert (role TEACHER, labelled "Expert" in the UI).
+  const english = await prisma.subject.upsert({
+    where: { name: "English" },
+    update: {},
+    create: {
+      name: "English",
+      description: "Listening, grammar, vocabulary and pronunciation practice.",
+    },
+  });
+  const skillNames = ["Listening", "Grammar", "Vocabulary", "Pronunciation"];
+  const skills = await Promise.all(
+    skillNames.map((name, order) =>
+      prisma.skill.upsert({
+        where: { subjectId_name: { subjectId: english.id, name } },
+        update: {},
+        create: { subjectId: english.id, name, order },
+      }),
+    ),
+  );
+  const skill = Object.fromEntries(skills.map((k) => [k.name, k.id]));
+
+  const expertEmail = process.env.EXPERT_EMAIL ?? "expert@example.com";
+  const expert = await prisma.user.upsert({
+    where: { email: expertEmail },
+    update: {},
+    create: {
+      email: expertEmail,
+      passwordHash: await hashPassword(process.env.EXPERT_PASSWORD ?? "changeme"),
+      name: "Sample Expert",
+      role: "TEACHER",
+    },
+  });
+  await prisma.subjectExpert.upsert({
+    where: { subjectId_userId: { subjectId: english.id, userId: expert.id } },
+    update: {},
+    create: { subjectId: english.id, userId: expert.id },
+  });
+  console.log(`Expert user: ${expertEmail} (assigned to English)`);
+
   const topicPast = await prisma.topic.create({
     data: {
       description:
@@ -40,6 +80,13 @@ async function main() {
       level: "A1 - A2",
       tags: ["was", "were", "past descriptions"],
       title: "Verb To Be in Past",
+      subjectId: english.id,
+      skills: {
+        create: [
+          { skillId: skill.Listening },
+          { skillId: skill.Grammar },
+        ],
+      },
     },
   });
 
@@ -50,6 +97,13 @@ async function main() {
       level: "A1 - A2",
       tags: ["actions now", "ing forms", "describing scenes"],
       title: "Present Continuous",
+      subjectId: english.id,
+      skills: {
+        create: [
+          { skillId: skill.Listening },
+          { skillId: skill.Grammar },
+        ],
+      },
     },
   });
 

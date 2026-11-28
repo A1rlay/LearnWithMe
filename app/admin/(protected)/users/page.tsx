@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { DeleteButton } from "@/components/admin/delete-button";
 import { requireRole } from "@/lib/auth";
+import { ROLE_BADGE, ROLE_LABEL } from "@/lib/roles";
 import { adminGetAllUsers } from "@/server/data/users";
 import { deleteUserAction } from "./actions";
 
@@ -14,17 +15,17 @@ export default async function UsersPage() {
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
             Users
           </p>
-          <h1 className="mt-1 font-serif text-3xl text-[var(--foreground)]">
+          <h1 className="mt-1 font-serif text-3xl text-fg">
             User Management
           </h1>
         </div>
         {isAdmin && (
           <Link
             href="/admin/users/new"
-            className="rounded-full bg-[#0F9C00] px-5 py-2.5 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-fg transition-opacity hover:opacity-90"
           >
             New user
           </Link>
@@ -32,24 +33,24 @@ export default async function UsersPage() {
       </div>
 
       {users.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-[var(--border)] p-12 text-center text-sm text-[var(--muted)]">
+        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
           No users yet.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[28px] border border-[var(--border)] bg-[var(--panel)]">
+        <div className="overflow-hidden rounded-[28px] border border-line bg-surface">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[var(--border)]">
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+              <tr className="border-b border-line">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
                   Name
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
                   Email
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
                   Role
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-[0.22em] text-muted">
                   Actions
                 </th>
               </tr>
@@ -58,30 +59,20 @@ export default async function UsersPage() {
               {users.map((user) => (
                 <tr
                   key={user.id}
-                  className="border-b border-[var(--border)] last:border-0"
+                  className="border-b border-line last:border-0"
                 >
-                  <td className="px-6 py-4 font-medium text-[var(--foreground)]">
+                  <td className="px-6 py-4 font-medium text-fg">
                     {user.name}
                   </td>
-                  <td className="px-6 py-4 text-[var(--muted)]">{user.email}</td>
+                  <td className="px-6 py-4 text-muted">{user.email}</td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                        user.role === "ADMIN"
-                          ? "bg-purple-500/20 text-purple-300"
-                          : user.role === "TEACHER"
-                            ? "bg-blue-500/20 text-blue-300"
-                            : "bg-green-500/20 text-green-300"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
+                    <span className={`chip ${ROLE_BADGE[user.role]}`}>{ROLE_LABEL[user.role]}</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-3">
                       <Link
                         href={`/profile/${user.id}`}
-                        className="text-xs font-semibold text-[var(--muted)] hover:text-[var(--foreground)] hover:underline"
+                        className="text-xs font-semibold text-muted hover:text-fg hover:underline"
                       >
                         Profile
                       </Link>
@@ -89,7 +80,7 @@ export default async function UsersPage() {
                         <>
                           <Link
                             href={`/admin/users/${user.id}/edit`}
-                            className="text-xs font-semibold text-[var(--accent)] hover:underline"
+                            className="text-xs font-semibold text-accent-text hover:underline"
                           >
                             Edit
                           </Link>

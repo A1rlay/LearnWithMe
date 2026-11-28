@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { VideoList } from "@/components/video/video-list";
 import { BackLink } from "@/components/ui/nav-link";
+import { VideoList } from "@/components/video/video-list";
+import { assertSubjectViewable } from "@/lib/auth";
 import { getTopicById } from "@/server/data/learning";
 
 type TopicPageProps = {
@@ -11,20 +12,31 @@ type TopicPageProps = {
 export default async function TopicPage({ params }: TopicPageProps) {
   const { topicId } = await params;
   const topic = await getTopicById(topicId);
-
   if (!topic) notFound();
+  await assertSubjectViewable(topic.subject.id);
 
   return (
-    <main className="mx-auto flex w-full max-w-lg flex-col gap-6 px-6 py-12 sm:py-16">
-      <BackLink href="/topics">Topics</BackLink>
+    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-24 pt-10 sm:px-6">
+      <BackLink href={`/subjects/${topic.subject.id}`}>{topic.subject.name}</BackLink>
 
-      <div>
-        {topic.level && (
-          <p className="text-xs font-bold uppercase tracking-[0.28em] text-[rgba(255,255,255,0.55)]">
-            {topic.level}
+      <header className="flex flex-col gap-3">
+        <p className="eyebrow">Video lessons{topic.level ? ` · ${topic.level}` : ""}</p>
+        <h1 className="font-display text-5xl leading-tight text-fg">{topic.title}</h1>
+        {topic.description && <p className="text-base text-muted">{topic.description}</p>}
+        {topic.skills.length > 0 && (
+          <p className="text-sm text-muted">
+            <span className="text-subtle">Trains </span>
+            {topic.skills.join(" · ")}
           </p>
         )}
-        <h1 className="mt-1 text-3xl font-extrabold text-white">{topic.title}</h1>
+      </header>
+
+      <div className="card flex items-start gap-3 p-4 text-sm text-muted">
+        <span aria-hidden="true" className="mt-0.5 text-accent-text">ⓘ</span>
+        <p>
+          The video pauses at each checkpoint and asks one question. You can re-watch before
+          answering. Your answers count toward your skill chart when you&apos;re signed in.
+        </p>
       </div>
 
       <VideoList topic={topic} />

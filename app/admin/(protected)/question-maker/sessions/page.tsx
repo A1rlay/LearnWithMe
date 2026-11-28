@@ -1,12 +1,15 @@
 import Link from "next/link";
 
 import { adminGetQMTopics, adminGetQMSessions } from "@/server/data/question-maker";
+import { editableSubjectIds, requireEditorPage, requireRole } from "@/lib/auth";
 
 type Props = { searchParams: Promise<{ topicId?: string }> };
 
 export default async function QMSessionsPage({ searchParams }: Props) {
   const { topicId } = await searchParams;
-  const topics = await adminGetQMTopics();
+  const viewer = await requireRole("ADMIN", "TEACHER");
+  if (topicId) await requireEditorPage({ kind: "qmTopic", id: topicId });
+  const topics = await adminGetQMTopics(await editableSubjectIds(viewer));
   const selectedTopic = topicId ? topics.find((t) => t.id === topicId) : null;
   const sessions = topicId ? await adminGetQMSessions(topicId) : [];
 
@@ -14,16 +17,16 @@ export default async function QMSessionsPage({ searchParams }: Props) {
     <div className="flex flex-col gap-6">
       <Link
         href="/admin/question-maker"
-        className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+        className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
       </Link>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-          Admin · QuestionMaker
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          Studio · Quizzes
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">Sessions</h1>
+        <h1 className="mt-2 font-serif text-4xl text-fg">Sessions</h1>
       </div>
 
       {/* Topic filter */}
@@ -34,8 +37,8 @@ export default async function QMSessionsPage({ searchParams }: Props) {
             href={`/admin/question-maker/sessions?topicId=${t.id}`}
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
               t.id === topicId
-                ? "bg-[#0F9C00] text-white"
-                : "border border-[rgba(255,255,255,0.2)] text-[rgba(255,255,255,0.6)] hover:border-white hover:text-white"
+                ? "bg-accent text-fg"
+                : "border border-fg/20 text-fg/60 hover:border-fg hover:text-fg"
             }`}
           >
             {t.title}
@@ -44,11 +47,11 @@ export default async function QMSessionsPage({ searchParams }: Props) {
       </div>
 
       {!topicId ? (
-        <div className="rounded-[28px] border border-dashed border-[var(--border)] p-12 text-center text-sm text-[var(--muted)]">
+        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
           Select a topic above to view its sessions.
         </div>
       ) : sessions.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-[var(--border)] p-12 text-center text-sm text-[var(--muted)]">
+        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
           No completed sessions for {selectedTopic?.title ?? "this topic"} yet.
         </div>
       ) : (
@@ -62,13 +65,13 @@ export default async function QMSessionsPage({ searchParams }: Props) {
               <Link
                 key={session.id}
                 href={`/admin/question-maker/sessions/${session.id}`}
-                className="flex items-center justify-between gap-4 rounded-[24px] border border-[var(--border)] bg-[var(--panel)] px-6 py-5 transition-colors hover:border-[rgba(255,255,255,0.4)]"
+                className="flex items-center justify-between gap-4 rounded-[24px] border border-line bg-surface px-6 py-5 transition-colors hover:border-fg/40"
               >
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
                     Session {sessions.length - idx}
                   </p>
-                  <p className="mt-1 text-sm text-[var(--muted)]">
+                  <p className="mt-1 text-sm text-muted">
                     {session.completedAt
                       ? new Date(session.completedAt).toLocaleString()
                       : "—"}
@@ -76,11 +79,11 @@ export default async function QMSessionsPage({ searchParams }: Props) {
                 </div>
                 <div className="flex items-center gap-3">
                   {pending > 0 && (
-                    <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-semibold text-yellow-300">
+                    <span className="rounded-full bg-warning/20 px-3 py-1 text-xs font-semibold text-warning">
                       {pending} pending
                     </span>
                   )}
-                  <span className="rounded-full bg-[rgba(15,156,0,0.2)] px-3 py-1 text-xs font-semibold text-[#0F9C00]">
+                  <span className="rounded-full bg-accent/20 px-3 py-1 text-xs font-semibold text-accent-text">
                     {correct}/{total} correct
                   </span>
                 </div>

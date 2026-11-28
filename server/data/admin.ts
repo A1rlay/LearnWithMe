@@ -2,9 +2,11 @@ import { prisma } from "@/server/db";
 
 // ─── Topics ──────────────────────────────────────────────────────────────────
 
-export async function adminGetAllTopics() {
+export async function adminGetAllTopics(subjectIds?: string[]) {
   return prisma.topic.findMany({
+    where: subjectIds ? { subjectId: { in: subjectIds } } : undefined,
     include: {
+      subject: { select: { name: true } },
       _count: {
         select: { videos: true },
       },
@@ -17,6 +19,7 @@ export async function adminGetTopic(id: string) {
   return prisma.topic.findUnique({
     where: { id },
     include: {
+      skills: { select: { skillId: true } },
       videos: {
         include: {
           _count: { select: { questions: true } },
@@ -30,6 +33,7 @@ export async function adminGetTopic(id: string) {
 export async function adminCreateTopic(data: {
   description: string;
   level: string;
+  subjectId: string;
   tags: string[];
   title: string;
 }) {
@@ -72,6 +76,7 @@ export async function adminGetVideo(id: string) {
 export async function adminCreateVideo(data: {
   description: string;
   order: number;
+  subtitlesEnabled: boolean;
   title: string;
   topicId: string;
   videoUrl: string;
@@ -84,6 +89,7 @@ export async function adminUpdateVideo(
   data: {
     description: string;
     order: number;
+    subtitlesEnabled: boolean;
     title: string;
     videoUrl: string;
   },
@@ -136,12 +142,15 @@ export async function adminUpdateQuestion(
 
   await prisma.question.update({ where: { id }, data: questionData });
 
-  for (const option of options) {
-    await prisma.questionOption.update({
-      where: { id: option.id },
-      data: { isCorrect: option.isCorrect, text: option.text },
-    });
-  }
+  // Scoped to this question: an option id from another question matches nothing.
+  await prisma.$transaction(
+    options.map((option) =>
+      prisma.questionOption.updateMany({
+        where: { id: option.id, questionId: id },
+        data: { isCorrect: option.isCorrect, text: option.text },
+      }),
+    ),
+  );
 
   return prisma.question.findUnique({
     where: { id },
@@ -156,8 +165,9 @@ export async function adminDeleteQuestion(id: string) {
 // ─── Dashboard counts ─────────────────────────────────────────────────────────
 
 export async function adminGetDashboardCounts() {
-  const [topicCount, videoCount, questionCount, qmTopicCount, qmQuestionCount, userCount] =
+  const [subjectCount, topicCount, videoCount, questionCount, qmTopicCount, qmQuestionCount, userCount] =
     await Promise.all([
+      prisma.subject.count(),
       prisma.topic.count(),
       prisma.video.count(),
       prisma.question.count(),
@@ -166,5 +176,5 @@ export async function adminGetDashboardCounts() {
       prisma.user.count(),
     ]);
 
-  return { topicCount, videoCount, questionCount, qmTopicCount, qmQuestionCount, userCount };
+  return { subjectCount, topicCount, videoCount, questionCount, qmTopicCount, qmQuestionCount, userCount };
 }

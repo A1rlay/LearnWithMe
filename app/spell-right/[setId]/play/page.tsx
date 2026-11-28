@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import { assertSubjectViewable } from "@/lib/auth";
+
 import { SpellRightMode, getSpellRightSetDetail } from "@/server/data/spell-right";
 import { TerminationClient } from "./termination-client";
 import { PronunciationClient } from "./pronunciation-client";
@@ -10,10 +12,11 @@ export default async function SpellRightPlayPage({ params }: Props) {
   const { setId } = await params;
   const set = await getSpellRightSetDetail(setId);
   if (!set || set.words.length === 0) notFound();
+  await assertSubjectViewable(set.subjectId);
 
   if (set.mode === SpellRightMode.TERMINATION) {
-    return <TerminationClient setId={set.id} setTitle={set.title} words={set.words} />;
+    return <TerminationClient setId={set.id} subjectId={set.subjectId} setTitle={set.title} words={set.words} />;
   }
 
-  return <PronunciationClient setId={set.id} setTitle={set.title} words={set.words} />;
+  return <PronunciationClient setId={set.id} subjectId={set.subjectId} setTitle={set.title} words={set.words} />;
 }

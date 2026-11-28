@@ -3,78 +3,65 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireRole } from "@/lib/auth";
-import {
-  adminCreateQuestion,
-  adminDeleteQuestion,
-  adminUpdateQuestion,
-} from "@/server/data/admin";
+import { requireEditorOf } from "@/lib/auth";
+import { int, str } from "@/lib/form";
+import { adminCreateQuestion, adminDeleteQuestion, adminUpdateQuestion } from "@/server/data/admin";
+import { prisma } from "@/server/db";
 
-function buildOptions(
-  formData: FormData,
-  correctIndex: number,
-): { isCorrect: boolean; order: number; text: string }[] {
-  return [1, 2, 3, 4].map((n) => ({
-    isCorrect: n === correctIndex,
-    order: n,
-    text: formData.get(`option${n}`)?.toString().trim() ?? "",
-  }));
+async function questionPath(questionId: string) {
+  const q = await prisma.question.findUniqueOrThrow({
+    where: { id: questionId },
+    select: { videoId: true, video: { select: { topicId: true } } },
+  });
+  return `/admin/topics/${q.video.topicId}/videos/${q.videoId}/questions`;
 }
 
-export async function createQuestionAction(
-  topicId: string,
-  videoId: string,
-  formData: FormData,
-) {
-  await requireRole("ADMIN");
-  const prompt = formData.get("prompt")?.toString().trim() ?? "";
-  const order = parseInt(formData.get("order")?.toString() ?? "1", 10);
-  const checkpointSeconds = parseInt(
-    formData.get("checkpointSeconds")?.toString() ?? "0",
-    10,
-  );
-  const correct = parseInt(formData.get("correct")?.toString() ?? "1", 10);
-  const options = buildOptions(formData, correct);
-
-  await adminCreateQuestion({ checkpointSeconds, options, order, prompt, videoId });
-
-  revalidatePath(`/admin/topics/${topicId}/videos/${videoId}/questions`);
-  redirect(`/admin/topics/${topicId}/videos/${videoId}/questions`);
+export async function createQuestionAction(_topicId: string, videoId: string, formData: FormData) {
+  await requireEditorOf({ kind: "video", id: videoId });
+  const correct = int(formData, "correct", 1);
+  await adminCreateQuestion({
+    videoId,
+    prompt: str(formData, "prompt"),
+    order: int(formData, "order", 1),
+    checkpointSeconds: Math.max(0, int(formData, "checkpointSeconds")),
+    options: [1, 2, 3, 4].map((n) => ({
+      isCorrect: n === correct,
+      order: n,
+      text: str(formData, `option${n}`),
+    })),
+  });
+  const { topicId } = await prisma.video.findUniqueOrThrow({ where: { id: videoId }, select: { topicId: true } });
+  const path = `/admin/topics/${topicId}/videos/${videoId}/questions`;
+  revalidatePath(path);
+  redirect(path);
 }
 
 export async function updateQuestionAction(
-  topicId: string,
-  videoId: string,
+  _topicId: string,
+  _videoId: string,
   questionId: string,
   formData: FormData,
 ) {
-  await requireRole("ADMIN");
-  const prompt = formData.get("prompt")?.toString().trim() ?? "";
-  const checkpointSeconds = parseInt(
-    formData.get("checkpointSeconds")?.toString() ?? "0",
-    10,
-  );
-  const correct = parseInt(formData.get("correct")?.toString() ?? "1", 10);
-
-  const options = [1, 2, 3, 4].map((n) => ({
-    id: formData.get(`option${n}Id`)?.toString() ?? "",
-    isCorrect: n === correct,
-    text: formData.get(`option${n}`)?.toString().trim() ?? "",
-  }));
-
-  await adminUpdateQuestion(questionId, { checkpointSeconds, options, prompt });
-
-  revalidatePath(`/admin/topics/${topicId}/videos/${videoId}/questions`);
-  redirect(`/admin/topics/${topicId}/videos/${videoId}/questions`);
+  await requireEditorOf({ kind: "question", id: questionId });
+  const correct = int(formData, "correct", 1);
+  await adminUpdateQuestion(questionId, {
+    prompt: str(formData, "prompt"),
+    checkpointSeconds: Math.max(0, int(formData, "checkpointSeconds")),
+    options: [1, 2, 3, 4].map((n) => ({
+      id: str(formData, `option${n}Id`),
+      isCorrect: n === correct,
+      text: str(formData, `option${n}`),
+    })),
+  });
+  const path = await questionPath(questionId);
+  revalidatePath(path);
+  redirect(path);
 }
 
-export async function deleteQuestionAction(
-  topicId: string,
-  videoId: string,
-  questionId: string,
-) {
-  await requireRole("ADMIN");
+export async function deleteQuestionAction(_topicId: string, _videoId: string, questionId: string) {
+  await requireEditorOf({ kind: "question", id: questionId });
+  const path = await questionPath(questionId);
   await adminDeleteQuestion(questionId);
-  revalidatePath(`/admin/topics/${topicId}/videos/${videoId}/questions`);
-  redirect(`/admin/topics/${topicId}/videos/${videoId}/questions`);
+  revalidatePath(path);
+  redirect(path);
 }

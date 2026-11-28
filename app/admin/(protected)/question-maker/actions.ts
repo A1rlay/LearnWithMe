@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireRole } from "@/lib/auth";
+import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
+import { int, str, subjectAndSkills } from "@/lib/form";
+import { setActivitySubjectAndSkills } from "@/server/data/subjects";
 import {
   adminCreateQMTopic,
   adminDeleteQMTopic,
@@ -18,83 +20,81 @@ import type { QMQuestionData } from "@/server/data/question-maker";
 
 // ─── Topics ───────────────────────────────────────────────────────────────────
 
-export async function createQMTopicAction(formData: FormData) {
-  await requireRole("ADMIN", "TEACHER");
-  const title = formData.get("title")?.toString().trim() ?? "";
-  const description = formData.get("description")?.toString().trim() ?? "";
-  const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
-  await adminCreateQMTopic({ title, description, order });
+function revalidateQM() {
   revalidatePath("/admin/question-maker");
-  revalidatePath("/question-maker");
+  revalidatePath("/", "layout");
+}
+
+export async function createQMTopicAction(formData: FormData) {
+  const { subjectId, skillIds } = subjectAndSkills(formData);
+  await requireSubjectEditor(subjectId);
+  const topic = await adminCreateQMTopic({
+    title: str(formData, "title"),
+    description: str(formData, "description"),
+    order: int(formData, "order"),
+    subjectId,
+  });
+  await setActivitySubjectAndSkills("qmTopic", topic.id, subjectId, skillIds);
+  revalidateQM();
   redirect("/admin/question-maker");
 }
 
 export async function updateQMTopicAction(id: string, formData: FormData) {
-  await requireRole("ADMIN", "TEACHER");
-  const title = formData.get("title")?.toString().trim() ?? "";
-  const description = formData.get("description")?.toString().trim() ?? "";
-  const order = parseInt(formData.get("order")?.toString() ?? "0", 10);
-  await adminUpdateQMTopic(id, { title, description, order });
-  revalidatePath("/admin/question-maker");
-  revalidatePath("/question-maker");
+  const { subjectId, skillIds } = subjectAndSkills(formData);
+  await requireEditorOf({ kind: "qmTopic", id });
+  await requireSubjectEditor(subjectId);
+  await adminUpdateQMTopic(id, {
+    title: str(formData, "title"),
+    description: str(formData, "description"),
+    order: int(formData, "order"),
+  });
+  await setActivitySubjectAndSkills("qmTopic", id, subjectId, skillIds);
+  revalidateQM();
   redirect("/admin/question-maker");
 }
 
 export async function deleteQMTopicAction(id: string) {
-  await requireRole("ADMIN", "TEACHER");
+  await requireEditorOf({ kind: "qmTopic", id });
   await adminDeleteQMTopic(id);
-  revalidatePath("/admin/question-maker");
-  revalidatePath("/question-maker");
+  revalidateQM();
   redirect("/admin/question-maker");
 }
 
 // ─── Questions ────────────────────────────────────────────────────────────────
 
-export async function createQMQuestionAction(
-  topicId: string,
-  order: number,
-  formData: FormData,
-) {
-  await requireRole("ADMIN", "TEACHER");
+export async function createQMQuestionAction(topicId: string, order: number, formData: FormData) {
+  await requireEditorOf({ kind: "qmTopic", id: topicId });
   const type = formData.get("type")?.toString() as QMQuestionType;
-  const prompt = formData.get("prompt")?.toString().trim() ?? "";
+  if (!Object.values(QMQuestionType).includes(type)) throw new Error("Unknown question type.");
+  const prompt = str(formData, "prompt");
   const data = parseQuestionData(type, formData);
-
   await adminCreateQMQuestion({ topicId, order, type, prompt, data });
   revalidatePath(`/admin/question-maker/${topicId}/questions`);
   redirect(`/admin/question-maker/${topicId}/questions`);
 }
 
-export async function updateQMQuestionAction(
-  topicId: string,
-  questionId: string,
-  formData: FormData,
-) {
-  await requireRole("ADMIN", "TEACHER");
+export async function updateQMQuestionAction(_topicId: string, questionId: string, formData: FormData) {
+  await requireEditorOf({ kind: "qmQuestion", id: questionId });
   const type = formData.get("type")?.toString() as QMQuestionType;
-  const prompt = formData.get("prompt")?.toString().trim() ?? "";
+  if (!Object.values(QMQuestionType).includes(type)) throw new Error("Unknown question type.");
+  const prompt = str(formData, "prompt");
   const data = parseQuestionData(type, formData);
-
-  await adminUpdateQMQuestion(questionId, { prompt, data });
-  revalidatePath(`/admin/question-maker/${topicId}/questions`);
-  redirect(`/admin/question-maker/${topicId}/questions`);
+  const q = await adminUpdateQMQuestion(questionId, { prompt, data });
+  revalidatePath(`/admin/question-maker/${q.topicId}/questions`);
+  redirect(`/admin/question-maker/${q.topicId}/questions`);
 }
 
-export async function deleteQMQuestionAction(topicId: string, questionId: string) {
-  await requireRole("ADMIN", "TEACHER");
-  await adminDeleteQMQuestion(questionId);
-  revalidatePath(`/admin/question-maker/${topicId}/questions`);
-  redirect(`/admin/question-maker/${topicId}/questions`);
+export async function deleteQMQuestionAction(_topicId: string, questionId: string) {
+  await requireEditorOf({ kind: "qmQuestion", id: questionId });
+  const q = await adminDeleteQMQuestion(questionId);
+  revalidatePath(`/admin/question-maker/${q.topicId}/questions`);
+  redirect(`/admin/question-maker/${q.topicId}/questions`);
 }
 
 // ─── Review ───────────────────────────────────────────────────────────────────
 
-export async function reviewQMAnswerAction(
-  sessionId: string,
-  answerId: string,
-  isCorrect: boolean,
-) {
-  await requireRole("ADMIN", "TEACHER");
+export async function reviewQMAnswerAction(sessionId: string, answerId: string, isCorrect: boolean) {
+  await requireEditorOf({ kind: "qmAnswer", id: answerId });
   await adminReviewQMAnswer(answerId, isCorrect);
   revalidatePath(`/admin/question-maker/sessions/${sessionId}`);
 }

@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 
 import { AnswerDisplay } from "@/components/qm/answer-display";
 import { BackLink } from "@/components/ui/nav-link";
-import { requireSession } from "@/lib/auth";
+import { requireEditorPage, requireSession } from "@/lib/auth";
 import { getQMSession } from "@/server/data/question-maker";
 import type { QMQuestionData } from "@/server/data/question-maker";
 import { adminGetUser } from "@/server/data/users";
@@ -18,7 +18,7 @@ export default async function ProfileSessionPage({ params }: Props) {
     viewer.userId === userId ||
     viewer.role === "ADMIN" ||
     viewer.role === "TEACHER";
-  if (!canView) redirect("/learn");
+  if (!canView) redirect("/");
 
   const [session, user] = await Promise.all([
     getQMSession(sessionId),
@@ -28,6 +28,8 @@ export default async function ProfileSessionPage({ params }: Props) {
   if (!session || !user) notFound();
   // Prevent viewing a session that belongs to a different student
   if (session.userId !== userId) notFound();
+  // Experts may only read sessions in subjects they teach (admins: all).
+  if (viewer.userId !== userId) await requireEditorPage({ kind: "qmTopic", id: session.topicId });
 
   const isStaff = viewer.role === "ADMIN" || viewer.role === "TEACHER";
   const isOwner = viewer.userId === userId;
@@ -45,15 +47,15 @@ export default async function ProfileSessionPage({ params }: Props) {
       <BackLink href={`/profile/${userId}`}>{isOwner ? "My Profile" : user.name}</BackLink>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
           Session review
         </p>
-        <h1 className="mt-1 font-serif text-3xl text-[var(--foreground)]">
+        <h1 className="mt-1 font-serif text-3xl text-fg">
           {session.topic.title}
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           {session.completedAt && (
-            <span className="text-sm text-[var(--muted)]">
+            <span className="text-sm text-muted">
               {new Date(session.completedAt).toLocaleDateString(undefined, {
                 month: "long",
                 day: "numeric",
@@ -65,17 +67,17 @@ export default async function ProfileSessionPage({ params }: Props) {
             <span
               className={`rounded-full px-3 py-1 text-xs font-bold ${
                 pct >= 80
-                  ? "bg-[rgba(15,156,0,0.2)] text-[#0F9C00]"
+                  ? "bg-accent/20 text-accent-text"
                   : pct >= 50
-                  ? "bg-yellow-500/20 text-yellow-300"
-                  : "bg-red-500/20 text-red-400"
+                  ? "bg-warning/20 text-warning"
+                  : "bg-danger/20 text-danger"
               }`}
             >
               {pct}% · {scoreCorrect}/{scoreTotal} correct
             </span>
           )}
           {isStaff && pendingCount > 0 && (
-            <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-xs font-bold text-yellow-300">
+            <span className="rounded-full bg-warning/20 px-3 py-1 text-xs font-bold text-warning">
               {pendingCount} pending review
             </span>
           )}
@@ -91,30 +93,30 @@ export default async function ProfileSessionPage({ params }: Props) {
           return (
             <div
               key={answer.id}
-              className="flex flex-col gap-4 rounded-[24px] border border-[var(--border)] bg-[var(--panel)] p-6"
+              className="flex flex-col gap-4 rounded-[24px] border border-line bg-surface p-6"
             >
               {/* Question header */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
                     {idx + 1}. {answer.question.type.replace(/_/g, " ")}
                   </p>
-                  <p className="mt-1 font-semibold text-[var(--foreground)]">
+                  <p className="mt-1 font-semibold text-fg">
                     {answer.question.prompt}
                   </p>
                 </div>
                 {answer.isCorrect === true && (
-                  <span className="shrink-0 rounded-full bg-[rgba(15,156,0,0.2)] px-3 py-1.5 text-xs font-bold text-[#0F9C00]">
+                  <span className="shrink-0 rounded-full bg-accent/20 px-3 py-1.5 text-xs font-bold text-accent-text">
                     Correct
                   </span>
                 )}
                 {answer.isCorrect === false && (
-                  <span className="shrink-0 rounded-full bg-red-500/20 px-3 py-1.5 text-xs font-bold text-red-400">
+                  <span className="shrink-0 rounded-full bg-danger/20 px-3 py-1.5 text-xs font-bold text-danger">
                     Incorrect
                   </span>
                 )}
                 {answer.isCorrect === null && isStaff && (
-                  <span className="shrink-0 rounded-full bg-yellow-500/20 px-3 py-1.5 text-xs font-bold text-yellow-300">
+                  <span className="shrink-0 rounded-full bg-warning/20 px-3 py-1.5 text-xs font-bold text-warning">
                     Pending review
                   </span>
                 )}
@@ -125,12 +127,12 @@ export default async function ProfileSessionPage({ params }: Props) {
 
               {/* Staff: mark open answers */}
               {needsReview && (
-                <div className="flex gap-2 border-t border-[var(--border)] pt-4">
-                  <p className="mr-auto self-center text-xs text-[var(--muted)]">Mark this answer:</p>
+                <div className="flex gap-2 border-t border-line pt-4">
+                  <p className="mr-auto self-center text-xs text-muted">Mark this answer:</p>
                   <form action={reviewAnswerAction.bind(null, userId, sessionId, answer.id, true)}>
                     <button
                       type="submit"
-                      className="rounded-full bg-[rgba(15,156,0,0.2)] px-4 py-2 text-xs font-bold text-[#0F9C00] transition-colors hover:bg-[rgba(15,156,0,0.35)]"
+                      className="rounded-full bg-accent/20 px-4 py-2 text-xs font-bold text-accent-text transition-colors hover:bg-accent/35"
                     >
                       Correct
                     </button>
@@ -138,7 +140,7 @@ export default async function ProfileSessionPage({ params }: Props) {
                   <form action={reviewAnswerAction.bind(null, userId, sessionId, answer.id, false)}>
                     <button
                       type="submit"
-                      className="rounded-full bg-red-500/15 px-4 py-2 text-xs font-bold text-red-400 transition-colors hover:bg-red-500/25"
+                      className="rounded-full bg-danger/15 px-4 py-2 text-xs font-bold text-danger transition-colors hover:bg-danger/25"
                     >
                       Incorrect
                     </button>
@@ -148,13 +150,13 @@ export default async function ProfileSessionPage({ params }: Props) {
 
               {/* Staff: override already-marked answers */}
               {isStaff && answer.isCorrect !== null && answer.question.type === "OPEN_ANSWER" && (
-                <div className="flex items-center gap-2 border-t border-[var(--border)] pt-3">
-                  <p className="mr-auto text-xs text-[var(--muted)]">Override:</p>
+                <div className="flex items-center gap-2 border-t border-line pt-3">
+                  <p className="mr-auto text-xs text-muted">Override:</p>
                   <form action={reviewAnswerAction.bind(null, userId, sessionId, answer.id, true)}>
                     <button
                       type="submit"
                       disabled={answer.isCorrect === true}
-                      className="rounded-full px-3 py-1.5 text-xs font-semibold text-[rgba(15,156,0,0.7)] transition-colors hover:text-[#0F9C00] disabled:opacity-30"
+                      className="rounded-full px-3 py-1.5 text-xs font-semibold text-accent-text/70 transition-colors hover:text-accent-text disabled:opacity-30"
                     >
                       Mark correct
                     </button>
@@ -163,7 +165,7 @@ export default async function ProfileSessionPage({ params }: Props) {
                     <button
                       type="submit"
                       disabled={answer.isCorrect === false}
-                      className="rounded-full px-3 py-1.5 text-xs font-semibold text-red-400/70 transition-colors hover:text-red-400 disabled:opacity-30"
+                      className="rounded-full px-3 py-1.5 text-xs font-semibold text-danger/70 transition-colors hover:text-danger disabled:opacity-30"
                     >
                       Mark incorrect
                     </button>

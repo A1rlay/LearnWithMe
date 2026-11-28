@@ -1,24 +1,58 @@
 @import "tailwindcss";
 
-:root {
-  --blue: #000D71;
-  --green: #0F9C00;
-  /* aliases used across admin pages */
-  --background: #000D71;
-  --foreground: #ffffff;
-  --accent: #0F9C00;
-  --muted: rgba(255, 255, 255, 0.55);
-  --border: rgba(255, 255, 255, 0.18);
-  --border-strong: rgba(255, 255, 255, 0.3);
-  --surface: rgba(255, 255, 255, 0.1);
-  --surface-strong: rgba(255, 255, 255, 0.18);
-  --panel: rgba(255, 255, 255, 0.08);
+/*
+ * Learn With Me — design tokens (see docs/build/frontend/design-system.md).
+ * Components use the Tailwind utilities generated from @theme (bg-surface,
+ * text-muted, border-line, bg-accent …) — never raw hex.
+ * Contrast (checked): fg/canvas 16.9:1 · muted/canvas 7.9:1 · muted/surface-2 6.7:1 ·
+ * subtle/surface 4.7:1 · accent-text/surface 8.4:1 · fg on accent 5.2:1.
+ */
+@theme inline {
+  --color-canvas: #0b0c10;
+  --color-surface: #14161d;
+  --color-surface-2: #1b1e27;
+  --color-surface-3: #232733;
+  --color-fg: #edeef2;
+  --color-muted: #a0a4b0;
+  --color-subtle: #7d8291;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.16);
+
+  --color-accent: #5b4fe0; /* fills: buttons, selected states */
+  --color-accent-hover: #6a5ef0;
+  --color-accent-text: #afa6ff; /* accent as text/icon on dark surfaces */
+  --color-on-accent: #ffffff;
+
+  --color-success: #4ade9b;
+  --color-warning: #f5c04a;
+  --color-danger: #ff7a7a;
+
+  /* Radar series (validated: dataviz validate_palette, dark, surface #14161D) */
+  --color-series-now: #8b80ff;
+  --color-series-then: #2bb39a;
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-serif: var(--font-instrument), ui-serif, Georgia, serif;
+
+  --radius-card: 1.25rem;
+  --shadow-card: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 12px 32px -12px rgb(0 0 0 / 0.6);
+  --shadow-glow: 0 0 0 1px rgb(139 128 255 / 0.35), 0 8px 32px -8px rgb(91 79 224 / 0.55);
 }
 
-@theme inline {
-  --color-background: #000D71;
-  --color-foreground: #ffffff;
-  --font-sans: var(--font-manrope);
+/* Legacy aliases still referenced by a few inline styles. */
+:root {
+  color-scheme: dark;
+  --background: var(--color-canvas);
+  --foreground: var(--color-fg);
+  --accent: var(--color-accent-text);
+  --muted: var(--color-muted);
+  --border: var(--color-line);
+  --border-strong: var(--color-line-strong);
+  --panel: var(--color-surface);
+  --surface: var(--color-surface-2);
+  --surface-strong: var(--color-surface-3);
 }
 
 * {
@@ -31,10 +65,15 @@ html {
 
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #000D71 0%, #0a6800 100%);
+  background-color: var(--color-canvas);
+  /* Two soft light sources, fixed so they don't scroll with content. */
+  background-image:
+    radial-gradient(60rem 40rem at 85% -10%, rgb(91 79 224 / 0.18), transparent 60%),
+    radial-gradient(50rem 35rem at -10% 110%, rgb(43 179 154 / 0.1), transparent 60%);
   background-attachment: fixed;
-  color: #ffffff;
-  font-family: var(--font-sans), sans-serif;
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
 }
 
 a {
@@ -43,5 +82,117 @@ a {
 }
 
 ::selection {
-  background: rgba(15, 156, 0, 0.45);
+  background: rgb(139 128 255 / 0.4);
+  color: var(--color-fg);
+}
+
+/* Visible, consistent keyboard focus everywhere (WCAG 2.2 AA 2.4.7 / 2.4.11). */
+:focus-visible {
+  outline: 2px solid var(--color-accent-text);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@layer components {
+  /* Card: layered surface with a hairline highlight. */
+  .card {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 40%), var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+  .card-interactive {
+    transition:
+      border-color 150ms ease,
+      transform 150ms ease,
+      background-color 150ms ease;
+  }
+  .card-interactive:hover {
+    border-color: var(--color-line-strong);
+    transform: translateY(-2px);
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-accent-text);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.7rem 1.4rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      opacity 150ms ease;
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    box-shadow: var(--shadow-glow);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+  }
+  .btn-ghost {
+    border: 1px solid var(--color-line-strong);
+    color: var(--color-fg);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--color-surface-2);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 9999px;
+    border: 1px solid var(--color-line);
+    background: var(--color-surface-2);
+    padding: 0.2rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+
+  .field {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface-2);
+    padding: 0.7rem 0.9rem;
+    font-size: 0.875rem;
+    color: var(--color-fg);
+    transition: border-color 150ms ease;
+  }
+  .field::placeholder {
+    color: var(--color-subtle);
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-accent-text);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

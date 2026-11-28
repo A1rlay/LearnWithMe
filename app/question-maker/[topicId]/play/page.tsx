@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { requireSession } from "@/lib/auth";
+import { assertSubjectViewable, requireSession } from "@/lib/auth";
 import { getQMTopicDetail } from "@/server/data/question-maker";
 import { GameClient } from "./game-client";
 
@@ -11,6 +11,7 @@ export default async function GamePage({ params }: Props) {
   const { topicId } = await params;
   const topic = await getQMTopicDetail(topicId);
   if (!topic) notFound();
+  await assertSubjectViewable(topic.subjectId);
   if (topic.questions.length === 0) notFound();
 
   return <GameClient topic={topic} />;

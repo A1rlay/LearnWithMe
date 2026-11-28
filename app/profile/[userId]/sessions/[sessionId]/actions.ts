@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireRole } from "@/lib/auth";
+import { requireEditorOf } from "@/lib/auth";
 import { adminReviewQMAnswer } from "@/server/data/question-maker";
 
 export async function reviewAnswerAction(
@@ -11,7 +11,7 @@ export async function reviewAnswerAction(
   answerId: string,
   isCorrect: boolean,
 ) {
-  await requireRole("ADMIN", "TEACHER");
+  await requireEditorOf({ kind: "qmAnswer", id: answerId });
   await adminReviewQMAnswer(answerId, isCorrect);
   revalidatePath(`/profile/${userId}/sessions/${sessionId}`);
   // Also keep the admin sessions view in sync

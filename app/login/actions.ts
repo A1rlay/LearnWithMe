@@ -24,7 +24,7 @@ export async function loginAction(formData: FormData) {
   });
 
   if (user.role === "STUDENT") {
-    redirect("/learn");
+    redirect("/");
   } else {
     redirect("/admin");
   }

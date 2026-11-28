@@ -25,6 +25,7 @@ export type SpellRightWordDetail = {
 
 export type SpellRightSetDetail = {
   id: string;
+  subjectId: string;
   title: string;
   description: string | null;
   mode: SpellRightMode;
@@ -57,6 +58,7 @@ export async function getSpellRightSetDetail(id: string): Promise<SpellRightSetD
   return {
     description: set.description,
     id: set.id,
+    subjectId: set.subjectId,
     mode: set.mode,
     title: set.title,
     words: set.words.map((w) => ({
@@ -71,28 +73,60 @@ export async function getSpellRightSetDetail(id: string): Promise<SpellRightSetD
 
 // ─── Session ──────────────────────────────────────────────────────────────────
 
-export async function createSpellRightSession(setId: string, userId: string | null = null) {
-  return prisma.spellRightSession.create({ data: { setId, userId } });
+/** Same normalisation the pronunciation client uses for the live feedback. */
+export function normalizeSpoken(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}'-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-export async function submitSpellRightAnswers(
-  sessionId: string,
-  answers: { wordId: string; answer: string; isCorrect: boolean }[],
+/**
+ * Records a finished run. Correctness is recomputed here from the stored words —
+ * the client only sends what the learner chose (termination) or what the speech
+ * recogniser heard (pronunciation). Words not in the set are ignored, and
+ * sets in hidden subjects are refused. Pronunciation trusts the browser's
+ * transcript by nature (speech recognition only runs client-side).
+ */
+export async function recordSpellRightRun(
+  setId: string,
+  userId: string,
+  answers: { wordId: string; answer: string }[],
 ) {
-  await prisma.spellRightAnswer.createMany({
-    data: answers.map((a) => ({ ...a, sessionId })),
+  const set = await prisma.spellRightSet.findFirst({
+    where: { id: setId, subject: { experts: { some: { user: { role: { in: ["TEACHER", "ADMIN"] } } } } } },
+    select: { mode: true, words: { select: { id: true, word: true, correctAnswer: true } } },
   });
-  await prisma.spellRightSession.update({
-    where: { id: sessionId },
-    data: { completedAt: new Date() },
+  if (!set) return null;
+  const byId = new Map(set.words.map((w) => [w.id, w]));
+  const seen = new Set<string>();
+
+  const rows = answers.flatMap((a) => {
+    const w = byId.get(a.wordId);
+    if (!w || seen.has(w.id)) return [];
+    seen.add(w.id);
+    const answer = a.answer.slice(0, 200);
+    const isCorrect =
+      set.mode === SpellRightMode.TERMINATION
+        ? w.correctAnswer !== null && answer === w.correctAnswer
+        : normalizeSpoken(answer) === normalizeSpoken(w.word);
+    return [{ wordId: w.id, answer, isCorrect }];
+  });
+  if (rows.length === 0) return null;
+
+  return prisma.spellRightSession.create({
+    data: { setId, userId, completedAt: new Date(), answers: { create: rows } },
+    select: { id: true },
   });
 }
 
 // ─── Admin queries ────────────────────────────────────────────────────────────
 
-export async function adminGetSpellRightSets() {
+export async function adminGetSpellRightSets(subjectIds?: string[]) {
   return prisma.spellRightSet.findMany({
-    include: { _count: { select: { words: true } } },
+    where: subjectIds ? { subjectId: { in: subjectIds } } : undefined,
+    include: { _count: { select: { words: true } }, subject: { select: { name: true } } },
     orderBy: [{ mode: "asc" }, { order: "asc" }],
   });
 }
@@ -100,7 +134,7 @@ export async function adminGetSpellRightSets() {
 export async function adminGetSpellRightSet(id: string) {
   return prisma.spellRightSet.findUnique({
     where: { id },
-    include: { words: { orderBy: { order: "asc" } } },
+    include: { words: { orderBy: { order: "asc" } }, skills: { select: { skillId: true } } },
   });
 }
 
@@ -109,6 +143,7 @@ export async function adminCreateSpellRightSet(data: {
   description: string;
   mode: SpellRightMode;
   order: number;
+  subjectId: string;
 }) {
   return prisma.spellRightSet.create({ data });
 }

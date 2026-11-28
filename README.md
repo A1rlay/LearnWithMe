@@ -1,57 +1,46 @@
-# LearnWithMe 
+# Learn With Me
 
-Next.js foundation for an English listening platform where students:
+A platform for learning **with people**: every subject (English, Math, Guitar…) is taught by
+an expert who builds its activities, and learners see their progress as a skill chart.
 
-- choose a grammar topic
-- pick an audio lesson inside that topic
-- listen until a configured checkpoint
-- answer 4 database-driven comprehension questions in a modal
+- **Subjects first.** The home page lists subjects. A subject is only visible while at least one
+  expert is assigned to it.
+- **Experts** are accounts the owner creates (role `TEACHER`, shown as *Expert*) and assigns to
+  subjects in **Studio → Subjects & experts**. Experts can only edit their own subjects.
+- **Activities** — video lessons with checkpoint questions, quizzes, and sounds & spelling
+  drills — each belong to a subject and are tagged with the **skills** they train.
+- **Skill chart.** Answers count toward the tagged skills; the profile and subject pages show a
+  radar of % correct now vs 30 days ago.
+- **Subtitles** are set per video by the expert (on for beginners, off for listening practice).
 
 ## Stack
+Next.js 16 (App Router, `proxy.ts`), React 19, Prisma 6 + PostgreSQL, tRPC (video checkpoints),
+Tailwind CSS v4 with design tokens in `app/globals.css`.
 
-- Next.js App Router
-- React 19
-- tRPC
-- Prisma
-- PostgreSQL
-- Tailwind CSS v4
-
-## Project structure
-
-- `app/`: frontend routes and the tRPC route handler
-- `components/`: reusable UI by feature area
-- `server/api/`: tRPC context, root router, and domain routers
-- `server/db.ts`: shared Prisma client
-- `prisma/schema.prisma`: PostgreSQL schema for topics, audios, questions, and options
-- `prisma/seed.ts`: sample seed data
-- `lib/placeholders.ts`: temporary UI data shaped like the database records
-
-## Commands
-
+## Getting started
 ```bash
+cp .env.example .env      # fill in DATABASE_URL(S) and AUTH_SECRET
+npm install
+npx prisma db push        # fresh local database
+npm run db:seed           # admin, a sample expert, English subject + skills
 npm run dev
-npm run lint
-npm run typecheck
-npm run db:generate
-npm run db:migrate
-npm run db:push
-npm run db:seed
-npm run db:studio
 ```
 
-## Environment
+### Applying the subjects/skills migration to an existing database
+The existing database was managed with `db push`, so apply this one migration explicitly:
+```bash
+npx prisma db execute --schema prisma/schema.prisma --file prisma/migrations/20261127_subjects_skills/migration.sql
+npx prisma migrate resolve --applied 20261127_subjects_skills
+```
+It creates the **English** subject and moves all existing content into it. Then assign an expert
+to English in Studio — until you do, English is hidden from learners.
 
-Copy `.env.example` to `.env` and update `DATABASE_URL` for your PostgreSQL instance.
+## Commands
+`npm run dev` · `npm run build` · `npm run lint` · `npm run typecheck` · `npm run db:seed` · `npm run db:studio`
 
-## Current routes
-
-- `/`: landing page
-- `/topics`: topic listing
-- `/topics/[topicSlug]`: audio list for a topic
-- `/topics/[topicSlug]/audios/[audioSlug]`: audio lesson detail and quiz blueprint
-
-## Notes
-
-- Topic and audio routes now read from PostgreSQL through Prisma.
-- tRPC routers are ready for frontend consumption and already mirror the core topic/audio lookup flow.
-- The next steps are adding the real player, opening the quiz modal at the playback checkpoint, and submitting answers/results.
+## Project map
+- `app/` — routes. Learner: `/`, `/subjects/[id]`, `/topics/…`, `/question-maker/…`, `/spell-right/…`, `/profile/[id]`. Studio: `/admin/…`.
+- `server/data/` — all database access (`subjects.ts`, `skill-progress.ts`, …).
+- `lib/auth.ts` — session + subject-scoped authorization helpers.
+- `components/` — UI (`progress/skill-radar.tsx`, `studio/`, `brand/`).
+- `docs/build/` — PRD, ADRs, data-model notes, design system, handoffs.

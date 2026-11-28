@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { updateQuestionAction } from "../../actions";
 import { adminGetQuestion } from "@/server/data/admin";
+import { requireEditorPage } from "@/lib/auth";
 
 type EditQuestionPageProps = {
   params: Promise<{ id: string; questionId: string; videoId: string }>;
@@ -10,6 +11,7 @@ type EditQuestionPageProps = {
 
 export default async function EditQuestionPage({ params }: EditQuestionPageProps) {
   const { id, questionId, videoId } = await params;
+  await requireEditorPage({ kind: "question", id: questionId });
   const question = await adminGetQuestion(questionId);
   if (!question) notFound();
 
@@ -20,24 +22,24 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
       <div>
         <Link
           href={`/admin/topics/${id}/videos/${videoId}/questions`}
-          className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+          className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
         </Link>
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-          Admin · {question.video.title}
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          Studio · {question.video.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">
+        <h1 className="mt-2 font-serif text-4xl text-fg">
           Edit question {question.order}
         </h1>
       </div>
 
       <form
         action={update}
-        className="flex flex-col gap-5 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8"
+        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
       >
         <QuestionFields
           defaults={{
@@ -49,7 +51,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
           >
             Save changes
           </button>
@@ -74,7 +76,7 @@ export function QuestionFields({
     defaults?.options?.find((o) => o.isCorrect)?.order ?? 1;
 
   const inputClass =
-    "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
+    "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
 
   return (
     <>
@@ -83,9 +85,9 @@ export function QuestionFields({
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="order"
-              className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+              className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
             >
-              Order <span className="text-[var(--accent)]">*</span>
+              Order <span className="text-accent-text">*</span>
             </label>
             <input
               id="order"
@@ -99,9 +101,9 @@ export function QuestionFields({
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="checkpointSeconds"
-            className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+            className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
           >
-            Checkpoint (seconds) <span className="text-[var(--accent)]">*</span>
+            Checkpoint (seconds) <span className="text-accent-text">*</span>
           </label>
           <input
             id="checkpointSeconds"
@@ -110,16 +112,16 @@ export function QuestionFields({
             required
             className={inputClass}
           />
-          <p className="text-xs text-[var(--muted)]">When to pause video for this question</p>
+          <p className="text-xs text-muted">When to pause video for this question</p>
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="prompt"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
         >
-          Prompt <span className="text-[var(--accent)]">*</span>
+          Prompt <span className="text-accent-text">*</span>
         </label>
         <input
           id="prompt"
@@ -130,8 +132,8 @@ export function QuestionFields({
         />
       </div>
 
-      <fieldset className="flex flex-col gap-3 rounded-[20px] border border-[var(--border)] p-5">
-        <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+      <fieldset className="flex flex-col gap-3 rounded-[20px] border border-line p-5">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted">
           Options — select the correct answer
         </legend>
         {[1, 2, 3, 4].map((n) => {
@@ -144,7 +146,7 @@ export function QuestionFields({
                 name="correct"
                 value={n}
                 defaultChecked={n === correctIndex}
-                className="h-4 w-4 accent-[var(--foreground)]"
+                className="h-4 w-4 accent-fg"
               />
               {opt && (
                 <input type="hidden" name={`option${n}Id`} value={opt.id} />
@@ -155,12 +157,12 @@ export function QuestionFields({
                 defaultValue={opt?.text}
                 placeholder={`Option ${n}`}
                 required
-                className="flex-1 rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-2.5 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white"
+                className="flex-1 rounded-xl border border-line-strong bg-surface-2 px-4 py-2.5 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text"
               />
             </div>
           );
         })}
-        <p className="text-xs text-[var(--muted)]">
+        <p className="text-xs text-muted">
           Select the radio button next to the correct option.
         </p>
       </fieldset>

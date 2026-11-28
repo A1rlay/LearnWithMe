@@ -1,5 +1,6 @@
 import { QMQuestionType } from "@prisma/client";
 
+import { scoreQMAnswer } from "@/lib/qm-scoring";
 import { prisma } from "@/server/db";
 
 export { QMQuestionType };
@@ -75,6 +76,7 @@ export type QMTopicSummary = {
 
 export type QMTopicDetail = {
   id: string;
+  subjectId: string;
   title: string;
   description: string | null;
   questions: QMQuestionDetail[];
@@ -115,6 +117,7 @@ export async function getQMTopicDetail(id: string): Promise<QMTopicDetail | null
   return {
     description: topic.description,
     id: topic.id,
+    subjectId: topic.subjectId,
     questions: topic.questions.map((q) => ({
       data: q.data as QMQuestionData,
       id: q.id,
@@ -128,25 +131,35 @@ export async function getQMTopicDetail(id: string): Promise<QMTopicDetail | null
 
 // ─── Session ──────────────────────────────────────────────────────────────────
 
-export async function createQMSession(topicId: string, userId: string | null = null) {
-  return prisma.qMSession.create({ data: { topicId, userId } });
-}
-
-export async function submitQMAnswers(
-  sessionId: string,
-  answers: { questionId: string; answer: unknown; isCorrect: boolean | null }[],
+/**
+ * Grades and stores one quiz run. Returns null (stores nothing) when the topic
+ * doesn't exist or its subject is hidden. Questions from other topics are ignored;
+ * oversized answer payloads are rejected.
+ */
+export async function recordQMRun(
+  topicId: string,
+  userId: string | null,
+  answers: { questionId: string; answer: unknown }[],
 ) {
-  await prisma.qMAnswer.createMany({
-    data: answers.map((a) => ({
-      answer: a.answer as object,
-      isCorrect: a.isCorrect,
-      questionId: a.questionId,
-      sessionId,
-    })),
+  const topic = await prisma.qMTopic.findFirst({
+    where: { id: topicId, subject: { experts: { some: { user: { role: { in: ["TEACHER", "ADMIN"] } } } } } },
+    select: { questions: { select: { id: true, type: true, data: true } } },
   });
-  await prisma.qMSession.update({
-    where: { id: sessionId },
-    data: { completedAt: new Date() },
+  if (!topic) return null;
+  const byId = new Map(topic.questions.map((q) => [q.id, q]));
+  const seen = new Set<string>();
+  const rows = answers.flatMap((a) => {
+    const q = a && typeof a.questionId === "string" ? byId.get(a.questionId) : undefined;
+    if (!q || seen.has(q.id)) return [];
+    seen.add(q.id);
+    const json = JSON.stringify(a.answer ?? null);
+    if (json.length > 4000) return [];
+    return [{ questionId: q.id, answer: JSON.parse(json) as object, isCorrect: scoreQMAnswer(q, a.answer) }];
+  });
+  if (rows.length === 0) return null;
+  return prisma.qMSession.create({
+    data: { topicId, userId, completedAt: new Date(), answers: { create: rows } },
+    select: { id: true },
   });
 }
 
@@ -165,9 +178,10 @@ export async function getQMSession(sessionId: string) {
 
 // ─── Admin queries ────────────────────────────────────────────────────────────
 
-export async function adminGetQMTopics() {
+export async function adminGetQMTopics(subjectIds?: string[]) {
   return prisma.qMTopic.findMany({
-    include: { _count: { select: { questions: true } } },
+    where: subjectIds ? { subjectId: { in: subjectIds } } : undefined,
+    include: { _count: { select: { questions: true } }, subject: { select: { name: true } } },
     orderBy: { order: "asc" },
   });
 }
@@ -175,7 +189,7 @@ export async function adminGetQMTopics() {
 export async function adminGetQMTopic(id: string) {
   return prisma.qMTopic.findUnique({
     where: { id },
-    include: { questions: { orderBy: { order: "asc" } } },
+    include: { questions: { orderBy: { order: "asc" } }, skills: { select: { skillId: true } } },
   });
 }
 
@@ -183,6 +197,7 @@ export async function adminCreateQMTopic(data: {
   title: string;
   description: string;
   order: number;
+  subjectId: string;
 }) {
   return prisma.qMTopic.create({ data });
 }

@@ -3,14 +3,16 @@ import { notFound } from "next/navigation";
 
 import { adminGetSpellRightSet } from "@/server/data/spell-right";
 import { createSpellRightWordAction } from "../../../actions";
+import { requireEditorPage } from "@/lib/auth";
 
 type Props = { params: Promise<{ setId: string }> };
 
 const inputClass =
-  "rounded-xl border border-[rgba(255,255,255,0.2)] bg-[rgba(0,13,113,0.5)] px-4 py-3 text-sm text-white placeholder:text-[rgba(255,255,255,0.35)] outline-none focus:border-white";
+  "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
 
 export default async function NewSpellRightWordPage({ params }: Props) {
   const { setId } = await params;
+  await requireEditorPage({ kind: "spellSet", id: setId });
   const set = await adminGetSpellRightSet(setId);
   if (!set) notFound();
 
@@ -22,7 +24,7 @@ export default async function NewSpellRightWordPage({ params }: Props) {
     <div className="flex flex-col gap-6">
       <Link
         href={`/admin/spell-right/${setId}/words`}
-        className="flex items-center gap-2 text-base font-bold text-white transition-colors hover:text-[#0F9C00]"
+        className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M15 18l-6-6 6-6" />
@@ -31,19 +33,19 @@ export default async function NewSpellRightWordPage({ params }: Props) {
       </Link>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[var(--accent)]">
-          Admin · SpellRight · {set.title}
+        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          Studio · Sounds & spelling · {set.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-[var(--foreground)]">Add word</h1>
+        <h1 className="mt-2 font-serif text-4xl text-fg">Add word</h1>
       </div>
 
       <form
         action={create}
-        className="flex flex-col gap-5 rounded-[28px] border border-[var(--border)] bg-[var(--panel)] p-8"
+        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
       >
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="word" className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-            Word <span className="text-[var(--accent)]">*</span>
+          <label htmlFor="word" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+            Word <span className="text-accent-text">*</span>
           </label>
           <input
             id="word"
@@ -56,8 +58,8 @@ export default async function NewSpellRightWordPage({ params }: Props) {
 
         {isTermination && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-              Correct termination <span className="text-[var(--accent)]">*</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+              Correct termination <span className="text-accent-text">*</span>
             </span>
             <div className="flex gap-4">
               {[
@@ -70,12 +72,12 @@ export default async function NewSpellRightWordPage({ params }: Props) {
                     type="radio"
                     name="correctAnswer"
                     value={opt.value}
-                    className="mt-0.5 accent-[#0F9C00]"
+                    className="mt-0.5 accent-accent-text"
                     required
                   />
                   <div>
-                    <p className="text-sm font-semibold text-[var(--foreground)]">{opt.label}</p>
-                    <p className="text-xs text-[var(--muted)]">{opt.hint}</p>
+                    <p className="text-sm font-semibold text-fg">{opt.label}</p>
+                    <p className="text-xs text-muted">{opt.hint}</p>
                   </div>
                 </label>
               ))}
@@ -84,9 +86,9 @@ export default async function NewSpellRightWordPage({ params }: Props) {
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="explanation" className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+          <label htmlFor="explanation" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
             Explanation
-            <span className="ml-1 normal-case text-[rgba(255,255,255,0.3)]">(shown after answer)</span>
+            <span className="ml-1 normal-case text-fg/30">(shown after answer)</span>
           </label>
           <textarea
             id="explanation"
@@ -104,7 +106,7 @@ export default async function NewSpellRightWordPage({ params }: Props) {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-[#0F9C00] px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90"
+            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
           >
             Add word
           </button>
