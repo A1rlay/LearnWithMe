@@ -99,3 +99,31 @@ dashes from all user-facing copy.
 kind off hides, never deletes. Moving an activity into a subject requires the kind; staying put doesn't.
 **Verification:** migration rehearsed on a Neon branch (zero drift); E2E as owner: chips add/remove/
 dedupe/persist, kind off hides in Studio + learner page, back on restores.
+
+### tech-lead — Learner experience batch — Build — 2026-11-27
+**Did:** first-run `/welcome` (subjects, interests, weekly goal, buddies opt-in → first activity) and
+an activation funnel on Studio Overview; weekly goals shared with buddies (rings, "studied today"),
+invite link, buddy-request badge; per-activity instructions + level, per-question hints, level filter,
+learner CC toggle (within the expert's setting); class insights (quiet students, most-missed
+questions) and classes scoped to their teacher; GitHub-style profile `/u/[username]` (practice
+calendar in the learner's timezone, streaks, learning projects, achievements, skills, recent
+activity, visibility setting); phone tab bar; legacy screens moved to design-system classes;
+submit buttons show pending state; light theme (header toggle, cookie, dark stays default);
+migrations squashed into a `pg_dump --schema-only` baseline.
+**Decisions**
+- Activated = finished an activity within 7 days of sign-up — rejected: sign-up (not value) and
+  "has a buddy" (too far for week one; tracked as the next funnel step).
+- Profile visible to signed-in members by default, never to anonymous visitors — rejected: public
+  web profiles (possibly minors). Owner can choose buddies-only or only-me.
+- Heatmap counts answers per local day (user timezone from the browser, validated against
+  Intl.supportedValuesOf) — rejected: UTC days (wrong day for Mexico evenings).
+- Baseline from pg_dump — rejected: `migrate diff --from-empty` (drops CHECK constraints).
+- No automated tests: the owner asked for none unless requested; verified by running the app.
+**Verification:** Playwright runs against a seeded Neon branch (welcome flow, profile, projects,
+buddies, class insights, light/dark, phone layout); fresh `migrate deploy` on Postgres 17 → zero
+drift, 11 CHECKs; production procedure rehearsed on a branch of main → zero drift, data intact.
+**Risks**
+- LOW — Week boundaries for goals use UTC Mondays while the calendar uses local days.
+- LOW — `lastActiveAt` counts completions only; answering without finishing reads as inactive.
+- Blocked on owner: email notifications (needs an email provider + domain), error tracking (needs a
+  Sentry project/DSN).
