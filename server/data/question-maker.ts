@@ -142,7 +142,7 @@ export async function recordQMRun(
   answers: { questionId: string; answer: unknown }[],
 ) {
   const topic = await prisma.qMTopic.findFirst({
-    where: { id: topicId, subject: { experts: { some: { user: { role: "TEACHER" } } } } },
+    where: { id: topicId, subject: { experts: { some: { user: { role: { in: ["TEACHER", "ADMIN"] } } } } } },
     select: { questions: { select: { id: true, type: true, data: true } } },
   });
   if (!topic) return null;

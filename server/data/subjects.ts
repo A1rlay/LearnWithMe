@@ -1,9 +1,13 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/server/db";
 
 // ─── Public catalog ───────────────────────────────────────────────────────────
 // A subject is visible to learners only while at least one expert is assigned —
-// and that person must still hold the expert (TEACHER) role.
-export const VISIBLE = { experts: { some: { user: { role: "TEACHER" } } } } as const;
+// and that person must still be staff (TEACHER = expert; the owner/ADMIN may also be one).
+export const VISIBLE: Prisma.SubjectWhereInput = {
+  experts: { some: { user: { role: { in: ["TEACHER", "ADMIN"] } } } },
+};
 
 export type SubjectCard = {
   id: string;
@@ -74,10 +78,10 @@ export async function isSubjectVisible(subjectId: string): Promise<boolean> {
 
 // ─── Access ───────────────────────────────────────────────────────────────────
 
-/** Assignment row exists AND the user is still a TEACHER (demotion revokes at once). */
+/** Assignment row exists AND the user is still staff (demotion to learner revokes at once). */
 export async function isSubjectExpert(subjectId: string, userId: string): Promise<boolean> {
   const row = await prisma.subjectExpert.findFirst({
-    where: { subjectId, userId, user: { role: "TEACHER" } },
+    where: { subjectId, userId, user: { role: { in: ["TEACHER", "ADMIN"] } } },
     select: { userId: true },
   });
   return row !== null;
@@ -90,7 +94,7 @@ export async function getUserRole(userId: string): Promise<string | null> {
 
 export async function getExpertSubjectIds(userId: string): Promise<string[]> {
   const rows = await prisma.subjectExpert.findMany({
-    where: { userId, user: { role: "TEACHER" } },
+    where: { userId, user: { role: { in: ["TEACHER", "ADMIN"] } } },
     select: { subjectId: true },
   });
   return rows.map((r) => r.subjectId);
@@ -159,7 +163,7 @@ export async function adminGetSubjects(onlyIds?: string[]) {
     orderBy: [{ order: "asc" }, { name: "asc" }],
     include: {
       experts: {
-        where: { user: { role: "TEACHER" } },
+        where: { user: { role: { in: ["TEACHER", "ADMIN"] } } },
         include: { user: { select: { id: true, name: true } } },
       },
       _count: { select: { skills: true, topics: true, qmTopics: true, spellRightSets: true } },
@@ -172,7 +176,7 @@ export async function adminGetSubject(id: string) {
     where: { id },
     include: {
       experts: {
-        where: { user: { role: "TEACHER" } },
+        where: { user: { role: { in: ["TEACHER", "ADMIN"] } } },
         include: { user: { select: { id: true, name: true, email: true } } },
         orderBy: { assignedAt: "asc" },
       },
@@ -196,7 +200,7 @@ export async function adminDeleteSubject(id: string) {
 
 export async function adminAssignExpert(subjectId: string, userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-  if (!user || user.role !== "TEACHER") throw new Error("Only teacher accounts can be experts.");
+  if (!user || (user.role !== "TEACHER" && user.role !== "ADMIN")) throw new Error("Only expert or admin accounts can be experts.");
   await prisma.subjectExpert.upsert({
     where: { subjectId_userId: { subjectId, userId } },
     update: {},
@@ -290,7 +294,7 @@ export async function getEditableSubjectsWithSkills(onlyIds?: string[]) {
 
 export async function getExpertCandidates() {
   return prisma.user.findMany({
-    where: { role: "TEACHER" },
+    where: { role: { in: ["TEACHER", "ADMIN"] } },
     orderBy: { name: "asc" },
     select: { id: true, name: true, email: true },
   });

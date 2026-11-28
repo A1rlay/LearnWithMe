@@ -30,10 +30,10 @@ export async function adminUpdateUser(
   id: string,
   data: { email: string; name: string; role: Role; passwordHash?: string },
 ) {
-  // Leaving the expert role ends every subject assignment in the same transaction.
+  // Becoming a learner ends every subject assignment in the same transaction.
   return prisma.$transaction(async (tx) => {
     const user = await tx.user.update({ where: { id }, data });
-    if (user.role !== "TEACHER") await tx.subjectExpert.deleteMany({ where: { userId: id } });
+    if (user.role === "STUDENT") await tx.subjectExpert.deleteMany({ where: { userId: id } });
     return user;
   });
 }
