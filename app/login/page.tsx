@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { LogoMark } from "@/components/brand/logo";
 import { loginAction } from "./actions";
 
@@ -26,14 +28,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="card p-7">
           {error && (
             <p role="alert" className="mb-5 rounded-xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-danger">
-              That email and password don&apos;t match. Check both and try again.
+              {error === "locked"
+                ? "Too many attempts. Wait 15 minutes and try again."
+                : "That username and password don't match. Check both and try again."}
             </p>
           )}
 
           <form action={loginAction} className="flex flex-col gap-4">
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-fg">Email</span>
-              <input name="email" type="email" required autoComplete="email" className="field" />
+              <span className="text-sm font-medium text-fg">Username or email</span>
+              <input name="login" required autoComplete="username" autoCapitalize="none" spellCheck={false} className="field" />
             </label>
             <label className="flex flex-col gap-1.5">
               <span className="text-sm font-medium text-fg">Password</span>
@@ -45,8 +49,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-subtle">
-          Accounts are created by the owner. Want to teach a subject? Get in touch.
+        <p className="mt-6 text-center text-sm text-muted">
+          New here?{" "}
+          <Link href="/signup" className="text-accent-text hover:underline">Create an account</Link>
         </p>
       </div>
     </main>

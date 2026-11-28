@@ -14,7 +14,9 @@ export async function verifyPassword(
   stored: string,
 ): Promise<boolean> {
   const [salt, hash] = stored.split(":");
+  if (!salt || !hash) return false;
   const buf = Buffer.from(hash, "hex");
   const key = (await scryptAsync(password, salt, 64)) as Buffer;
-  return timingSafeEqual(buf, key);
+  // Malformed stored hashes have the wrong length; timingSafeEqual would throw.
+  return buf.length === key.length && timingSafeEqual(buf, key);
 }

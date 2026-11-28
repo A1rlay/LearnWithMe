@@ -7,7 +7,7 @@ import { adminGetAllUsers } from "@/server/data/users";
 import { deleteUserAction } from "./actions";
 
 export default async function UsersPage() {
-  const session = await requireRole("ADMIN", "TEACHER");
+  const session = await requireRole("ADMIN");
   const isAdmin = session.role === "ADMIN";
   const users = await adminGetAllUsers();
 
@@ -45,7 +45,7 @@ export default async function UsersPage() {
                   Name
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
-                  Email
+                  Username
                 </th>
                 <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
                   Role
@@ -64,7 +64,7 @@ export default async function UsersPage() {
                   <td className="px-6 py-4 font-medium text-fg">
                     {user.name}
                   </td>
-                  <td className="px-6 py-4 text-muted">{user.email}</td>
+                  <td className="px-6 py-4 text-muted">@{user.username}{user.email ? <span className="block text-xs text-subtle">{user.email}</span> : null}</td>
                   <td className="px-6 py-4">
                     <span className={`chip ${ROLE_BADGE[user.role]}`}>{ROLE_LABEL[user.role]}</span>
                   </td>

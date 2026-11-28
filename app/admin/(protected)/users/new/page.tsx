@@ -18,7 +18,7 @@ export default async function NewUserPage() {
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
-          Admin · Users
+          Studio · People
         </p>
         <h1 className="mt-2 font-serif text-4xl text-fg">New user</h1>
       </div>

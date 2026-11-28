@@ -106,7 +106,7 @@ export default async function SubjectDetailPage({ params }: Props) {
                 <li key={e.userId} className="flex items-center justify-between gap-3 py-2.5">
                   <div>
                     <p className="text-sm font-medium text-fg">{e.user.name}</p>
-                    <p className="text-xs text-subtle">{e.user.email}</p>
+                    <p className="text-xs text-subtle">@{e.user.username}</p>
                   </div>
                   {isAdmin && (
                     <form action={unassignExpertAction.bind(null, id, e.userId)}>
@@ -125,7 +125,7 @@ export default async function SubjectDetailPage({ params }: Props) {
                   <option value="" disabled>Choose an expert…</option>
                   {available.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({c.email})
+                      {c.name} (@{c.username})
                     </option>
                   ))}
                 </select>

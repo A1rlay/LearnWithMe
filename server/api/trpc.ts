@@ -15,6 +15,11 @@ type TRPCContext = Awaited<ReturnType<typeof createTRPCContext>>;
 
 const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
+  // Never send internal (e.g. Prisma) error text to clients.
+  errorFormatter: ({ shape, error }) =>
+    error.code === "INTERNAL_SERVER_ERROR"
+      ? { ...shape, message: "Something went wrong.", data: { ...shape.data, stack: undefined } }
+      : shape,
 });
 
 export const createTRPCRouter = t.router;
