@@ -5,10 +5,11 @@ Tokens live in `app/globals.css` (`@theme`) and are consumed as Tailwind utiliti
 (`#0F9C00`, `#000D71`, `rgba(255,255,255,…)`, Tailwind gray/green/red).
 
 ## Direction
-Modern, calm, dark-first: near-black canvas with two soft light sources, layered surfaces
+Modern, calm, dark-first: flat near-black canvas (no coloured glows; owner asked for none)
+with a faint neutral dot grid fading out down the first screen, layered surfaces
 with a hairline highlight, one violet accent, editorial serif for display text.
-"Not simple, not flashy": depth from layering and type, motion limited to 150 ms hovers
-(disabled under `prefers-reduced-motion`).
+"Not simple, not flashy": depth from layering and type; motion is purposeful and quick (see
+Motion below), and collapses under `prefers-reduced-motion`.
 
 ## Tokens
 | Role | Token / utility | Value |
@@ -34,6 +35,23 @@ one emphasised word). `font-serif` aliases display for older pages.
 ## Components (globals.css `@layer components`)
 `card`, `card-interactive`, `btn btn-primary|btn-ghost`, `chip`, `field`, `eyebrow`.
 Focus: global `:focus-visible` 2px accent-text outline. Skip link in the root layout.
+
+## Motion (ADR 0002)
+CSS only, transform + opacity only. Tokens: `--ease-out`, `--ease-spring`, `--dur-enter` (280 ms).
+| Utility | Use |
+|---|---|
+| `animate-enter` | panels, revealed hints, new messages, question changes (key the element) |
+| `stagger` | on a list/grid: children rise in 40 ms apart (first 10) |
+| `animate-pop` | badges, ticks, scores, the correct answer |
+| `animate-shake` | wrong answer, form error; always with a word, never motion alone |
+| `animate-fade` | overlays, secondary series |
+| `press` | tactile scale on custom buttons (`.btn`, `.toggle-chip` already have it) |
+| `skeleton` | shimmer placeholder in `loading.tsx` |
+| `<Spinner>` / `<LoadingLabel>` | `components/ui/spinner.tsx`; every pending button uses it |
+
+Entrances use fill-mode `backwards` so hover/press transforms still work afterwards.
+Route loading: `app/loading.tsx`, Studio `app/admin/(protected)/loading.tsx` (`PageSkeleton`).
+Navigation bar: `components/ui/nav-progress.tsx`. Theme switch cross-fades (View Transitions).
 
 ## Brand
 Wordmark "Learn *with* me"; mark = two overlapping circles (you + the person you learn with)

@@ -6,6 +6,7 @@ import { TagInput } from "@/components/ui/tag-input";
 import { TimezoneInput } from "@/components/ui/timezone-input";
 
 import { saveProfileAction, type FormState } from "./actions";
+import { Spinner } from "@/components/ui/spinner";
 
 type Props = {
   me: {
@@ -129,7 +130,7 @@ export function ProfileForm({ me, subjects }: Props) {
 
       <div className="flex items-center gap-3">
         <button type="submit" disabled={pending} className="btn btn-primary">
-          {pending ? "Saving…" : "Save profile"}
+          {pending ? <><Spinner />Saving…</> : "Save profile"}
         </button>
         <span role="status" className={`text-sm ${state.error ? "text-danger" : "text-success"}`}>
           {state.error ?? state.ok}

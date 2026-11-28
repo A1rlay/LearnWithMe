@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef } from "react";
 
 import { saveProjectAction, type ProjectState } from "@/app/u/actions";
+import { Spinner } from "@/components/ui/spinner";
 
 type Defaults = { title: string; description: string | null; url: string | null; status: string; subjectId: string | null };
 
@@ -59,7 +60,7 @@ export function ProjectForm({
       </label>
       <div className="flex items-center gap-3">
         <button type="submit" disabled={pending} className="btn btn-primary px-4 py-2">
-          {pending ? "Saving…" : projectId ? "Save project" : "Add project"}
+          {pending ? <><Spinner />Saving…</> : projectId ? "Save project" : "Add project"}
         </button>
         {onDone && projectId && (
           <button type="button" onClick={onDone} className="text-sm text-muted hover:text-fg">Cancel</button>

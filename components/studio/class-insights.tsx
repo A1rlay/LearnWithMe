@@ -13,7 +13,7 @@ export function ClassInsights({ students, missed }: { students: StudentInsight[]
     <section aria-labelledby="insights-h" className="flex flex-col gap-4">
       <h2 id="insights-h" className="text-sm font-semibold text-fg">How the class is doing</h2>
 
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <dl className="stagger grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="card p-4">
           <dt className="text-xs text-muted">Met their weekly goal</dt>
           <dd className="mt-1 font-mono text-2xl text-fg">{onTrack}<span className="text-sm text-subtle"> / {students.length}</span></dd>

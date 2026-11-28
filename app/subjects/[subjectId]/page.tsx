@@ -154,7 +154,7 @@ export default async function SubjectPage({ params, searchParams }: Props) {
                   <h2 id={`${g.key}-h`} className="font-display text-3xl text-fg">{g.title}</h2>
                   <p className="mt-1 text-sm text-muted">{g.blurb}</p>
                 </div>
-                <ul className="grid gap-3 sm:grid-cols-2">
+                <ul className="stagger grid gap-3 sm:grid-cols-2">
                   {g.items.map((it) => (
                     <li key={it.id}>
                       <Link href={it.href} className="card card-interactive group flex h-full flex-col gap-3 p-5">

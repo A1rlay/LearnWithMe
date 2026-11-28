@@ -70,7 +70,7 @@ export async function SiteHeader() {
 
 function Badge({ n }: { n: number }) {
   return (
-    <span aria-hidden="true" className="ml-1.5 rounded-full bg-accent px-1.5 text-[11px] leading-5 text-on-accent">
+    <span aria-hidden="true" className="animate-pop ml-1.5 rounded-full bg-accent px-1.5 text-[11px] leading-5 text-on-accent">
       {n > 9 ? "9+" : n}
     </span>
   );

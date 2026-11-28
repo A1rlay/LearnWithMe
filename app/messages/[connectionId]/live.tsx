@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useRef } from "react";
 
+import { Spinner } from "@/components/ui/spinner";
+
 import { sendMessageAction, type SendState } from "../actions";
 
 /** Re-fetches the thread every 5 s while the tab is visible (polling; no websockets at stage 0). */
@@ -36,7 +38,7 @@ export function Composer({ connectionId }: { connectionId: string }) {
 
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-2">
-      {state.error && <p role="alert" className="text-xs text-danger">{state.error}</p>}
+      {state.error && <p role="alert" className="animate-shake text-xs text-danger">{state.error}</p>}
       <div className="flex items-end gap-2">
         <label htmlFor="body" className="sr-only">Message</label>
         <textarea
@@ -54,8 +56,15 @@ export function Composer({ connectionId }: { connectionId: string }) {
             }
           }}
         />
-        <button type="submit" disabled={pending} className="btn btn-primary h-11 px-5">
-          {pending ? "…" : "Send"}
+        <button type="submit" disabled={pending} aria-busy={pending} className="btn btn-primary relative h-11 px-5">
+          {/* "Send" keeps its space while pending so the textarea doesn't reflow. */}
+          <span className={pending ? "invisible" : undefined}>Send</span>
+          {pending && (
+            <span className="absolute inset-0 grid place-items-center">
+              <Spinner />
+              <span className="sr-only">Sending</span>
+            </span>
+          )}
         </button>
       </div>
       <p className="text-[11px] text-subtle">Enter to send · Shift+Enter for a new line</p>

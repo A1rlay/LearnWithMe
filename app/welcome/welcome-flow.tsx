@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { Spinner } from "@/components/ui/spinner";
 import { TagInput } from "@/components/ui/tag-input";
 import { TimezoneInput } from "@/components/ui/timezone-input";
 import { finishWelcomeAction, skipWelcomeAction } from "./actions";
@@ -23,7 +24,9 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
         <ol className="flex items-center gap-2" aria-label="Progress">
           {STEPS.map((s, i) => (
             <li key={s} className="flex flex-1 flex-col gap-1.5" aria-current={i === step ? "step" : undefined}>
-              <span className={`h-1 rounded-full transition-colors ${i <= step ? "bg-accent-text" : "bg-surface-3"}`} />
+              <span className="relative h-1 overflow-hidden rounded-full bg-surface-3">
+                <span className={`absolute inset-0 origin-left rounded-full bg-accent-text transition-transform duration-500 ease-[var(--ease-out)] ${i <= step ? "scale-x-100" : "scale-x-0"}`} />
+              </span>
               <span className={`text-[11px] ${i === step ? "text-fg" : "text-subtle"}`}>{s}</span>
             </li>
           ))}
@@ -34,7 +37,7 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
       <form action={finishWelcomeAction} className="flex flex-col gap-8">
         <TimezoneInput />
         {/* Step 1. Hidden steps stay in the DOM so their fields are posted. */}
-        <section hidden={step !== 0} aria-labelledby="w1" className="flex flex-col gap-5">
+        <section hidden={step !== 0} aria-labelledby="w1" className="animate-enter flex flex-col gap-5">
           <div>
             <h1 id="w1" className="font-display text-4xl leading-tight text-fg sm:text-5xl">What do you want to learn?</h1>
             <p className="mt-2 text-muted">Pick one or more. You can change this any time.</p>
@@ -42,7 +45,7 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
           {subjects.length === 0 ? (
             <p className="card p-6 text-sm text-muted">No subjects are open yet. Check back soon.</p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="stagger grid gap-3 sm:grid-cols-2">
               {subjects.map((s) => {
                 const on = picked.includes(s.id);
                 return (
@@ -62,9 +65,9 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
                       <span className="font-display text-2xl text-fg">{s.name}</span>
                       <span
                         aria-hidden="true"
-                        className={`grid h-5 w-5 place-items-center rounded-full border text-[11px] ${on ? "border-accent-text bg-accent text-on-accent" : "border-line-strong"}`}
+                        className={`grid h-5 w-5 place-items-center rounded-full border text-[11px] transition-colors ${on ? "border-accent-text bg-accent text-on-accent" : "border-line-strong"}`}
                       >
-                        {on ? "✓" : ""}
+                        {on ? <span className="animate-pop">✓</span> : ""}
                       </span>
                     </span>
                     {s.description && <span className="text-sm text-muted">{s.description}</span>}
@@ -78,7 +81,7 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
           )}
         </section>
 
-        <section hidden={step !== 1} aria-labelledby="w2" className="flex flex-col gap-6">
+        <section hidden={step !== 1} aria-labelledby="w2" className="animate-enter flex flex-col gap-6">
           <div>
             <h1 id="w2" className="font-display text-4xl leading-tight text-fg sm:text-5xl">A bit about you</h1>
             <p className="mt-2 text-muted">Shared interests help us match you with study buddies.</p>
@@ -98,7 +101,7 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
           </fieldset>
         </section>
 
-        <section hidden={step !== 2} aria-labelledby="w3" className="flex flex-col gap-5">
+        <section hidden={step !== 2} aria-labelledby="w3" className="animate-enter flex flex-col gap-5">
           <div>
             <h1 id="w3" className="font-display text-4xl leading-tight text-fg sm:text-5xl">Study with someone?</h1>
             <p className="mt-2 text-muted">
@@ -142,8 +145,8 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
 function Finish({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="btn btn-primary">
-      {pending ? "Setting up…" : label}
+    <button type="submit" disabled={pending} aria-busy={pending} className="btn btn-primary">
+      {pending ? <><Spinner />Setting up…</> : label}
     </button>
   );
 }

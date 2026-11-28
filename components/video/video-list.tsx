@@ -12,7 +12,7 @@ export function VideoList({ topic }: { topic: TopicDetail }) {
   }
 
   return (
-    <ol className="flex flex-col gap-3">
+    <ol className="stagger flex flex-col gap-3">
       {topic.videos.map((video, index) => (
         <li key={video.id}>
           <Link

@@ -90,20 +90,22 @@ export function SkillRadar({ skills, title }: { skills: RadarSkill[]; title: str
 
           {/* Then: dashed outline, no fill (identity by colour AND dash) */}
           {thenPath && (
-            <path d={thenPath} fill="none" stroke="var(--color-series-then)" strokeWidth={2} strokeDasharray="5 4" strokeLinejoin="round" />
+            <path d={thenPath} className="animate-fade" fill="none" stroke="var(--color-series-then)" strokeWidth={2} strokeDasharray="5 4" strokeLinejoin="round" />
           )}
 
           {/* Now: soft fill + 2px line + ringed markers */}
-          {nowPath && (
-            <path d={nowPath} fill="var(--color-series-now)" fillOpacity={0.18} stroke="var(--color-series-now)" strokeWidth={2} strokeLinejoin="round" />
-          )}
-          {skills.map((s, i) => {
-            if (s.pct === null) return null;
-            const p = point(i, n, s.pct);
-            return (
-              <circle key={i} cx={p.x} cy={p.y} r={active === i ? 5.5 : 4} fill="var(--color-series-now)" stroke="var(--color-surface)" strokeWidth={2} />
-            );
-          })}
+          <g className="radar-draw">
+            {nowPath && (
+              <path d={nowPath} fill="var(--color-series-now)" fillOpacity={0.18} stroke="var(--color-series-now)" strokeWidth={2} strokeLinejoin="round" />
+            )}
+            {skills.map((s, i) => {
+              if (s.pct === null) return null;
+              const p = point(i, n, s.pct);
+              return (
+                <circle key={i} cx={p.x} cy={p.y} r={active === i ? 5.5 : 4} fill="var(--color-series-now)" stroke="var(--color-surface)" strokeWidth={2} className="transition-[r] duration-150" />
+              );
+            })}
+          </g>
 
           {/* Axis labels with the "now" value as a selective direct label */}
           {skills.map((s, i) => {

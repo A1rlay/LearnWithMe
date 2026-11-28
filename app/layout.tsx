@@ -1,8 +1,10 @@
 import { getTheme } from "@/lib/theme";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 
 import { Providers } from "@/app/providers";
+import { NavProgress } from "@/components/ui/nav-progress";
 import { SiteHeader } from "@/components/ui/site-header";
 import "./globals.css";
 
@@ -35,6 +37,9 @@ export default async function RootLayout({
         >
           Skip to content
         </a>
+        <Suspense fallback={null}>
+          <NavProgress />
+        </Suspense>
         <Providers>
           <SiteHeader />
           <div id="main">{children}</div>

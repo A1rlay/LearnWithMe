@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+
+import { LoadingLabel } from "@/components/ui/spinner";
 import { useEffect, useRef, useState } from "react";
 
 import { recordSpellRightRunAction } from "./actions";
@@ -126,13 +128,13 @@ export function TerminationClient({
             Sounds · Word endings
           </p>
           <h1 className="font-display text-4xl text-fg">Results</h1>
-          <p className="mt-1 text-lg text-muted">
+          <p className="animate-pop mt-1 text-lg text-muted">
             {score} / {words.length} correct
           </p>
         </div>
 
         {/* Word review */}
-        <div className="flex flex-col gap-3">
+        <div className="stagger flex flex-col gap-3">
           {answers.map((a, i) => {
             const correct = a.selected === a.word.correctAnswer;
             return (
@@ -233,14 +235,14 @@ export function TerminationClient({
         </p>
 
         {phase === "loading" ? (
-          <div className="h-20 flex items-center text-sm text-muted">Loading audio…</div>
+          <div className="h-20 flex items-center"><LoadingLabel>Loading audio…</LoadingLabel></div>
         ) : audioUrl ? (
           <>
             <audio ref={audioRef} src={audioUrl} />
             <button
               type="button"
               onClick={playAudio}
-              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-accent-text bg-accent/12 text-accent-text hover:bg-accent/22 transition-colors"
+              className="press flex h-20 w-20 items-center justify-center rounded-full border-2 border-accent-text bg-accent/12 text-accent-text hover:bg-accent/22 hover:scale-105"
               aria-label="Play audio"
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
@@ -259,7 +261,7 @@ export function TerminationClient({
 
       {/* Choices */}
       {phase !== "loading" && (
-        <div className="w-full max-w-md grid grid-cols-3 gap-3">
+        <div key={index} className="stagger w-full max-w-md grid grid-cols-3 gap-3">
           {CHOICES.map((c) => {
             const isSelected = selected === c.value;
             const isCorrect = phase === "answered" && c.value === current.correctAnswer;
@@ -272,12 +274,12 @@ export function TerminationClient({
                 onClick={() => handleAnswer(c.value)}
                 disabled={phase === "answered"}
                 className={[
-                  "flex flex-col items-center gap-1 rounded-[20px] border px-4 py-5 text-center transition-all",
+                  "press flex flex-col items-center gap-1 rounded-[20px] border px-4 py-5 text-center transition-all",
                   phase === "answered"
                     ? isCorrect
-                      ? "border-accent-text bg-accent/12 text-accent-text"
+                      ? "animate-pop border-accent-text bg-accent/12 text-accent-text"
                       : isWrong
-                        ? "border-danger bg-danger/10 text-danger"
+                        ? "animate-shake border-danger bg-danger/10 text-danger"
                         : "border-line text-muted opacity-40"
                     : "cursor-pointer border-line bg-surface text-fg hover:border-fg hover:bg-surface-3",
                 ].join(" ")}
@@ -292,12 +294,12 @@ export function TerminationClient({
 
       {/* Result panel */}
       {phase === "answered" && (
-        <div className="w-full max-w-md card p-6 flex flex-col gap-4">
+        <div className="animate-enter w-full max-w-md card p-6 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             {selected === current.correctAnswer ? (
-              <span className="text-2xl text-success">✓</span>
+              <span className="animate-pop text-2xl text-success">✓</span>
             ) : (
-              <span className="text-2xl text-danger">✗</span>
+              <span className="animate-pop text-2xl text-danger">✗</span>
             )}
             <div>
               <p className={`font-bold ${selected === current.correctAnswer ? "text-success" : "text-danger"}`}>
@@ -314,7 +316,7 @@ export function TerminationClient({
           <button
             type="button"
             onClick={handleNext}
-            className="rounded-full bg-accent py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
+            className="btn btn-primary"
           >
             {index + 1 < words.length ? "Next word" : "See results"}
           </button>

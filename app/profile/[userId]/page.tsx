@@ -122,7 +122,7 @@ export default async function ProfilePage({ params }: Props) {
       </section>
 
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="stagger grid grid-cols-3 gap-4">
         {[
           { label: "Quizzes done", value: stats.totalSessions },
           { label: "Avg score", value: stats.totalSessions > 0 ? `${stats.overallPct}%` : "-" },

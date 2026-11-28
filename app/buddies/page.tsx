@@ -91,7 +91,7 @@ export default async function BuddiesPage({ searchParams }: Props) {
           <h2 id="incoming-h" className="text-sm font-semibold text-fg">
             Requests for you <span className="ml-1 rounded-full bg-accent px-2 text-xs text-on-accent">{conn.incoming.length}</span>
           </h2>
-          <ul className="grid gap-3 md:grid-cols-2">
+          <ul className="stagger grid gap-3 md:grid-cols-2">
             {conn.incoming.map((c) => (
               <li key={c.id} className="card flex flex-col gap-4 p-5">
                 <PersonHeader user={c.user} />
@@ -119,7 +119,7 @@ export default async function BuddiesPage({ searchParams }: Props) {
       {conn.buddies.length > 0 && (
         <section aria-labelledby="mine-h" className="flex flex-col gap-4">
           <h2 id="mine-h" className="text-sm font-semibold text-fg">Your buddies</h2>
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="stagger grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {conn.buddies.map((c) => (
               <li key={c.id}>
                 <Link href={`/messages/${c.id}`} className="card card-interactive flex items-center gap-3 p-4">
@@ -160,7 +160,7 @@ export default async function BuddiesPage({ searchParams }: Props) {
               <InviteButton />
             </div>
           ) : (
-            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {suggestions.map((s) => (
                 <li key={s.id} className="card flex flex-col gap-4 p-5">
                   <PersonHeader user={s} />

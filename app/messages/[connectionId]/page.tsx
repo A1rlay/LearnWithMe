@@ -84,7 +84,7 @@ export default async function ThreadPage({ params, searchParams }: Props) {
           messages.map((m) => {
             const mine = m.senderId === userId;
             return (
-              <div key={m.id} className={`group flex flex-col gap-1 ${mine ? "items-end" : "items-start"}`}>
+              <div key={m.id} className={`animate-enter group flex flex-col gap-1 ${mine ? "items-end origin-bottom-right" : "items-start origin-bottom-left"}`}>
                 <p
                   className={`max-w-[80%] whitespace-pre-wrap break-words rounded-2xl px-4 py-2.5 text-sm ${
                     mine ? "rounded-br-md bg-accent text-on-accent" : "rounded-bl-md bg-surface-3 text-fg"
