@@ -95,7 +95,7 @@ export async function recordSpellRightRun(
   answers: { wordId: string; answer: string }[],
 ) {
   const set = await prisma.spellRightSet.findFirst({
-    where: { id: setId, subject: { experts: { some: { user: { role: "TEACHER" } } } } },
+    where: { id: setId, subject: { experts: { some: { user: { role: { in: ["TEACHER", "ADMIN"] } } } } } },
     select: { mode: true, words: { select: { id: true, word: true, correctAnswer: true } } },
   });
   if (!set) return null;

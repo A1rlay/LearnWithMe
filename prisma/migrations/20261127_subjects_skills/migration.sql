@@ -6,8 +6,7 @@
 -- Apply to an existing database with:
 --   npx prisma db execute --schema prisma/schema.prisma --file prisma/migrations/20261127_subjects_skills/migration.sql
 --   npx prisma migrate resolve --applied 20261127_subjects_skills
--- Existing TEACHER users become experts of English (see the INSERT near the end).
--- If there are none, assign an expert in Studio afterwards or learners see no subjects.
+-- Existing TEACHER and ADMIN users become experts of English (see the INSERT near the end).
 -- See docs/build/data/schema.md for the migration-drift note.
 
 -- DropIndex
@@ -190,11 +189,11 @@ ALTER TABLE "SubjectExpert" ADD CONSTRAINT "SubjectExpert_subjectId_fkey" FOREIG
 -- AddForeignKey
 ALTER TABLE "SubjectExpert" ADD CONSTRAINT "SubjectExpert_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Keep the site live after deploy: every existing teacher becomes an expert of English
--- (before this change teachers could edit all content). Without at least one expert,
--- English — i.e. all existing content — would be hidden from learners.
+-- Keep the site live after deploy: every existing teacher and admin (owner) becomes an
+-- expert of English (before this change they could all edit content). Without at least one
+-- expert, English — i.e. all existing content — would be hidden from learners.
 INSERT INTO "SubjectExpert" ("subjectId", "userId")
-SELECT 'subject_english', u."id" FROM "User" u WHERE u."role" = 'TEACHER'
+SELECT 'subject_english', u."id" FROM "User" u WHERE u."role" IN ('TEACHER', 'ADMIN')
 ON CONFLICT DO NOTHING;
 
 -- AddForeignKey

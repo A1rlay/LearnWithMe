@@ -103,7 +103,7 @@ export async function getSkillProgress(userId: string): Promise<SubjectSkillProg
      -- Hidden subjects (no current expert) are not charted.
      WHERE EXISTS (
        SELECT 1 FROM "SubjectExpert" x JOIN "User" u ON u.id = x."userId"
-        WHERE x."subjectId" = s.id AND u.role = 'TEACHER'
+        WHERE x."subjectId" = s.id AND u.role IN ('TEACHER', 'ADMIN')
      )
      GROUP BY k.id, s.id
      ORDER BY s."order", s.name, k."order", k.name
