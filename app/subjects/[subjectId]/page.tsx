@@ -73,8 +73,8 @@ export default async function SubjectPage({ params, searchParams }: Props) {
     },
   ].filter((g) => g.items.length > 0 && subject.activityTypes.includes(g.type as (typeof subject.activityTypes)[number]));
 
-  // Level filter: levels are free text set by experts; compare case-insensitively.
-  const norm = (l: string | null) => (l ?? "").trim().toLowerCase();
+  // Level filter: levels are free text set by experts, so "A1 - A2" and "a1-a2" are the same level.
+  const norm = (l: string | null) => (l ?? "").toLowerCase().replace(/\s+/g, "");
   const levels = [...new Map(groups.flatMap((g) => g.items).filter((i) => i.level?.trim()).map((i) => [norm(i.level), i.level!.trim()])).values()].sort(
     (a, b) => a.localeCompare(b, undefined, { numeric: true }),
   );
