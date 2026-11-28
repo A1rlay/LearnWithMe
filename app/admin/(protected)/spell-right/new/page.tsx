@@ -1,3 +1,4 @@
+import { PedagogyFields } from "@/components/studio/pedagogy-fields";
 import Link from "next/link";
 
 import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
@@ -49,6 +50,7 @@ export default async function NewSpellRightSetPage({ searchParams }: { searchPar
           </label>
           <textarea id="description" name="description" rows={2} className={inputClass} />
         </div>
+        <PedagogyFields />
 
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">

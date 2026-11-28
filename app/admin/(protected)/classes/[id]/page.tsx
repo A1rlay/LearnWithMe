@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DeleteButton } from "@/components/admin/delete-button";
-import { requireRole } from "@/lib/auth";
+import { requireClassOwner } from "@/lib/auth";
+import { ClassInsights } from "@/components/studio/class-insights";
+import { getClassInsights } from "@/server/data/class-insights";
 import { adminGetClass, getClassAssignments } from "@/server/data/classes";
 import { prisma } from "@/server/db";
 import {
@@ -17,16 +19,17 @@ import {
 type Props = { params: Promise<{ id: string }> };
 
 export default async function ClassDetailPage({ params }: Props) {
-  const session = await requireRole("ADMIN", "TEACHER");
   const { id } = await params;
+  const session = await requireClassOwner(id);
 
-  const [cls, assignments, allTopics] = await Promise.all([
+  const [cls, assignments, allTopics, insights] = await Promise.all([
     adminGetClass(id),
     getClassAssignments(id),
     prisma.qMTopic.findMany({
       select: { id: true, title: true, _count: { select: { questions: true } } },
       orderBy: { order: "asc" },
     }),
+    getClassInsights(id),
   ]);
   if (!cls) notFound();
 
@@ -35,7 +38,7 @@ export default async function ClassDetailPage({ params }: Props) {
 
   const allStudents = await prisma.user.findMany({
     where: { role: "STUDENT" },
-    select: { id: true, name: true, email: true },
+    select: { id: true, name: true, username: true },
     orderBy: { name: "asc" },
   });
   const unenrolled = allStudents.filter((s) => !enrolledIds.has(s.id));
@@ -97,6 +100,8 @@ export default async function ClassDetailPage({ params }: Props) {
         </div>
         <DeleteButton action={deleteClassAction.bind(null, cls.id)} label="Delete class" />
       </div>
+
+      <ClassInsights students={insights.students} missed={insights.missed} />
 
       {/* Edit */}
       <details className="rounded-[24px] border border-line bg-surface">
@@ -224,7 +229,7 @@ export default async function ClassDetailPage({ params }: Props) {
                   <Link href={`/profile/${s.studentId}`} className="text-sm font-semibold text-fg hover:underline">
                     {s.student.name}
                   </Link>
-                  <span className="text-xs text-muted">{s.student.email}</span>
+                  <span className="text-xs text-muted">@{s.student.username}</span>
                 </div>
                 <form action={removeStudentAction.bind(null, cls.id, s.studentId)}>
                   <button type="submit" className="rounded-full border border-danger/40 px-3 py-1.5 text-xs font-semibold text-danger hover:border-danger hover:bg-danger/10">
@@ -241,7 +246,7 @@ export default async function ClassDetailPage({ params }: Props) {
             <select name="studentId" required className={`flex-1 ${inputClass}`}>
               <option value="">Add student manually…</option>
               {unenrolled.map((s) => (
-                <option key={s.id} value={s.id}>{s.name} ({s.email})</option>
+                <option key={s.id} value={s.id}>{s.name} (@{s.username})</option>
               ))}
             </select>
             <button type="submit" className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-fg transition-opacity hover:opacity-90">

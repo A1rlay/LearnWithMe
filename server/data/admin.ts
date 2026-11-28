@@ -36,6 +36,7 @@ export async function adminCreateTopic(data: {
   subjectId: string;
   tags: string[];
   title: string;
+  instructions?: string | null;
 }) {
   return prisma.topic.create({ data });
 }
@@ -47,6 +48,7 @@ export async function adminUpdateTopic(
     level: string;
     tags: string[];
     title: string;
+    instructions?: string | null;
   },
 ) {
   return prisma.topic.update({ where: { id }, data });
@@ -118,6 +120,7 @@ export async function adminCreateQuestion(data: {
   options: { isCorrect: boolean; order: number; text: string }[];
   order: number;
   prompt: string;
+  hint?: string | null;
   videoId: string;
 }) {
   const { options, ...questionData } = data;
@@ -136,6 +139,7 @@ export async function adminUpdateQuestion(
     checkpointSeconds: number;
     options: { id: string; isCorrect: boolean; text: string }[];
     prompt: string;
+    hint?: string | null;
   },
 ) {
   const { options, ...questionData } = data;

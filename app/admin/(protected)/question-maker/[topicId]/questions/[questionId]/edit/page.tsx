@@ -36,6 +36,7 @@ export default async function EditQMQuestionPage({ params }: Props) {
         defaults={{
           type: question.type as QMQuestionType,
           prompt: question.prompt,
+          hint: question.hint,
           data: question.data as QMQuestionData,
         }}
         submitLabel="Save changes"

@@ -20,6 +20,7 @@ type Props = {
   defaults?: {
     type: QMQuestionType;
     prompt: string;
+    hint?: string | null;
     data: QMQuestionData;
   };
   submitLabel: string;
@@ -63,6 +64,10 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
         <label htmlFor="prompt" className={labelClass}>Prompt <span className="text-accent-text">*</span></label>
         <input id="prompt" name="prompt" defaultValue={defaults?.prompt} required className={inputClass} />
       </div>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Hint (optional)</span>
+        <input name="hint" maxLength={200} defaultValue={defaults?.hint ?? ""} placeholder="A nudge, not the answer. e.g. Listen for the -ed ending." className="field" />
+      </label>
 
       {/* Type-specific fields — each component manages its own state */}
       {type === "MULTIPLE_OPTION" && <MultipleOptionFields defaults={moData ?? undefined} />}

@@ -79,6 +79,8 @@ export type QMTopicDetail = {
   subjectId: string;
   title: string;
   description: string | null;
+  level: string | null;
+  instructions: string | null;
   questions: QMQuestionDetail[];
 };
 
@@ -87,6 +89,7 @@ export type QMQuestionDetail = {
   order: number;
   type: QMQuestionType;
   prompt: string;
+  hint: string | null;
   data: QMQuestionData;
 };
 
@@ -118,11 +121,14 @@ export async function getQMTopicDetail(id: string): Promise<QMTopicDetail | null
     description: topic.description,
     id: topic.id,
     subjectId: topic.subjectId,
+    level: topic.level,
+    instructions: topic.instructions,
     questions: topic.questions.map((q) => ({
       data: q.data as QMQuestionData,
       id: q.id,
       order: q.order,
       prompt: q.prompt,
+      hint: q.hint,
       type: q.type,
     })),
     title: topic.title,
@@ -198,13 +204,15 @@ export async function adminCreateQMTopic(data: {
   description: string;
   order: number;
   subjectId: string;
+  level?: string | null;
+  instructions?: string | null;
 }) {
   return prisma.qMTopic.create({ data });
 }
 
 export async function adminUpdateQMTopic(
   id: string,
-  data: { title: string; description: string; order: number },
+  data: { title: string; description: string; order: number; level?: string | null; instructions?: string | null },
 ) {
   return prisma.qMTopic.update({ where: { id }, data });
 }
@@ -222,6 +230,7 @@ export async function adminCreateQMQuestion(data: {
   order: number;
   type: QMQuestionType;
   prompt: string;
+  hint?: string | null;
   data: QMQuestionData;
 }) {
   return prisma.qMQuestion.create({
@@ -231,7 +240,7 @@ export async function adminCreateQMQuestion(data: {
 
 export async function adminUpdateQMQuestion(
   id: string,
-  data: { prompt: string; data: QMQuestionData },
+  data: { prompt: string; hint?: string | null; data: QMQuestionData },
 ) {
   return prisma.qMQuestion.update({
     where: { id },

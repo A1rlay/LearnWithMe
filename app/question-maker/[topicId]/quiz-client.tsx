@@ -1,5 +1,7 @@
 "use client";
 
+import { ActivityInstructions } from "@/components/ui/activity-instructions";
+import { HintToggle } from "@/components/ui/hint-toggle";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 
@@ -83,12 +85,20 @@ export function QuizClient({ topic, topicId }: Props) {
         </div>
       </div>
 
+      {step === 0 && (
+        <ActivityInstructions
+          text={topic.instructions}
+          fallback="Answer each question, then submit to see what you got right. Hints are there if you're stuck."
+        />
+      )}
+
       {/* Question */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
           Question {step + 1}
         </p>
         <h2 className="mt-2 text-2xl font-bold text-fg">{current.prompt}</h2>
+        <HintToggle key={current.id} hint={current.hint} />
       </div>
 
       {/* Answer input — keyed by question id so state resets between questions */}

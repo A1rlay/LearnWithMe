@@ -1,3 +1,4 @@
+import { PedagogyFields } from "@/components/studio/pedagogy-fields";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -47,7 +48,7 @@ export default async function EditQMTopicPage({ params }: Props) {
 
 const inputClass = "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
 
-export function QMTopicFields({ defaults }: { defaults?: { title?: string; description?: string | null; order?: number } } = {}) {
+export function QMTopicFields({ defaults }: { defaults?: { title?: string; description?: string | null; order?: number; level?: string | null; instructions?: string | null } } = {}) {
   return (
     <>
       <div className="flex flex-col gap-1.5">
@@ -60,6 +61,7 @@ export function QMTopicFields({ defaults }: { defaults?: { title?: string; descr
         <label htmlFor="description" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Description</label>
         <textarea id="description" name="description" defaultValue={defaults?.description ?? ""} rows={2} className={inputClass} />
       </div>
+      <PedagogyFields defaults={defaults} />
       <div className="flex flex-col gap-1.5">
         <label htmlFor="order" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Order</label>
         <input id="order" name="order" type="number" defaultValue={defaults?.order ?? 0} className={inputClass} />

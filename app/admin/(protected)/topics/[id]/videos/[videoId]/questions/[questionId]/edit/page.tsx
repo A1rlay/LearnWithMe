@@ -46,6 +46,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
             checkpointSeconds: question.checkpointSeconds,
             options: question.options,
             prompt: question.prompt,
+            hint: question.hint,
           }}
         />
         <div className="flex gap-3 pt-2">
@@ -70,6 +71,7 @@ export function QuestionFields({
     checkpointSeconds?: number;
     options?: { id: string; isCorrect: boolean; order: number; text: string }[];
     prompt?: string;
+    hint?: string | null;
   };
 }) {
   const correctIndex =
@@ -131,6 +133,10 @@ export function QuestionFields({
           className={inputClass}
         />
       </div>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Hint (optional)</span>
+        <input name="hint" maxLength={200} defaultValue={defaults?.hint ?? ""} placeholder="A nudge, not the answer. e.g. Listen for the -ed ending." className="field" />
+      </label>
 
       <fieldset className="flex flex-col gap-3 rounded-[20px] border border-line p-5">
         <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted">

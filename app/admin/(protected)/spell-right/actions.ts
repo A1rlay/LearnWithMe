@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
-import { int, str, subjectAndSkills } from "@/lib/form";
+import { int, pedagogy, str, subjectAndSkills } from "@/lib/form";
 import {
   SpellRightMode,
   adminCreateSpellRightSet,
@@ -32,6 +32,7 @@ export async function createSpellRightSetAction(formData: FormData) {
   if (!Object.values(SpellRightMode).includes(mode)) throw new Error("Unknown mode.");
   const set = await adminCreateSpellRightSet({
     title: str(formData, "title"),
+    ...pedagogy(formData),
     description: str(formData, "description"),
     mode,
     order: int(formData, "order"),
@@ -48,6 +49,7 @@ export async function updateSpellRightSetAction(id: string, formData: FormData) 
   await requireSubjectEditor(subjectId);
   await adminUpdateSpellRightSet(id, {
     title: str(formData, "title"),
+    ...pedagogy(formData),
     description: str(formData, "description"),
     order: int(formData, "order"),
   });

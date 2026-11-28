@@ -1,3 +1,4 @@
+import { PedagogyFields } from "@/components/studio/pedagogy-fields";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -58,6 +59,7 @@ export default async function EditSpellRightSetPage({ params }: Props) {
           </label>
           <textarea id="description" name="description" defaultValue={set.description ?? ""} rows={2} className={inputClass} />
         </div>
+        <PedagogyFields defaults={set} />
 
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">

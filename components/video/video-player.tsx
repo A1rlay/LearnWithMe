@@ -1,5 +1,6 @@
 "use client";
 
+import { HintToggle } from "@/components/ui/hint-toggle";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -41,6 +42,7 @@ interface YTPlayer {
   playVideo(): void;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
   unloadModule(moduleName: string): void;
+  loadModule(moduleName: string): void;
   destroy(): void;
 }
 
@@ -102,6 +104,9 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
 
   const videoId = extractYouTubeId(video.videoUrl);
   const subtitles = video.subtitlesEnabled;
+  // The expert decides whether subtitles are allowed; the learner may still hide them.
+  const [captionsOn, setCaptionsOn] = useState(subtitles);
+  const captionsRef = useRef(subtitles);
 
   const trpc = useTRPC();
   const submitMutation = useMutation({
@@ -178,12 +183,12 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
           onReady: (e) => {
             setVolume(e.target.getVolume());
             setMuted(e.target.isMuted());
-            if (!subtitles) e.target.unloadModule("captions");
+            if (!captionsRef.current) e.target.unloadModule("captions");
           },
           onStateChange: (e) => {
             const YTState = window.YT.PlayerState;
             if (e.data === YTState.PLAYING) {
-              if (!subtitles) playerRef.current?.unloadModule("captions");
+              if (!captionsRef.current) playerRef.current?.unloadModule("captions");
               setCoverActive(false);
               setPhase("playing");
               startPolling();
@@ -219,6 +224,15 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoId, subtitles]);
+
+  function handleToggleCaptions() {
+    if (!subtitles) return;
+    const next = !captionsRef.current;
+    captionsRef.current = next;
+    setCaptionsOn(next);
+    if (next) playerRef.current?.loadModule("captions");
+    else playerRef.current?.unloadModule("captions");
+  }
 
   function handleRelisten() {
     const idx = activeCheckpointIdxRef.current;
@@ -372,6 +386,21 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
 
           {/* Volume + fullscreen */}
           <div className="flex shrink-0 items-center gap-3">
+            {subtitles && (
+              <button
+                type="button"
+                onClick={handleToggleCaptions}
+                aria-pressed={captionsOn}
+                aria-label={captionsOn ? "Hide subtitles" : "Show subtitles"}
+                title={captionsOn ? "Hide subtitles to challenge yourself" : "Show subtitles"}
+                className={`rounded-md border px-1.5 py-0.5 font-mono text-[11px] font-semibold transition-colors ${
+                  captionsOn ? "border-fg/60 text-fg" : "border-fg/25 text-fg/45 line-through hover:text-fg"
+                }`}
+              >
+                CC
+              </button>
+            )}
+
             {/* Mute toggle */}
             <button
               onClick={handleToggleMute}
@@ -436,6 +465,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                 <h2 className="mt-3 font-display text-2xl text-fg">
                   {activeQuestion.prompt}
                 </h2>
+                <HintToggle key={activeQuestion.id} hint={activeQuestion.hint} />
 
                 <div className="mt-5 space-y-2">
                   {activeQuestion.options.map((option) => {

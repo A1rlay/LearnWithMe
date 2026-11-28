@@ -2,6 +2,7 @@ import type { ActivityType } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 
 import { getSession, type SessionData } from "@/lib/session";
+import { prisma } from "@/server/db";
 import { getExpertSubjectIds, getUserRole, isSubjectExpert, isSubjectVisible, subjectIdOf } from "@/server/data/subjects";
 
 /** Signed in AND the account still exists (cookies of deleted users are rejected). */
@@ -89,4 +90,20 @@ export async function isStaffViewer(): Promise<boolean> {
   if (!session) return false;
   const role = await getUserRole(session.userId);
   return role === "ADMIN" || role === "TEACHER";
+}
+
+/** Owner: any class. Expert: only classes they teach. Anything else is a 404. */
+export async function requireClassOwner(classId: string): Promise<SessionData> {
+  const session = await requireRole("ADMIN", "TEACHER");
+  if (session.role === "ADMIN") return session;
+  const n = await prisma.class.count({ where: { id: classId, teacherId: session.userId } });
+  if (n === 0) notFound();
+  return session;
+}
+
+/** Experts can only make themselves the teacher; the owner can pick any staff member. */
+export async function allowedTeacherId(session: SessionData, requested: string): Promise<string> {
+  if (session.role !== "ADMIN") return session.userId;
+  const role = await getUserRole(requested);
+  return role === "ADMIN" || role === "TEACHER" ? requested : session.userId;
 }

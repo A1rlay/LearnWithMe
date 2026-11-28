@@ -1,3 +1,4 @@
+import { PedagogyFields } from "@/components/studio/pedagogy-fields";
 import Link from "next/link";
 
 import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
@@ -57,6 +58,7 @@ export function TopicFields({
     level?: string | null;
     tags?: string[];
     title?: string;
+    instructions?: string | null;
   };
 } = {}) {
   return (
@@ -74,6 +76,7 @@ export function TopicFields({
         defaultValue={defaults?.description ?? ""}
         multiline
       />
+      <PedagogyFields defaults={defaults} withLevel={false} />
       <Field
         label="Tags"
         name="tags"
