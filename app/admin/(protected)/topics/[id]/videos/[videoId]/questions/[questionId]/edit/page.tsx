@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { updateQuestionAction } from "../../actions";
 import { adminGetQuestion } from "@/server/data/admin";
 import { requireEditorPage } from "@/lib/auth";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type EditQuestionPageProps = {
   params: Promise<{ id: string; questionId: string; videoId: string }>;
@@ -50,12 +51,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
           }}
         />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>

@@ -5,6 +5,7 @@ import { createVideoAction } from "../actions";
 import { VideoFields } from "../[videoId]/edit/page";
 import { adminGetTopic } from "@/server/data/admin";
 import { requireEditorPage } from "@/lib/auth";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type NewVideoPageProps = {
   params: Promise<{ id: string }>;
@@ -44,12 +45,7 @@ export default async function NewVideoPage({ params }: NewVideoPageProps) {
       >
         <VideoFields />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Create video
-          </button>
+          <SubmitButton className="btn btn-primary">Create video</SubmitButton>
         </div>
       </form>
     </div>

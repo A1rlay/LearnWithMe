@@ -25,6 +25,7 @@ import {
 } from "@/server/data/profile";
 import { getSkillProgress } from "@/server/data/skill-progress";
 import { prisma } from "@/server/db";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ username: string }> };
 
@@ -98,7 +99,7 @@ export default async function ProfilePage({ params }: Props) {
           <Link href={`/messages/${connection!.id}`} className="btn btn-primary w-full py-2">Message</Link>
         ) : profile.lookingForBuddies && !connection ? (
           <form action={requestBuddyAction.bind(null, profile.id)}>
-            <button type="submit" className="btn btn-primary w-full py-2">Send buddy request</button>
+            <SubmitButton className="btn btn-primary w-full py-2">Send buddy request</SubmitButton>
           </form>
         ) : null}
 

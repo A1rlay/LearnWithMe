@@ -8,6 +8,7 @@ import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
 import { pickerSubjects } from "@/lib/studio";
 
 import { updateSpellRightSetAction } from "../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ setId: string }> };
 
@@ -84,12 +85,7 @@ export default async function EditSpellRightSetPage({ params }: Props) {
         />
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>

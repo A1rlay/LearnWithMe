@@ -15,6 +15,7 @@ import {
   removeStudentAction,
   updateClassAction,
 } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -232,9 +233,7 @@ export default async function ClassDetailPage({ params }: Props) {
                   <span className="text-xs text-muted">@{s.student.username}</span>
                 </div>
                 <form action={removeStudentAction.bind(null, cls.id, s.studentId)}>
-                  <button type="submit" className="rounded-full border border-danger/40 px-3 py-1.5 text-xs font-semibold text-danger hover:border-danger hover:bg-danger/10">
-                    Remove
-                  </button>
+                  <SubmitButton className="rounded-full border border-danger/40 px-3 py-1.5 text-xs font-semibold text-danger hover:border-danger hover:bg-danger/10">Remove</SubmitButton>
                 </form>
               </div>
             ))}
@@ -249,9 +248,7 @@ export default async function ClassDetailPage({ params }: Props) {
                 <option key={s.id} value={s.id}>{s.name} (@{s.username})</option>
               ))}
             </select>
-            <button type="submit" className="btn btn-primary">
-              Add
-            </button>
+            <SubmitButton className="btn btn-primary">Add</SubmitButton>
           </form>
         )}
       </section>

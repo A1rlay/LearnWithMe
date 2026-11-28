@@ -5,6 +5,7 @@ import { pickerSubjects } from "@/lib/studio";
 
 import { createQMTopicAction } from "../actions";
 import { QMTopicFields } from "../[topicId]/edit/page";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function NewQMTopicPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
   const { subject } = await searchParams;
@@ -24,9 +25,7 @@ export default async function NewQMTopicPage({ searchParams }: { searchParams: P
         <QMTopicFields />
         <SubjectSkillPicker subjects={subjects} defaultSubjectId={defaultSubjectId} />
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="btn btn-primary">
-            Create topic
-          </button>
+          <SubmitButton className="btn btn-primary">Create topic</SubmitButton>
         </div>
       </form>
     </div>

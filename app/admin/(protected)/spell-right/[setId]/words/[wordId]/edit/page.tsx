@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { adminGetSpellRightWord } from "@/server/data/spell-right";
 import { updateSpellRightWordAction } from "../../../../actions";
 import { requireEditorPage } from "@/lib/auth";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ setId: string; wordId: string }> };
 
@@ -93,12 +94,7 @@ export default async function EditSpellRightWordPage({ params }: Props) {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>

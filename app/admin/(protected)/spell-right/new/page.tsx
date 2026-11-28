@@ -5,6 +5,7 @@ import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
 import { pickerSubjects } from "@/lib/studio";
 
 import { createSpellRightSetAction } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 const inputClass =
   "field";
@@ -78,12 +79,7 @@ export default async function NewSpellRightSetPage({ searchParams }: { searchPar
         <SubjectSkillPicker subjects={subjects} defaultSubjectId={defaultSubjectId} />
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Create set
-          </button>
+          <SubmitButton className="btn btn-primary">Create set</SubmitButton>
         </div>
       </form>
     </div>

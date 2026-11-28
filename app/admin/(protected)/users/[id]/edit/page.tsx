@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth";
 import { adminGetUser } from "@/server/data/users";
 import { updateUserAction } from "../../actions";
 import { UserFields } from "../../_components";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -55,12 +56,7 @@ export default async function EditUserPage({ params }: Props) {
           />
         </div>
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>

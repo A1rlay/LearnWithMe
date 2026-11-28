@@ -8,6 +8,7 @@ import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
 import { pickerSubjects } from "@/lib/studio";
 
 import { updateQMTopicAction } from "../../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ topicId: string }> };
 
@@ -37,9 +38,7 @@ export default async function EditQMTopicPage({ params }: Props) {
           defaultSkillIds={topic.skills.map((k) => k.skillId)}
         />
         <div className="flex gap-3 pt-2">
-          <button type="submit" className="btn btn-primary">
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>

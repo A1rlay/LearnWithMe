@@ -7,6 +7,7 @@ import { adminGetTopic } from "@/server/data/admin";
 import { requireEditorPage } from "@/lib/auth";
 import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
 import { pickerSubjects } from "@/lib/studio";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 
 type EditTopicPageProps = {
@@ -53,12 +54,7 @@ export default async function EditTopicPage({ params }: EditTopicPageProps) {
           defaultSkillIds={topic.skills.map((k) => k.skillId)}
         />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>

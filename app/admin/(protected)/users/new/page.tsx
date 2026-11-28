@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { createUserAction } from "../actions";
 import { UserFields } from "../_components";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function NewUserPage() {
   await requireRole("ADMIN");
@@ -44,12 +45,7 @@ export default async function NewUserPage() {
           />
         </div>
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Create user
-          </button>
+          <SubmitButton className="btn btn-primary">Create user</SubmitButton>
         </div>
       </form>
     </div>

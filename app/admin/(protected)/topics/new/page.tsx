@@ -5,6 +5,7 @@ import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
 import { pickerSubjects } from "@/lib/studio";
 
 import { createTopicAction } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function NewTopicPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
   const { subject } = await searchParams;
@@ -38,12 +39,7 @@ export default async function NewTopicPage({ searchParams }: { searchParams: Pro
         <TopicFields />
         <SubjectSkillPicker subjects={subjects} defaultSubjectId={defaultSubjectId} />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Create topic
-          </button>
+          <SubmitButton className="btn btn-primary">Create topic</SubmitButton>
         </div>
       </form>
     </div>

@@ -5,6 +5,7 @@ import { createQuestionAction } from "../actions";
 import { QuestionFields } from "../[questionId]/edit/page";
 import { adminGetVideo } from "@/server/data/admin";
 import { requireEditorPage } from "@/lib/auth";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type NewQuestionPageProps = {
   params: Promise<{ id: string; videoId: string }>;
@@ -45,12 +46,7 @@ export default async function NewQuestionPage({ params }: NewQuestionPageProps) 
       >
         <QuestionFields defaultOrder={nextOrder} />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Create question
-          </button>
+          <SubmitButton className="btn btn-primary">Create question</SubmitButton>
         </div>
       </form>
     </div>

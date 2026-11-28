@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/server/db";
 import { createClassAction } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function NewClassPage() {
   const session = await requireRole("ADMIN", "TEACHER");
@@ -62,12 +63,7 @@ export default async function NewClassPage() {
           )}
         </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary"
-        >
-          Create class
-        </button>
+        <SubmitButton className="btn btn-primary">Create class</SubmitButton>
       </form>
     </div>
   );

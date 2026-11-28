@@ -16,6 +16,7 @@ import {
   declineAction,
   requestBuddyAction,
 } from "./actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata = { title: "Study buddies" };
 
@@ -97,10 +98,10 @@ export default async function BuddiesPage({ searchParams }: Props) {
                 {c.user.bio && <p className="text-sm text-muted">{c.user.bio}</p>}
                 <div className="flex flex-wrap items-center gap-2">
                   <form action={acceptAction.bind(null, c.id)}>
-                    <button type="submit" className="btn btn-primary px-4 py-2">Accept</button>
+                    <SubmitButton className="btn btn-primary px-4 py-2">Accept</SubmitButton>
                   </form>
                   <form action={declineAction.bind(null, c.id)}>
-                    <button type="submit" className="btn btn-ghost px-4 py-2">Decline</button>
+                    <SubmitButton className="btn btn-ghost px-4 py-2">Decline</SubmitButton>
                   </form>
                   <div className="ml-auto flex items-center gap-3">
                     <form action={blockAction.bind(null, c.user.id)}>
@@ -177,7 +178,7 @@ export default async function BuddiesPage({ searchParams }: Props) {
                     </ul>
                   )}
                   <form action={requestBuddyAction.bind(null, s.id)} className="mt-auto">
-                    <button type="submit" className="btn btn-primary w-full py-2">Send buddy request</button>
+                    <SubmitButton className="btn btn-primary w-full py-2">Send buddy request</SubmitButton>
                   </form>
                 </li>
               ))}

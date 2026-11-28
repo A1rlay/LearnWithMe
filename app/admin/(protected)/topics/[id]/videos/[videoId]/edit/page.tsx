@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { updateVideoAction } from "../../actions";
 import { adminGetVideo } from "@/server/data/admin";
 import { requireEditorPage } from "@/lib/auth";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type EditVideoPageProps = {
   params: Promise<{ id: string; videoId: string }>;
@@ -43,12 +44,7 @@ export default async function EditVideoPage({ params }: EditVideoPageProps) {
       >
         <VideoFields defaults={video} />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="btn btn-primary"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>
