@@ -13,8 +13,9 @@ type Props = { params: Promise<{ topicId: string }> };
 export default async function EditQMTopicPage({ params }: Props) {
   const { topicId } = await params;
   await requireEditorPage({ kind: "qmTopic", id: topicId });
-  const [topic, subjects] = await Promise.all([adminGetQMTopic(topicId), pickerSubjects()]);
+  const topic = await adminGetQMTopic(topicId);
   if (!topic) notFound();
+  const subjects = await pickerSubjects("QUIZ", topic.subjectId);
 
   const update = updateQMTopicAction.bind(null, topicId);
 

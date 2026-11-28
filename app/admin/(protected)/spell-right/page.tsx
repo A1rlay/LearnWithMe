@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { DeleteButton } from "@/components/admin/delete-button";
 import { SpellRightMode, adminGetSpellRightSets } from "@/server/data/spell-right";
-import { editableSubjectIds, requireRole } from "@/lib/auth";
+import { studioScope } from "@/lib/studio";
 import { deleteSpellRightSetAction } from "./actions";
 
 const MODE_LABEL: Record<SpellRightMode, string> = {
@@ -10,15 +10,15 @@ const MODE_LABEL: Record<SpellRightMode, string> = {
   PRONUNCIATION: "Pronunciation",
 };
 
-export default async function AdminSpellRightPage() {
-  const session = await requireRole("ADMIN", "TEACHER");
-  const sets = await adminGetSpellRightSets(await editableSubjectIds(session));
+export default async function AdminSpellRightPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
+  const scope = await studioScope((await searchParams).subject);
+  const sets = await adminGetSpellRightSets(scope.ids);
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <Link
-          href="/admin/games"
+          href={`/admin/games${scope.q}`}
           className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -31,12 +31,12 @@ export default async function AdminSpellRightPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
-            Studio · Sounds & spelling
+            {scope.subject ? `${scope.subject.name} · Sounds & spelling` : "Studio · Sounds & spelling"}
           </p>
           <h1 className="mt-2 font-serif text-4xl text-fg">Sets</h1>
         </div>
         <Link
-          href="/admin/spell-right/new"
+          href={`/admin/spell-right/new${scope.q}`}
           className="rounded-full bg-accent px-5 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
         >
           New set

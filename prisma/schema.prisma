@@ -56,11 +56,19 @@ model User {
 // A Subject (English, Math, Guitar…) is the top level learners browse. It is only
 // listed while at least one expert (SubjectExpert) is assigned.
 
+enum ActivityType {
+  VIDEO
+  QUIZ
+  SPELLING
+}
+
 model Subject {
   id             String           @id @default(cuid())
   name           String           @unique
   description    String?
   order          Int              @default(0)
+  /// Activity kinds this subject offers (English: all three; most subjects: video + quiz).
+  activityTypes  ActivityType[]   @default([VIDEO, QUIZ])
   experts        SubjectExpert[]
   skills         Skill[]
   topics         Topic[]

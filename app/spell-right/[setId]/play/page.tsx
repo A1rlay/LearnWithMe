@@ -12,7 +12,7 @@ export default async function SpellRightPlayPage({ params }: Props) {
   const { setId } = await params;
   const set = await getSpellRightSetDetail(setId);
   if (!set || set.words.length === 0) notFound();
-  await assertSubjectViewable(set.subjectId);
+  await assertSubjectViewable(set.subjectId, "SPELLING");
 
   if (set.mode === SpellRightMode.TERMINATION) {
     return <TerminationClient setId={set.id} subjectId={set.subjectId} setTitle={set.title} words={set.words} />;

@@ -11,7 +11,7 @@ export default async function GamePage({ params }: Props) {
   const { topicId } = await params;
   const topic = await getQMTopicDetail(topicId);
   if (!topic) notFound();
-  await assertSubjectViewable(topic.subjectId);
+  await assertSubjectViewable(topic.subjectId, "QUIZ");
   if (topic.questions.length === 0) notFound();
 
   return <GameClient topic={topic} />;

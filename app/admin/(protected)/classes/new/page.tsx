@@ -40,7 +40,7 @@ export default async function NewClassPage() {
           <label className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
             Class name <span className="text-accent-text">*</span>
           </label>
-          <input name="name" required className={inputClass} placeholder="e.g. English B1 — Morning" />
+          <input name="name" required className={inputClass} placeholder="e.g. English B1 Morning" />
         </div>
 
         <div className="flex flex-col gap-1.5">

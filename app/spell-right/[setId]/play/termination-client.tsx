@@ -251,7 +251,7 @@ export function TerminationClient({
           </>
         ) : (
           <div className="flex flex-col items-center gap-2 py-2">
-            <p className="text-xs text-muted">No audio found — word shown instead</p>
+            <p className="text-xs text-muted">No audio found, so the word is shown instead</p>
             <p className="text-2xl font-bold text-fg">{current.word}</p>
           </div>
         )}

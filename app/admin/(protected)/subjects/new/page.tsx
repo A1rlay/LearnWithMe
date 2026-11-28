@@ -1,6 +1,7 @@
 import { BackLink } from "@/components/ui/nav-link";
 import { requireRole } from "@/lib/auth";
 import { createSubjectAction } from "../actions";
+import { ActivityTypeChecks } from "@/components/studio/activity-type-checks";
 
 export const metadata = { title: "New subject" };
 
@@ -29,6 +30,11 @@ export default async function NewSubjectPage() {
           <span className="text-sm font-medium text-fg">Display order</span>
           <input name="order" type="number" defaultValue={0} className="field w-28" />
         </label>
+        <fieldset className="flex flex-col gap-2">
+          <legend className="mb-1.5 text-sm font-medium text-fg">Activity kinds</legend>
+          <ActivityTypeChecks defaults={["VIDEO", "QUIZ"]} />
+          <span className="text-xs text-subtle">You can change these later on the subject page.</span>
+        </fieldset>
         <button type="submit" className="btn btn-primary self-start">
           Create subject
         </button>

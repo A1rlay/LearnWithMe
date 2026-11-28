@@ -68,7 +68,7 @@ export async function signupAction(_prev: SignupState, formData: FormData): Prom
     user = await createLearner({ username, passwordHash: await hashPassword(password) });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      return { error: "That username is taken — try another.", username };
+      return { error: "That username is taken. Try another.", username };
     }
     throw e;
   }

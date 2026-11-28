@@ -30,6 +30,7 @@ export default async function SubjectPage({ params }: Props) {
   const groups = [
     {
       key: "videos",
+      type: "VIDEO",
       title: "Video lessons",
       blurb: "Watch, and answer a question at each checkpoint.",
       items: subject.topics.map((t) => ({
@@ -42,6 +43,7 @@ export default async function SubjectPage({ params }: Props) {
     },
     {
       key: "quizzes",
+      type: "QUIZ",
       title: "Quizzes",
       blurb: "Multiple choice, matching, sorting and open answers.",
       items: subject.qmTopics.map((t) => ({
@@ -54,6 +56,7 @@ export default async function SubjectPage({ params }: Props) {
     },
     {
       key: "spelling",
+      type: "SPELLING",
       title: "Sounds & spelling",
       blurb: "Listen and pick the ending sound, or say the word out loud.",
       items: subject.spellRightSets.map((s) => ({
@@ -64,7 +67,7 @@ export default async function SubjectPage({ params }: Props) {
         skills: s.skills.map((k) => k.skill.name),
       })),
     },
-  ].filter((g) => g.items.length > 0);
+  ].filter((g) => g.items.length > 0 && subject.activityTypes.includes(g.type as (typeof subject.activityTypes)[number]));
 
   const skillsCard = (
     <aside aria-labelledby="my-skills-h" className="card p-5 lg:sticky lg:top-20">
@@ -72,7 +75,7 @@ export default async function SubjectPage({ params }: Props) {
       {!session ? (
         <div className="flex flex-col items-start gap-3 text-sm text-muted">
           <p>Create a free account and your answers will build a skill chart you can watch grow.</p>
-          <Link href="/signup" className="btn btn-ghost px-4 py-2">Join — just a username</Link>
+          <Link href="/signup" className="btn btn-ghost px-4 py-2">Join with just a username</Link>
         </div>
       ) : progress && subject.skills.length > 0 ? (
         <SkillRadar

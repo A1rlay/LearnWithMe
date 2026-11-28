@@ -34,7 +34,7 @@ export default async function StudioOverviewPage() {
         <div role="status" className="card flex flex-wrap items-center justify-between gap-3 border-warning/30 p-5">
           <p className="text-sm text-fg">
             <span className="font-semibold text-warning">Hidden from learners:</span>{" "}
-            {hidden.map((s) => s.name).join(", ")} — no expert assigned yet.
+            {hidden.map((s) => s.name).join(", ")}: no expert assigned yet.
           </p>
           <Link href="/admin/subjects" className="btn btn-ghost">
             Assign experts

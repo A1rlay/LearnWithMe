@@ -324,7 +324,7 @@ export async function sendMessage(me: string, connectionId: string, rawBody: str
   const c = await myConnection(me, connectionId);
   if (c.status !== "ACCEPTED") throw new BuddyError("You can message each other once the request is accepted.");
   if (await isBlockedEitherWay(c.userAId, c.userBId)) throw new BuddyError("Not found.");
-  if (!(await allow(`msg:${me}`, 30, 60_000))) throw new BuddyError("Slow down a little — try again in a minute.");
+  if (!(await allow(`msg:${me}`, 30, 60_000))) throw new BuddyError("Slow down a little and try again in a minute.");
   await prisma.message.create({ data: { connectionId, senderId: me, body } });
 }
 

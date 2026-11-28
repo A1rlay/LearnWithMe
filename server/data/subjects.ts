@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { Prisma, type ActivityType as ActivityTypeEnum } from "@prisma/client";
 
 import { prisma } from "@/server/db";
 
@@ -32,9 +32,10 @@ export async function getVisibleSubjects(): Promise<SubjectCard[]> {
     id: s.id,
     name: s.name,
     description: s.description,
-    videoTopicCount: s._count.topics,
-    quizCount: s._count.qmTopics,
-    spellingSetCount: s._count.spellRightSets,
+    // Kinds a subject turned off don't count: learners can't open them.
+    videoTopicCount: s.activityTypes.includes("VIDEO") ? s._count.topics : 0,
+    quizCount: s.activityTypes.includes("QUIZ") ? s._count.qmTopics : 0,
+    spellingSetCount: s.activityTypes.includes("SPELLING") ? s._count.spellRightSets : 0,
     skills: s.skills.map((k) => k.name),
   }));
 }
@@ -71,8 +72,10 @@ export async function getSubjectForLearner(id: string, includeHidden = false) {
 }
 
 /** True when the subject is visible to learners (or the viewer is staff). */
-export async function isSubjectVisible(subjectId: string): Promise<boolean> {
-  const n = await prisma.subject.count({ where: { id: subjectId, ...VISIBLE } });
+export async function isSubjectVisible(subjectId: string, type?: ActivityTypeEnum): Promise<boolean> {
+  const n = await prisma.subject.count({
+    where: { id: subjectId, ...VISIBLE, ...(type ? { activityTypes: { has: type } } : {}) },
+  });
   return n > 0;
 }
 
@@ -185,7 +188,30 @@ export async function adminGetSubject(id: string) {
   });
 }
 
-export async function adminCreateSubject(data: { name: string; description: string | null; order: number }) {
+/** Studio Activities hub: each editable subject with the kinds it offers and how many of each exist. */
+export async function getStudioSubjectActivities(onlyIds?: string[]) {
+  return prisma.subject.findMany({
+    where: onlyIds ? { id: { in: onlyIds } } : undefined,
+    orderBy: [{ order: "asc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      activityTypes: true,
+      _count: { select: { topics: true, qmTopics: true, spellRightSets: true, experts: true } },
+    },
+  });
+}
+
+export async function setSubjectActivityTypes(id: string, types: ActivityTypeEnum[]) {
+  return prisma.subject.update({ where: { id }, data: { activityTypes: types } });
+}
+
+export async function adminCreateSubject(data: {
+  name: string;
+  description: string | null;
+  order: number;
+  activityTypes?: ActivityTypeEnum[];
+}) {
   return prisma.subject.create({ data });
 }
 
@@ -244,12 +270,35 @@ export type ActivityKind = "topic" | "qmTopic" | "spellSet";
  * activity's subject) would otherwise reject the subject change.
  * Skill ids from other subjects are dropped here and would be rejected by the DB anyway.
  */
+const KIND_TYPE: Record<ActivityKind, ActivityTypeEnum> = { topic: "VIDEO", qmTopic: "QUIZ", spellSet: "SPELLING" };
+
+export class ActivityTypeError extends Error {}
+
+/** The subject must offer this kind of activity before one can be created in (or moved to) it. */
+export async function assertSubjectOffers(subjectId: string, type: ActivityTypeEnum) {
+  const n = await prisma.subject.count({ where: { id: subjectId, activityTypes: { has: type } } });
+  if (n === 0) throw new ActivityTypeError("This subject doesn't offer that kind of activity.");
+}
+
+async function currentSubjectOf(kind: ActivityKind, id: string): Promise<string | null> {
+  const row =
+    kind === "topic"
+      ? await prisma.topic.findUnique({ where: { id }, select: { subjectId: true } })
+      : kind === "qmTopic"
+        ? await prisma.qMTopic.findUnique({ where: { id }, select: { subjectId: true } })
+        : await prisma.spellRightSet.findUnique({ where: { id }, select: { subjectId: true } });
+  return row?.subjectId ?? null;
+}
+
 export async function setActivitySubjectAndSkills(
   kind: ActivityKind,
   id: string,
   subjectId: string,
   skillIds: string[],
 ) {
+  // Moving an activity into another subject needs that subject to offer the kind.
+  // Staying put is always allowed, so turning a kind off never blocks editing.
+  if ((await currentSubjectOf(kind, id)) !== subjectId) await assertSubjectOffers(subjectId, KIND_TYPE[kind]);
   const valid = await prisma.skill.findMany({
     where: { subjectId, id: { in: skillIds } },
     select: { id: true },
@@ -280,9 +329,16 @@ export async function setActivitySubjectAndSkills(
 }
 
 /** Subjects + skills the current editor may tag with (for form pickers). */
-export async function getEditableSubjectsWithSkills(onlyIds?: string[]) {
+export async function getEditableSubjectsWithSkills(
+  onlyIds?: string[],
+  type?: ActivityTypeEnum,
+  alsoInclude?: string,
+) {
+  const offers: Prisma.SubjectWhereInput = type
+    ? { OR: [{ activityTypes: { has: type } }, ...(alsoInclude ? [{ id: alsoInclude }] : [])] }
+    : {};
   return prisma.subject.findMany({
-    where: onlyIds ? { id: { in: onlyIds } } : undefined,
+    where: { ...(onlyIds ? { id: { in: onlyIds } } : {}), ...offers },
     orderBy: [{ order: "asc" }, { name: "asc" }],
     select: {
       id: true,

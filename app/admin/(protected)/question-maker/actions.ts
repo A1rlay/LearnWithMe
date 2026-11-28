@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
 import { int, str, subjectAndSkills } from "@/lib/form";
-import { setActivitySubjectAndSkills } from "@/server/data/subjects";
+import { assertSubjectOffers, setActivitySubjectAndSkills } from "@/server/data/subjects";
 import {
   adminCreateQMTopic,
   adminDeleteQMTopic,
@@ -28,6 +28,7 @@ function revalidateQM() {
 export async function createQMTopicAction(formData: FormData) {
   const { subjectId, skillIds } = subjectAndSkills(formData);
   await requireSubjectEditor(subjectId);
+  await assertSubjectOffers(subjectId, "QUIZ");
   const topic = await adminCreateQMTopic({
     title: str(formData, "title"),
     description: str(formData, "description"),
@@ -36,7 +37,7 @@ export async function createQMTopicAction(formData: FormData) {
   });
   await setActivitySubjectAndSkills("qmTopic", topic.id, subjectId, skillIds);
   revalidateQM();
-  redirect("/admin/question-maker");
+  redirect(`/admin/question-maker?subject=${subjectId}`);
 }
 
 export async function updateQMTopicAction(id: string, formData: FormData) {
@@ -50,7 +51,7 @@ export async function updateQMTopicAction(id: string, formData: FormData) {
   });
   await setActivitySubjectAndSkills("qmTopic", id, subjectId, skillIds);
   revalidateQM();
-  redirect("/admin/question-maker");
+  redirect(`/admin/question-maker?subject=${subjectId}`);
 }
 
 export async function deleteQMTopicAction(id: string) {

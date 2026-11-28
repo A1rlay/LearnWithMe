@@ -1,3 +1,4 @@
+import type { ActivityType } from "@prisma/client";
 import { notFound, redirect } from "next/navigation";
 
 import { getSession, type SessionData } from "@/lib/session";
@@ -63,8 +64,9 @@ export async function editableSubjectIds(session: SessionData): Promise<string[]
  * Learner-facing pages of a subject with no expert 404 for everyone but staff,
  * so hiding a subject hides its deep links too, not just its catalog card.
  */
-export async function assertSubjectViewable(subjectId: string): Promise<void> {
-  if (await isSubjectVisible(subjectId)) return;
+/** 404 for learners unless the subject is live and (when given) still offers this kind of activity. */
+export async function assertSubjectViewable(subjectId: string, type?: ActivityType): Promise<void> {
+  if (await isSubjectVisible(subjectId, type)) return;
   if (await isStaffViewer()) return;
   notFound();
 }

@@ -241,7 +241,7 @@ export default async function ClassDetailPage({ params }: Props) {
             <select name="studentId" required className={`flex-1 ${inputClass}`}>
               <option value="">Add student manually…</option>
               {unenrolled.map((s) => (
-                <option key={s.id} value={s.id}>{s.name} — {s.email}</option>
+                <option key={s.id} value={s.id}>{s.name} ({s.email})</option>
               ))}
             </select>
             <button type="submit" className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-fg transition-opacity hover:opacity-90">

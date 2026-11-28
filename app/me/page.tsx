@@ -91,7 +91,7 @@ export default async function MePage({ searchParams }: Props) {
             {connections.buddies.length === 0 ? (
               <p className="text-sm text-muted">
                 {me.lookingForBuddies
-                  ? "No buddies yet — send a request from the Buddies page."
+                  ? "No buddies yet. Send a request from the Buddies page."
                   : "Turn on “Show me to study buddies” to find people learning the same things."}
               </p>
             ) : (

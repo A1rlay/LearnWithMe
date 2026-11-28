@@ -13,7 +13,7 @@ export default async function TopicPage({ params }: TopicPageProps) {
   const { topicId } = await params;
   const topic = await getTopicById(topicId);
   if (!topic) notFound();
-  await assertSubjectViewable(topic.subject.id);
+  await assertSubjectViewable(topic.subject.id, "VIDEO");
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pb-24 pt-10 sm:px-6">

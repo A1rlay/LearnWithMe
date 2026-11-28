@@ -134,7 +134,7 @@ export function QuestionFields({
 
       <fieldset className="flex flex-col gap-3 rounded-[20px] border border-line p-5">
         <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted">
-          Options — select the correct answer
+          Options: select the correct answer
         </legend>
         {[1, 2, 3, 4].map((n) => {
           const opt = defaults?.options?.find((o) => o.order === n);
