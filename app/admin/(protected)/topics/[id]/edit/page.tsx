@@ -7,6 +7,7 @@ import { adminGetTopic } from "@/server/data/admin";
 import { requireEditorPage } from "@/lib/auth";
 import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
 import { pickerSubjects } from "@/lib/studio";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 
 type EditTopicPageProps = {
@@ -34,17 +35,17 @@ export default async function EditTopicPage({ params }: EditTopicPageProps) {
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · Video lessons
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">
+        <h1 className="mt-2 font-display text-4xl text-fg">
           Edit topic
         </h1>
       </div>
 
       <form
         action={update}
-        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
+        className="flex flex-col gap-5 card p-8"
       >
         <TopicFields defaults={topic} />
         <SubjectSkillPicker
@@ -53,12 +54,7 @@ export default async function EditTopicPage({ params }: EditTopicPageProps) {
           defaultSkillIds={topic.skills.map((k) => k.skillId)}
         />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>

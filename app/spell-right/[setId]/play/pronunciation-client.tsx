@@ -268,7 +268,7 @@ export function PronunciationClient({
           <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent-text">
             Sounds · Speaking
           </p>
-          <h1 className="font-serif text-4xl text-fg">Results</h1>
+          <h1 className="font-display text-4xl text-fg">Results</h1>
           <p className="mt-1 text-lg text-muted">
             {score} / {words.length} correct
           </p>
@@ -301,13 +301,13 @@ export function PronunciationClient({
                 <p className="text-xs text-muted">
                   You said:{" "}
                   <span className={`font-semibold ${a.isCorrect ? "text-success" : "text-danger"}`}>
-                    "{a.transcript}"
+                    &ldquo;{a.transcript}&rdquo;
                   </span>
                 </p>
               )}
 
               {!a.isCorrect && a.word.explanation && (
-                <p className="text-xs text-muted leading-relaxed border-t border-fg/8 pt-2">
+                <p className="text-xs text-muted leading-relaxed border-t border-line-strong pt-2">
                   {a.word.explanation}
                 </p>
               )}
@@ -320,13 +320,13 @@ export function PronunciationClient({
           <button
             type="button"
             onClick={handlePlayAgain}
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
+            className="btn btn-primary"
           >
             Play again
           </button>
           <Link
             href={`/subjects/${subjectId}`}
-            className="rounded-full border border-fg/25 px-6 py-3 text-sm font-semibold text-fg/60 hover:border-fg hover:text-fg transition-colors"
+            className="rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-muted hover:border-fg hover:text-fg transition-colors"
           >
             All sets
           </Link>
@@ -353,8 +353,8 @@ export function PronunciationClient({
       </div>
 
       {/* Word card */}
-      <div className="w-full max-w-md rounded-[28px] border border-line bg-surface p-10 flex flex-col items-center gap-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+      <div className="w-full max-w-md card p-10 flex flex-col items-center gap-4">
+        <p className="eyebrow">
           Pronounce this word
         </p>
 
@@ -408,7 +408,7 @@ export function PronunciationClient({
 
       {/* Result panel */}
       {recordPhase === "evaluated" && (
-        <div className="w-full max-w-md rounded-[20px] border border-line bg-surface p-6 flex flex-col gap-4">
+        <div className="w-full max-w-md card p-6 flex flex-col gap-4">
           <div className="flex items-center gap-3">
             <span className={`text-3xl ${isCorrect ? "text-success" : "text-danger"}`}>
               {isCorrect ? "✓" : "✗"}
@@ -420,7 +420,7 @@ export function PronunciationClient({
               {transcript && (
                 <p className="text-xs text-muted">
                   You said:{" "}
-                  <span className="text-fg">"{transcript}"</span>
+                  <span className="text-fg">&ldquo;{transcript}&rdquo;</span>
                 </p>
               )}
             </div>
@@ -438,7 +438,7 @@ export function PronunciationClient({
               <button
                 type="button"
                 onClick={handleTryAgain}
-                className="flex-1 rounded-full border border-fg/25 py-3 text-sm font-semibold text-fg/70 hover:border-fg hover:text-fg transition-colors"
+                className="flex-1 rounded-full border border-line-strong py-3 text-sm font-semibold text-muted hover:border-fg hover:text-fg transition-colors"
               >
                 Try again
               </button>

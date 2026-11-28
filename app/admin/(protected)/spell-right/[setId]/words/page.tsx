@@ -32,24 +32,24 @@ export default async function SpellRightWordsPage({ params }: Props) {
 
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          <p className="eyebrow">
             Studio · Sounds & spelling · {set.title}
           </p>
-          <h1 className="mt-2 font-serif text-4xl text-fg">Words</h1>
+          <h1 className="mt-2 font-display text-4xl text-fg">Words</h1>
           <p className="mt-1 text-sm text-muted">
             {isTermination ? "Students hear the audio and pick the termination (ed / t / d)." : "Students see the word and practice pronouncing it."}
           </p>
         </div>
         <Link
           href={`/admin/spell-right/${setId}/words/new`}
-          className="shrink-0 rounded-full bg-accent px-5 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+          className="shrink-0 btn btn-primary"
         >
           Add word
         </Link>
       </div>
 
       {set.words.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-12 text-center text-sm text-muted">
           No words yet.
         </div>
       ) : (
@@ -57,7 +57,7 @@ export default async function SpellRightWordsPage({ params }: Props) {
           {set.words.map((w) => (
             <div
               key={w.id}
-              className="flex flex-wrap items-center justify-between gap-4 rounded-[24px] border border-line bg-surface px-6 py-5"
+              className="flex flex-wrap items-center justify-between gap-4 card px-6 py-5"
             >
               <div>
                 <p className="font-semibold text-fg">{w.word}</p>
@@ -73,7 +73,7 @@ export default async function SpellRightWordsPage({ params }: Props) {
               <div className="flex items-center gap-2">
                 <Link
                   href={`/admin/spell-right/${setId}/words/${w.id}/edit`}
-                  className="rounded-full border border-fg/25 px-4 py-2 text-xs font-semibold text-fg/70 transition-colors hover:border-fg hover:text-fg"
+                  className="rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-muted transition-colors hover:border-fg hover:text-fg"
                 >
                   Edit
                 </Link>

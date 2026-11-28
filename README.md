@@ -27,31 +27,25 @@ Tailwind CSS v4 with design tokens in `app/globals.css`.
 ```bash
 cp .env.example .env      # fill in DATABASE_URL(S) and AUTH_SECRET
 npm install
-npx prisma db push        # fresh local database
+npx prisma migrate deploy # fresh database: baseline + every later migration
 npm run db:seed           # admin, a sample expert, English subject + skills
 npm run dev
 ```
 
-### Applying the subjects/skills migration to an existing database
-The existing database was managed with `db push`, so apply this one migration explicitly:
-```bash
-npx prisma db execute --schema prisma/schema.prisma --file prisma/migrations/20261127_subjects_skills/migration.sql
-npx prisma migrate resolve --applied 20261127_subjects_skills
-```
-It creates the **English** subject and moves all existing content into it; existing teachers become
-its experts. Then apply the study-buddies migration the same way:
-```bash
-npx prisma db execute --schema prisma/schema.prisma --file prisma/migrations/20261128_study_buddies/migration.sql
-npx prisma migrate resolve --applied 20261128_study_buddies
-```
-It gives every existing account a username derived from its email (e.g. `ana.lopez`), shown in
-Studio → People.
+### Migrations
+`prisma/migrations/0_baseline` is the whole schema as production had it on 2026-11-28 (a
+`pg_dump --schema-only`, so CHECK constraints are included). Later migrations go after it.
+
+- **New database:** `npx prisma migrate deploy`.
+- **Production / an existing database:** back it up first (a Neon branch), then
+  `npx prisma migrate deploy`. Production already has the baseline marked as applied.
+- Write constraints Prisma can't express (CHECKs, composite FKs) by hand in the migration SQL.
 
 ## Commands
 `npm run dev` · `npm run build` · `npm run lint` · `npm run typecheck` · `npm run db:seed` · `npm run db:studio`
 
 ## Project map
-- `app/` — routes. Learner: `/`, `/subjects/[id]`, `/me`, `/buddies`, `/messages`, `/signup`, `/topics/…`, `/question-maker/…`, `/spell-right/…`. Studio: `/admin/…`.
+- `app/` — routes. Learner: `/`, `/welcome`, `/subjects/[id]`, `/u/[username]` (profile), `/me`, `/buddies`, `/messages`, `/signup`, `/topics/…`, `/question-maker/…`, `/spell-right/…`. Studio: `/admin/…`.
 - `server/data/` — all database access (`subjects.ts`, `skill-progress.ts`, …).
 - `lib/auth.ts` — session + subject-scoped authorization helpers.
 - `components/` — UI (`progress/skill-radar.tsx`, `studio/`, `brand/`).

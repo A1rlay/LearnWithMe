@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { LogoMark } from "@/components/brand/logo";
 import { loginAction } from "./actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata = { title: "Sign in" };
 
@@ -43,9 +44,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <span className="text-sm font-medium text-fg">Password</span>
               <input name="password" type="password" required autoComplete="current-password" className="field" />
             </label>
-            <button type="submit" className="btn btn-primary mt-2 w-full py-3">
-              Sign in
-            </button>
+            <SubmitButton className="btn btn-primary mt-2 w-full py-3">Sign in</SubmitButton>
           </form>
         </div>
 

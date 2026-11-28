@@ -15,6 +15,8 @@ const SIZE = 340; // viewBox square
 const C = SIZE / 2;
 const R = 112; // radius of the 100% ring
 const RINGS = [25, 50, 75, 100];
+// Side labels ("Pronunciation", "not enough practice") reach past the circle.
+const PAD = 56;
 
 function point(i: number, n: number, pct: number) {
   // Start at 12 o'clock, go clockwise.
@@ -59,8 +61,8 @@ export function SkillRadar({ skills, title }: { skills: RadarSkill[]; title: str
 
       <Legend hasThen={hasThen} />
 
-      <div className="relative mx-auto w-full max-w-[380px]">
-        <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="h-auto w-full overflow-visible" role="img" aria-label={`${title} skill chart`}>
+      <div className="relative mx-auto w-full max-w-[440px]">
+        <svg viewBox={`${-PAD} 0 ${SIZE + PAD * 2} ${SIZE}`} className="h-auto w-full overflow-visible" role="img" aria-label={`${title} skill chart`}>
           {/* Recessive grid */}
           {RINGS.map((r) => (
             <polygon
@@ -149,7 +151,7 @@ export function SkillRadar({ skills, title }: { skills: RadarSkill[]; title: str
           <div
             role="tooltip"
             className="pointer-events-none absolute z-10 w-44 -translate-x-1/2 rounded-xl border border-line-strong bg-surface-3/95 p-3 text-xs shadow-[var(--shadow-card)] backdrop-blur"
-            style={{ left: `${(tipPt.x / SIZE) * 100}%`, top: `${(Math.min(tipPt.y, C) / SIZE) * 100}%` }}
+            style={{ left: `${((tipPt.x + PAD) / (SIZE + PAD * 2)) * 100}%`, top: `${(Math.min(tipPt.y, C) / SIZE) * 100}%` }}
           >
             <p className="font-semibold text-fg">{tip.name}</p>
             <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-muted">

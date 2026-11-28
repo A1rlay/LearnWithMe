@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
-import { str, subjectAndSkills } from "@/lib/form";
+import { pedagogy, str, subjectAndSkills } from "@/lib/form";
 import { adminCreateTopic, adminDeleteTopic, adminUpdateTopic } from "@/server/data/admin";
 import { assertSubjectOffers, setActivitySubjectAndSkills } from "@/server/data/subjects";
 
@@ -26,6 +26,7 @@ export async function createTopicAction(formData: FormData) {
   await assertSubjectOffers(subjectId, "VIDEO");
   const topic = await adminCreateTopic({
     title: str(formData, "title"),
+    ...pedagogy(formData, false),
     description: str(formData, "description"),
     level: str(formData, "level"),
     tags: parseTags(str(formData, "tags")),
@@ -43,6 +44,7 @@ export async function updateTopicAction(id: string, formData: FormData) {
   await requireSubjectEditor(subjectId);
   await adminUpdateTopic(id, {
     title: str(formData, "title"),
+    ...pedagogy(formData, false),
     description: str(formData, "description"),
     level: str(formData, "level"),
     tags: parseTags(str(formData, "tags")),

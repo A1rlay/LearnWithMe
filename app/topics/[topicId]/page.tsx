@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { ActivityInstructions } from "@/components/ui/activity-instructions";
 import { BackLink } from "@/components/ui/nav-link";
 import { VideoList } from "@/components/video/video-list";
 import { assertSubjectViewable } from "@/lib/auth";
@@ -31,13 +32,10 @@ export default async function TopicPage({ params }: TopicPageProps) {
         )}
       </header>
 
-      <div className="card flex items-start gap-3 p-4 text-sm text-muted">
-        <span aria-hidden="true" className="mt-0.5 text-accent-text">ⓘ</span>
-        <p>
-          The video pauses at each checkpoint and asks one question. You can re-watch before
-          answering. Your answers count toward your skill chart when you&apos;re signed in.
-        </p>
-      </div>
+      <ActivityInstructions
+        text={topic.instructions}
+        fallback="The video pauses at each checkpoint and asks one question. You can re-watch before answering. Your answers count toward your skill chart when you're signed in."
+      />
 
       <VideoList topic={topic} />
     </main>

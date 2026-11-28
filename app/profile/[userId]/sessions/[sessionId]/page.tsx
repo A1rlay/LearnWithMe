@@ -7,6 +7,7 @@ import { getQMSession } from "@/server/data/question-maker";
 import type { QMQuestionData } from "@/server/data/question-maker";
 import { adminGetUser } from "@/server/data/users";
 import { reviewAnswerAction } from "./actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ userId: string; sessionId: string }> };
 
@@ -47,10 +48,10 @@ export default async function ProfileSessionPage({ params }: Props) {
       <BackLink href={`/profile/${userId}`}>{isOwner ? "My Profile" : user.name}</BackLink>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Session review
         </p>
-        <h1 className="mt-1 font-serif text-3xl text-fg">
+        <h1 className="mt-1 font-display text-3xl text-fg">
           {session.topic.title}
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -93,12 +94,12 @@ export default async function ProfileSessionPage({ params }: Props) {
           return (
             <div
               key={answer.id}
-              className="flex flex-col gap-4 rounded-[24px] border border-line bg-surface p-6"
+              className="flex flex-col gap-4 card p-6"
             >
               {/* Question header */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
+                  <p className="eyebrow">
                     {idx + 1}. {answer.question.type.replace(/_/g, " ")}
                   </p>
                   <p className="mt-1 font-semibold text-fg">
@@ -130,20 +131,10 @@ export default async function ProfileSessionPage({ params }: Props) {
                 <div className="flex gap-2 border-t border-line pt-4">
                   <p className="mr-auto self-center text-xs text-muted">Mark this answer:</p>
                   <form action={reviewAnswerAction.bind(null, userId, sessionId, answer.id, true)}>
-                    <button
-                      type="submit"
-                      className="rounded-full bg-accent/20 px-4 py-2 text-xs font-bold text-accent-text transition-colors hover:bg-accent/35"
-                    >
-                      Correct
-                    </button>
+                    <SubmitButton className="rounded-full bg-accent/20 px-4 py-2 text-xs font-bold text-accent-text transition-colors hover:bg-accent/35">Correct</SubmitButton>
                   </form>
                   <form action={reviewAnswerAction.bind(null, userId, sessionId, answer.id, false)}>
-                    <button
-                      type="submit"
-                      className="rounded-full bg-danger/15 px-4 py-2 text-xs font-bold text-danger transition-colors hover:bg-danger/25"
-                    >
-                      Incorrect
-                    </button>
+                    <SubmitButton className="rounded-full bg-danger/15 px-4 py-2 text-xs font-bold text-danger transition-colors hover:bg-danger/25">Incorrect</SubmitButton>
                   </form>
                 </div>
               )}

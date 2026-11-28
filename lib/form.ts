@@ -20,3 +20,9 @@ export function subjectAndSkills(fd: FormData): { subjectId: string; skillIds: s
     skillIds: fd.getAll("skillIds").map((v) => v.toString()).filter(Boolean),
   };
 }
+
+/** Optional level + instructions posted by <PedagogyFields />. Empty → null. */
+export function pedagogy(formData: FormData, withLevel = true) {
+  const t = (k: string, max: number) => formData.get(k)?.toString().trim().slice(0, max) || null;
+  return withLevel ? { level: t("level", 30), instructions: t("instructions", 600) } : { instructions: t("instructions", 600) };
+}

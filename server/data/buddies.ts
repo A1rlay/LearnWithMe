@@ -267,6 +267,18 @@ export async function getMyConnections(me: string) {
   };
 }
 
+/** Pending requests waiting on me, ignoring anyone blocked either way (same rule as the Buddies page). */
+export async function incomingRequestCount(me: string): Promise<number> {
+  const [rows, blocked] = await Promise.all([
+    prisma.buddyConnection.findMany({
+      where: { status: "PENDING", requesterId: { not: me }, OR: [{ userAId: me }, { userBId: me }] },
+      select: { userAId: true, userBId: true },
+    }),
+    blockedIds(me),
+  ]);
+  return rows.filter((c) => !blocked.has(other(c, me))).length;
+}
+
 export async function unreadCount(me: string): Promise<number> {
   return prisma.message.count({
     where: {

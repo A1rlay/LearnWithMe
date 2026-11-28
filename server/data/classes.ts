@@ -21,10 +21,10 @@ export async function adminGetClass(id: string) {
   return prisma.class.findUnique({
     where: { id },
     include: {
-      teacher: { select: { id: true, name: true, email: true } },
+      teacher: { select: { id: true, name: true, username: true } },
       students: {
         include: {
-          student: { select: { id: true, name: true, email: true } },
+          student: { select: { id: true, name: true, username: true } },
         },
         orderBy: { joinedAt: "asc" },
       },

@@ -8,7 +8,7 @@ import { getSession } from "@/lib/session";
 import { getSkillProgress } from "@/server/data/skill-progress";
 import { getSubjectForLearner } from "@/server/data/subjects";
 
-type Props = { params: Promise<{ subjectId: string }> };
+type Props = { params: Promise<{ subjectId: string }>; searchParams: Promise<{ level?: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const { subjectId } = await params;
@@ -16,8 +16,9 @@ export async function generateMetadata({ params }: Props) {
   return { title: s?.name ?? "Subject" };
 }
 
-export default async function SubjectPage({ params }: Props) {
+export default async function SubjectPage({ params, searchParams }: Props) {
   const { subjectId } = await params;
+  const { level: levelParam } = await searchParams;
   const session = await getSession();
   const isStaff = await isStaffViewer();
   const subject = await getSubjectForLearner(subjectId, isStaff);
@@ -37,6 +38,7 @@ export default async function SubjectPage({ params }: Props) {
         id: t.id,
         href: `/topics/${t.id}`,
         title: t.title,
+        level: t.level,
         meta: [t.level, `${t._count.videos} video${t._count.videos === 1 ? "" : "s"}`].filter(Boolean).join(" · "),
         skills: t.skills.map((k) => k.skill.name),
       })),
@@ -50,7 +52,8 @@ export default async function SubjectPage({ params }: Props) {
         id: t.id,
         href: `/question-maker/${t.id}`,
         title: t.title,
-        meta: `${t._count.questions} question${t._count.questions === 1 ? "" : "s"}`,
+        level: t.level,
+        meta: [t.level, `${t._count.questions} question${t._count.questions === 1 ? "" : "s"}`].filter(Boolean).join(" · "),
         skills: t.skills.map((k) => k.skill.name),
       })),
     },
@@ -63,11 +66,22 @@ export default async function SubjectPage({ params }: Props) {
         id: s.id,
         href: `/spell-right/${s.id}/play`,
         title: s.title,
-        meta: `${s.mode === "TERMINATION" ? "Listening" : "Speaking"} · ${s._count.words} word${s._count.words === 1 ? "" : "s"}`,
+        level: s.level,
+        meta: [s.level, s.mode === "TERMINATION" ? "Listening" : "Speaking", `${s._count.words} word${s._count.words === 1 ? "" : "s"}`].filter(Boolean).join(" · "),
         skills: s.skills.map((k) => k.skill.name),
       })),
     },
   ].filter((g) => g.items.length > 0 && subject.activityTypes.includes(g.type as (typeof subject.activityTypes)[number]));
+
+  // Level filter: levels are free text set by experts, so "A1 - A2" and "a1-a2" are the same level.
+  const norm = (l: string | null) => (l ?? "").toLowerCase().replace(/\s+/g, "");
+  const levels = [...new Map(groups.flatMap((g) => g.items).filter((i) => i.level?.trim()).map((i) => [norm(i.level), i.level!.trim()])).values()].sort(
+    (a, b) => a.localeCompare(b, undefined, { numeric: true }),
+  );
+  const level = levels.find((l) => norm(l) === norm(levelParam ?? null)) ?? null;
+  const shown = level
+    ? groups.map((g) => ({ ...g, items: g.items.filter((i) => norm(i.level) === norm(level)) })).filter((g) => g.items.length > 0)
+    : groups;
 
   const skillsCard = (
     <aside aria-labelledby="my-skills-h" className="card p-5 lg:sticky lg:top-20">
@@ -110,12 +124,31 @@ export default async function SubjectPage({ params }: Props) {
             )}
           </header>
 
+          {levels.length > 1 && (
+            <nav aria-label="Filter by level" className="-mb-4 flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-xs text-subtle">Level</span>
+              <Link href={`/subjects/${subject.id}`} aria-current={!level ? "page" : undefined} className={`chip ${!level ? "border-accent-text/60 bg-accent/25 text-fg" : "hover:text-fg"}`}>
+                All
+              </Link>
+              {levels.map((l) => (
+                <Link
+                  key={l}
+                  href={`/subjects/${subject.id}?level=${encodeURIComponent(l)}`}
+                  aria-current={level === l ? "page" : undefined}
+                  className={`chip ${level === l ? "border-accent-text/60 bg-accent/25 text-fg" : "hover:text-fg"}`}
+                >
+                  {l}
+                </Link>
+              ))}
+            </nav>
+          )}
+
           {groups.length === 0 ? (
             <div className="card p-10 text-center text-sm text-muted">
               The expert is still preparing activities for this subject.
             </div>
           ) : (
-            groups.map((g) => (
+            shown.map((g) => (
               <section key={g.key} aria-labelledby={`${g.key}-h`} className="flex flex-col gap-4">
                 <div>
                   <h2 id={`${g.key}-h`} className="font-display text-3xl text-fg">{g.title}</h2>

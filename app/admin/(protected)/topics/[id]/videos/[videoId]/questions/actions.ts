@@ -22,6 +22,7 @@ export async function createQuestionAction(_topicId: string, videoId: string, fo
   await adminCreateQuestion({
     videoId,
     prompt: str(formData, "prompt"),
+    hint: formData.get("hint")?.toString().trim().slice(0, 200) || null,
     order: int(formData, "order", 1),
     checkpointSeconds: Math.max(0, int(formData, "checkpointSeconds")),
     options: [1, 2, 3, 4].map((n) => ({
@@ -46,6 +47,7 @@ export async function updateQuestionAction(
   const correct = int(formData, "correct", 1);
   await adminUpdateQuestion(questionId, {
     prompt: str(formData, "prompt"),
+    hint: formData.get("hint")?.toString().trim().slice(0, 200) || null,
     checkpointSeconds: Math.max(0, int(formData, "checkpointSeconds")),
     options: [1, 2, 3, 4].map((n) => ({
       id: str(formData, `option${n}Id`),

@@ -24,6 +24,7 @@ export type SpellRightWordDetail = {
 };
 
 export type SpellRightSetDetail = {
+  instructions: string | null;
   id: string;
   subjectId: string;
   title: string;
@@ -61,6 +62,7 @@ export async function getSpellRightSetDetail(id: string): Promise<SpellRightSetD
     subjectId: set.subjectId,
     mode: set.mode,
     title: set.title,
+    instructions: set.instructions,
     words: set.words.map((w) => ({
       correctAnswer: w.correctAnswer,
       explanation: w.explanation,
@@ -144,13 +146,15 @@ export async function adminCreateSpellRightSet(data: {
   mode: SpellRightMode;
   order: number;
   subjectId: string;
+  level?: string | null;
+  instructions?: string | null;
 }) {
   return prisma.spellRightSet.create({ data });
 }
 
 export async function adminUpdateSpellRightSet(
   id: string,
-  data: { title: string; description: string; order: number },
+  data: { title: string; description: string; order: number; level?: string | null; instructions?: string | null },
 ) {
   return prisma.spellRightSet.update({ where: { id }, data });
 }

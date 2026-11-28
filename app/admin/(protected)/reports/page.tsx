@@ -3,6 +3,7 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth";
 import { adminListReports } from "@/server/data/buddies";
 import { resolveReportAction } from "./actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata = { title: "Reports" };
 
@@ -53,7 +54,7 @@ export default async function ReportsPage({ searchParams }: Props) {
               )}
               {!r.resolvedAt && (
                 <form action={resolveReportAction.bind(null, r.id)} className="self-end">
-                  <button type="submit" className="btn btn-ghost px-4 py-2 text-xs">Mark resolved</button>
+                  <SubmitButton className="btn btn-ghost px-4 py-2 text-xs">Mark resolved</SubmitButton>
                 </form>
               )}
             </li>

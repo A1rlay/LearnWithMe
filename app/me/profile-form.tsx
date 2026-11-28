@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { TagInput } from "@/components/ui/tag-input";
+import { TimezoneInput } from "@/components/ui/timezone-input";
 
 import { saveProfileAction, type FormState } from "./actions";
 
@@ -14,6 +15,8 @@ type Props = {
     discordHandle: string | null;
     email: string | null;
     lookingForBuddies: boolean;
+    weeklyGoal: number;
+    profileVisibility: "MEMBERS" | "BUDDIES" | "ONLY_ME";
     learning: string[];
   };
   subjects: { id: string; name: string }[];
@@ -24,6 +27,7 @@ export function ProfileForm({ me, subjects }: Props) {
 
   return (
     <form action={action} className="flex flex-col gap-5">
+      <TimezoneInput />
       <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-accent-text/30 bg-accent/10 p-4">
         <input
           type="checkbox"
@@ -64,6 +68,19 @@ export function ProfileForm({ me, subjects }: Props) {
         hint="Shared interests help match you with buddies."
       />
 
+      <fieldset id="goal" className="flex flex-col gap-2">
+        <legend className="mb-1.5 text-sm font-medium text-fg">Weekly goal</legend>
+        <div className="flex flex-wrap gap-2">
+          {[1, 2, 3, 5, 7, 10].map((g) => (
+            <label key={g} className="toggle-chip">
+              <input type="radio" name="weeklyGoal" value={g} defaultChecked={me.weeklyGoal === g} className="sr-only" />
+              {g} a week
+            </label>
+          ))}
+        </div>
+        <span className="text-xs text-subtle">Activities you aim to finish each week. Your buddies see your progress.</span>
+      </fieldset>
+
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1.5 text-sm font-medium text-fg">Subjects I&apos;m learning</legend>
         {subjects.length === 0 ? (
@@ -73,7 +90,7 @@ export function ProfileForm({ me, subjects }: Props) {
             {subjects.map((s) => (
               <label
                 key={s.id}
-                className="cursor-pointer rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:text-fg has-[:checked]:border-accent-text/60 has-[:checked]:bg-accent/25 has-[:checked]:text-fg has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-text"
+                className="toggle-chip"
               >
                 <input type="checkbox" name="subjectIds" value={s.id} defaultChecked={me.learning.includes(s.id)} className="sr-only" />
                 {s.name}
@@ -81,6 +98,23 @@ export function ProfileForm({ me, subjects }: Props) {
             ))}
           </div>
         )}
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1.5 text-sm font-medium text-fg">Who can see my profile page</legend>
+        <div className="flex flex-wrap gap-2">
+          {([
+            ["MEMBERS", "Anyone signed in"],
+            ["BUDDIES", "Only my buddies"],
+            ["ONLY_ME", "Only me"],
+          ] as const).map(([v, label]) => (
+            <label key={v} className="toggle-chip">
+              <input type="radio" name="profileVisibility" value={v} defaultChecked={me.profileVisibility === v} className="sr-only" />
+              {label}
+            </label>
+          ))}
+        </div>
+        <span className="text-xs text-subtle">Your practice calendar, projects and skills. People who aren&apos;t signed in never see it.</span>
       </fieldset>
 
       <details className="rounded-2xl border border-line p-4">

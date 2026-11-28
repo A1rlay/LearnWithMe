@@ -1,9 +1,11 @@
+import { PedagogyFields } from "@/components/studio/pedagogy-fields";
 import Link from "next/link";
 
 import { SubjectSkillPicker } from "@/components/studio/subject-skill-picker";
 import { pickerSubjects } from "@/lib/studio";
 
 import { createTopicAction } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default async function NewTopicPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
   const { subject } = await searchParams;
@@ -22,27 +24,22 @@ export default async function NewTopicPage({ searchParams }: { searchParams: Pro
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · Video lessons
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">
+        <h1 className="mt-2 font-display text-4xl text-fg">
           New topic
         </h1>
       </div>
 
       <form
         action={createTopicAction}
-        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
+        className="flex flex-col gap-5 card p-8"
       >
         <TopicFields />
         <SubjectSkillPicker subjects={subjects} defaultSubjectId={defaultSubjectId} />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
-          >
-            Create topic
-          </button>
+          <SubmitButton className="btn btn-primary">Create topic</SubmitButton>
         </div>
       </form>
     </div>
@@ -57,6 +54,7 @@ export function TopicFields({
     level?: string | null;
     tags?: string[];
     title?: string;
+    instructions?: string | null;
   };
 } = {}) {
   return (
@@ -74,6 +72,7 @@ export function TopicFields({
         defaultValue={defaults?.description ?? ""}
         multiline
       />
+      <PedagogyFields defaults={defaults} withLevel={false} />
       <Field
         label="Tags"
         name="tags"
@@ -100,13 +99,13 @@ function Field({
   required?: boolean;
 }) {
   const inputClass =
-    "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
+    "field";
 
   return (
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={name}
-        className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
+        className="text-sm font-medium text-fg"
       >
         {label}
         {required && <span className="ml-1 text-accent-text">*</span>}

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { updateVideoAction } from "../../actions";
 import { adminGetVideo } from "@/server/data/admin";
 import { requireEditorPage } from "@/lib/auth";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type EditVideoPageProps = {
   params: Promise<{ id: string; videoId: string }>;
@@ -29,26 +30,21 @@ export default async function EditVideoPage({ params }: EditVideoPageProps) {
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · {video.topic.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">
+        <h1 className="mt-2 font-display text-4xl text-fg">
           Edit video
         </h1>
       </div>
 
       <form
         action={update}
-        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
+        className="flex flex-col gap-5 card p-8"
       >
         <VideoFields defaults={video} />
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
-          >
-            Save changes
-          </button>
+          <SubmitButton className="btn btn-primary">Save changes</SubmitButton>
         </div>
       </form>
     </div>
@@ -124,13 +120,13 @@ function Field({
   required?: boolean;
 }) {
   const inputClass =
-    "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
+    "field";
 
   return (
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={name}
-        className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
+        className="text-sm font-medium text-fg"
       >
         {label}
         {required && <span className="ml-1 text-accent-text">*</span>}

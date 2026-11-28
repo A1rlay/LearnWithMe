@@ -15,6 +15,7 @@ import {
   unassignExpertAction,
   updateSubjectAction,
 } from "../actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -76,7 +77,7 @@ export default async function SubjectDetailPage({ params }: Props) {
                   <form action={renameSkillAction.bind(null, k.id)} className="flex flex-1 gap-2">
                     <label className="sr-only" htmlFor={`skill-${k.id}`}>Skill name</label>
                     <input id={`skill-${k.id}`} name="name" defaultValue={k.name} maxLength={60} className="field py-2" />
-                    <button type="submit" className="btn btn-ghost px-3 py-2 text-xs">Save</button>
+                    <SubmitButton className="btn btn-ghost px-3 py-2 text-xs">Save</SubmitButton>
                   </form>
                   <DeleteButton action={deleteSkillAction.bind(null, k.id)} label={`the skill “${k.name}”`} />
                 </li>
@@ -86,7 +87,7 @@ export default async function SubjectDetailPage({ params }: Props) {
           <form action={createSkillAction.bind(null, id)} className="flex gap-2">
             <label className="sr-only" htmlFor="new-skill">New skill</label>
             <input id="new-skill" name="name" required maxLength={60} placeholder="New skill" className="field py-2" />
-            <button type="submit" className="btn btn-primary px-4 py-2">Add</button>
+            <SubmitButton className="btn btn-primary px-4 py-2">Add</SubmitButton>
           </form>
         </section>
 
@@ -112,7 +113,7 @@ export default async function SubjectDetailPage({ params }: Props) {
                   </div>
                   {isAdmin && (
                     <form action={unassignExpertAction.bind(null, id, e.userId)}>
-                      <button type="submit" className="btn btn-ghost px-3 py-1.5 text-xs">Remove</button>
+                      <SubmitButton className="btn btn-ghost px-3 py-1.5 text-xs">Remove</SubmitButton>
                     </form>
                   )}
                 </li>
@@ -131,7 +132,7 @@ export default async function SubjectDetailPage({ params }: Props) {
                     </option>
                   ))}
                 </select>
-                <button type="submit" className="btn btn-primary px-4 py-2">Assign</button>
+                <SubmitButton className="btn btn-primary px-4 py-2">Assign</SubmitButton>
               </form>
             ) : (
               <p className="text-xs text-subtle">
@@ -151,7 +152,7 @@ export default async function SubjectDetailPage({ params }: Props) {
         </div>
         <form action={setActivityTypesAction.bind(null, id)} className="flex flex-wrap items-center justify-between gap-3">
           <ActivityTypeChecks defaults={subject.activityTypes} />
-          <button type="submit" className="btn btn-primary px-4 py-2">Save kinds</button>
+          <SubmitButton className="btn btn-primary px-4 py-2">Save kinds</SubmitButton>
         </form>
       </section>
 
@@ -171,7 +172,7 @@ export default async function SubjectDetailPage({ params }: Props) {
               <span className="text-sm font-medium text-fg">Description</span>
               <textarea name="description" rows={2} maxLength={300} defaultValue={subject.description ?? ""} className="field" />
             </label>
-            <button type="submit" className="btn btn-primary justify-self-start sm:col-span-2">Save details</button>
+            <SubmitButton className="btn btn-primary justify-self-start sm:col-span-2">Save details</SubmitButton>
           </form>
         </section>
       )}

@@ -29,28 +29,28 @@ export default async function QMQuestionsPage({ params }: Props) {
 
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">Studio · Quizzes · {topic.title}</p>
-          <h1 className="mt-2 font-serif text-4xl text-fg">Questions</h1>
+          <p className="eyebrow">Studio · Quizzes · {topic.title}</p>
+          <h1 className="mt-2 font-display text-4xl text-fg">Questions</h1>
         </div>
-        <Link href={`/admin/question-maker/${topicId}/questions/new`} className="rounded-full bg-accent px-5 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90">
+        <Link href={`/admin/question-maker/${topicId}/questions/new`} className="btn btn-primary">
           New question
         </Link>
       </div>
 
       {topic.questions.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">No questions yet.</div>
+        <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-12 text-center text-sm text-muted">No questions yet.</div>
       ) : (
         <div className="flex flex-col gap-3">
           {topic.questions.map((q) => (
-            <div key={q.id} className="flex items-start justify-between gap-4 rounded-[24px] border border-line bg-surface px-6 py-5">
+            <div key={q.id} className="flex items-start justify-between gap-4 card px-6 py-5">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
+                <p className="eyebrow">
                   {q.order}. {typeLabel[q.type] ?? q.type}
                 </p>
                 <p className="mt-1 font-semibold text-fg">{q.prompt}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <Link href={`/admin/question-maker/${topicId}/questions/${q.id}/edit`} className="rounded-full border border-fg/25 px-4 py-2 text-xs font-semibold text-fg/70 transition-colors hover:border-fg hover:text-fg">
+                <Link href={`/admin/question-maker/${topicId}/questions/${q.id}/edit`} className="rounded-full border border-line-strong px-4 py-2 text-xs font-semibold text-muted transition-colors hover:border-fg hover:text-fg">
                   Edit
                 </Link>
                 <DeleteButton action={deleteQMQuestionAction.bind(null, topicId, q.id)} label={`question ${q.order}`} />

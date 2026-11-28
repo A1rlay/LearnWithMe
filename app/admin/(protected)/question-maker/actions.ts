@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
-import { int, str, subjectAndSkills } from "@/lib/form";
+import { int, pedagogy, str, subjectAndSkills } from "@/lib/form";
 import { assertSubjectOffers, setActivitySubjectAndSkills } from "@/server/data/subjects";
 import {
   adminCreateQMTopic,
@@ -31,6 +31,7 @@ export async function createQMTopicAction(formData: FormData) {
   await assertSubjectOffers(subjectId, "QUIZ");
   const topic = await adminCreateQMTopic({
     title: str(formData, "title"),
+    ...pedagogy(formData),
     description: str(formData, "description"),
     order: int(formData, "order"),
     subjectId,
@@ -46,6 +47,7 @@ export async function updateQMTopicAction(id: string, formData: FormData) {
   await requireSubjectEditor(subjectId);
   await adminUpdateQMTopic(id, {
     title: str(formData, "title"),
+    ...pedagogy(formData),
     description: str(formData, "description"),
     order: int(formData, "order"),
   });
@@ -61,6 +63,8 @@ export async function deleteQMTopicAction(id: string) {
   redirect("/admin/question-maker");
 }
 
+const hintOf = (f: FormData) => f.get("hint")?.toString().trim().slice(0, 200) || null;
+
 // ─── Questions ────────────────────────────────────────────────────────────────
 
 export async function createQMQuestionAction(topicId: string, order: number, formData: FormData) {
@@ -69,7 +73,7 @@ export async function createQMQuestionAction(topicId: string, order: number, for
   if (!Object.values(QMQuestionType).includes(type)) throw new Error("Unknown question type.");
   const prompt = str(formData, "prompt");
   const data = parseQuestionData(type, formData);
-  await adminCreateQMQuestion({ topicId, order, type, prompt, data });
+  await adminCreateQMQuestion({ topicId, order, type, prompt, hint: hintOf(formData), data });
   revalidatePath(`/admin/question-maker/${topicId}/questions`);
   redirect(`/admin/question-maker/${topicId}/questions`);
 }
@@ -80,7 +84,7 @@ export async function updateQMQuestionAction(_topicId: string, questionId: strin
   if (!Object.values(QMQuestionType).includes(type)) throw new Error("Unknown question type.");
   const prompt = str(formData, "prompt");
   const data = parseQuestionData(type, formData);
-  const q = await adminUpdateQMQuestion(questionId, { prompt, data });
+  const q = await adminUpdateQMQuestion(questionId, { prompt, hint: hintOf(formData), data });
   revalidatePath(`/admin/question-maker/${q.topicId}/questions`);
   redirect(`/admin/question-maker/${q.topicId}/questions`);
 }

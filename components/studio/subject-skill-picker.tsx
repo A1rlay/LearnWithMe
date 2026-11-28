@@ -61,11 +61,7 @@ export function SubjectSkillPicker({
               return (
                 <label
                   key={k.id}
-                  className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs font-medium transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-text ${
-                    on
-                      ? "border-accent-text/60 bg-accent/25 text-fg"
-                      : "border-line-strong text-muted hover:text-fg"
-                  }`}
+                  className="toggle-chip"
                 >
                   <input
                     type="checkbox"
@@ -82,7 +78,6 @@ export function SubjectSkillPicker({
                     }
                     className="sr-only"
                   />
-                  {on ? "✓ " : ""}
                   {k.name}
                 </label>
               );

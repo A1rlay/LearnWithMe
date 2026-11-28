@@ -43,3 +43,26 @@ export function parseInterests(raw: string): string[] {
   }
   return out;
 }
+
+/** Activities per week, 1..14 (DB CHECK matches). Falls back to 3. */
+export function parseWeeklyGoal(raw: FormDataEntryValue | null): number {
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 14 ? n : 3;
+}
+
+/** IANA timezone from the browser, or UTC if missing/unknown (it goes into SQL AT TIME ZONE). */
+export function normalizeTimezone(raw: FormDataEntryValue | null): string {
+  const tz = raw?.toString() ?? "";
+  if (tz === "UTC") return tz;
+  try {
+    return Intl.supportedValuesOf("timeZone").includes(tz) ? tz : "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
+export const VISIBILITIES = ["MEMBERS", "BUDDIES", "ONLY_ME"] as const;
+export function parseVisibility(raw: FormDataEntryValue | null): (typeof VISIBILITIES)[number] {
+  const v = raw?.toString();
+  return (VISIBILITIES as readonly string[]).includes(v ?? "") ? (v as (typeof VISIBILITIES)[number]) : "MEMBERS";
+}

@@ -75,6 +75,7 @@ export type TopicDetail = {
   subject: { id: string; name: string };
   skills: string[];
   level: string | null;
+  instructions: string | null;
   tags: string[];
   title: string;
   videos: TopicVideoSummary[];
@@ -89,6 +90,7 @@ export type QuizQuestion = {
   }[];
   order: number;
   prompt: string;
+  hint: string | null;
 };
 
 export type VideoLesson = {
@@ -127,6 +129,7 @@ function mapTopicDetail(topic: TopicDetailRecord): TopicDetail {
     subject: topic.subject,
     skills: topic.skills.map((s) => s.skill.name),
     level: topic.level,
+    instructions: topic.instructions,
     tags: topic.tags,
     title: topic.title,
     videos: topic.videos.map((video) => ({
@@ -150,6 +153,7 @@ function mapVideoLesson(video: VideoLessonRecord): VideoLesson {
       })),
       order: question.order,
       prompt: question.prompt,
+      hint: question.hint,
     })),
     subtitlesEnabled: video.subtitlesEnabled,
     title: video.title,

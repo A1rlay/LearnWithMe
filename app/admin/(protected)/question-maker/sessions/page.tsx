@@ -23,10 +23,10 @@ export default async function QMSessionsPage({ searchParams }: Props) {
       </Link>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · Quizzes
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">Sessions</h1>
+        <h1 className="mt-2 font-display text-4xl text-fg">Sessions</h1>
       </div>
 
       {/* Topic filter */}
@@ -38,7 +38,7 @@ export default async function QMSessionsPage({ searchParams }: Props) {
             className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
               t.id === topicId
                 ? "bg-accent text-fg"
-                : "border border-fg/20 text-fg/60 hover:border-fg hover:text-fg"
+                : "border border-line-strong text-muted hover:border-fg hover:text-fg"
             }`}
           >
             {t.title}
@@ -47,11 +47,11 @@ export default async function QMSessionsPage({ searchParams }: Props) {
       </div>
 
       {!topicId ? (
-        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-12 text-center text-sm text-muted">
           Select a topic above to view its sessions.
         </div>
       ) : sessions.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-12 text-center text-sm text-muted">
           No completed sessions for {selectedTopic?.title ?? "this topic"} yet.
         </div>
       ) : (
@@ -65,10 +65,10 @@ export default async function QMSessionsPage({ searchParams }: Props) {
               <Link
                 key={session.id}
                 href={`/admin/question-maker/sessions/${session.id}`}
-                className="flex items-center justify-between gap-4 rounded-[24px] border border-line bg-surface px-6 py-5 transition-colors hover:border-fg/40"
+                className="flex items-center justify-between gap-4 card px-6 py-5 transition-colors hover:border-fg"
               >
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
+                  <p className="eyebrow">
                     Session {sessions.length - idx}
                   </p>
                   <p className="mt-1 text-sm text-muted">

@@ -13,7 +13,7 @@ const homeIcon = (
   </svg>
 );
 
-const base = "flex items-center gap-1.5 text-sm font-semibold text-fg/55 transition-colors hover:text-fg";
+const base = "flex items-center gap-1.5 text-sm font-semibold text-subtle transition-colors hover:text-fg";
 
 export function BackLink({ href, children }: { href: string; children?: React.ReactNode }) {
   return (

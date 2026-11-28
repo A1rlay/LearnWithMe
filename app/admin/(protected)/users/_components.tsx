@@ -1,5 +1,5 @@
 const inputClass =
-  "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
+  "field";
 
 export function UserFields({
   defaults,
@@ -11,7 +11,7 @@ export function UserFields({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="name"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
+          className="text-sm font-medium text-fg"
         >
           Display name
         </label>
@@ -24,7 +24,7 @@ export function UserFields({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="username" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+        <label htmlFor="username" className="text-sm font-medium text-fg">
           Username <span className="text-accent-text">*</span>
         </label>
         <input
@@ -40,7 +40,7 @@ export function UserFields({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+        <label htmlFor="email" className="text-sm font-medium text-fg">
           Email <span className="normal-case tracking-normal text-subtle">(optional)</span>
         </label>
         <input id="email" name="email" type="email" defaultValue={defaults?.email ?? ""} className={inputClass} />
@@ -49,7 +49,7 @@ export function UserFields({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="role"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
+          className="text-sm font-medium text-fg"
         >
           Role <span className="text-accent-text">*</span>
         </label>

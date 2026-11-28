@@ -1,11 +1,15 @@
 import Link from "next/link";
 
 import { LogoMark } from "@/components/brand/logo";
+import { redirect } from "next/navigation";
+
 import { getSession } from "@/lib/session";
+import { needsOnboarding } from "@/server/data/me";
 import { getVisibleSubjects } from "@/server/data/subjects";
 
 export default async function HomePage() {
   const [subjects, session] = await Promise.all([getVisibleSubjects(), getSession()]);
+  if (session && (await needsOnboarding(session.userId))) redirect("/welcome");
   const firstName = session?.name.split(" ")[0];
 
   return (

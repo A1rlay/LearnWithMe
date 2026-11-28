@@ -1,9 +1,12 @@
 import Link from "next/link";
 
 import { Avatar } from "@/components/people/avatar";
+import { InviteButton } from "@/components/people/invite-button";
+import { GoalRing } from "@/components/progress/goal-ring";
 import { ReportForm } from "@/components/people/report-form";
 import { Notice } from "@/components/ui/notice";
 import { requireSession } from "@/lib/auth";
+import { activityLabel, getWeekProgress } from "@/server/data/activity";
 import { getMyConnections, getSuggestions } from "@/server/data/buddies";
 import { getMe } from "@/server/data/me";
 import {
@@ -13,6 +16,7 @@ import {
   declineAction,
   requestBuddyAction,
 } from "./actions";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export const metadata = { title: "Study buddies" };
 
@@ -22,6 +26,16 @@ export default async function BuddiesPage({ searchParams }: Props) {
   const { userId } = await requireSession();
   const { notice } = await searchParams;
   const [me, suggestions, conn] = await Promise.all([getMe(userId), getSuggestions(userId), getMyConnections(userId)]);
+  // Weekly progress is shared only between accepted buddies.
+  const week = await getWeekProgress([userId, ...conn.buddies.map((c) => c.user.id)]);
+  const mine = week.get(userId) ?? { done: 0, goal: 3, lastActiveAt: null };
+  const together = conn.buddies.reduce(
+    (acc, c) => {
+      const w = week.get(c.user.id);
+      return w ? { done: acc.done + Math.min(w.done, w.goal), goal: acc.goal + w.goal } : acc;
+    },
+    { done: Math.min(mine.done, mine.goal), goal: mine.goal },
+  );
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 pb-24 pt-10 sm:px-6">
@@ -32,11 +46,33 @@ export default async function BuddiesPage({ searchParams }: Props) {
         </h1>
         <p className="max-w-2xl text-muted">
           Find people learning the same subjects. Send a request. Once they accept, you can message each other
-          here and see each other&apos;s Discord.
+          here, see each other&apos;s Discord, and cheer each other on toward your weekly goals.
         </p>
+        <div>
+          <InviteButton className="btn btn-ghost px-4 py-2" />
+        </div>
       </header>
 
       <Notice text={notice} />
+
+      {conn.buddies.length > 0 && (
+        <section aria-labelledby="week-h" className="card flex flex-wrap items-center gap-6 p-6">
+          <GoalRing done={together.done} goal={together.goal} size={72} label={`Together ${together.done} of ${together.goal} activities this week`} />
+          <div className="min-w-0 flex-1">
+            <h2 id="week-h" className="font-semibold text-fg">This week, together</h2>
+            <p className="mt-1 text-sm text-muted">
+              {together.done >= together.goal
+                ? "Everyone hit their goal. Nice work."
+                : `${together.goal - together.done} more ${together.goal - together.done === 1 ? "activity" : "activities"} between you and your buddies to hit everyone's goal.`}
+            </p>
+            <p className="mt-1 text-xs text-subtle">
+              You: {mine.done} of {mine.goal}.{" "}
+              <Link href="/me#goal" className="text-accent-text hover:underline">Change my goal</Link>
+            </p>
+          </div>
+          <Link href="/#subjects" className="btn btn-primary">Do an activity</Link>
+        </section>
+      )}
 
       {!me?.lookingForBuddies && (
         <div className="card flex flex-wrap items-center justify-between gap-4 border-accent-text/30 p-6">
@@ -62,10 +98,10 @@ export default async function BuddiesPage({ searchParams }: Props) {
                 {c.user.bio && <p className="text-sm text-muted">{c.user.bio}</p>}
                 <div className="flex flex-wrap items-center gap-2">
                   <form action={acceptAction.bind(null, c.id)}>
-                    <button type="submit" className="btn btn-primary px-4 py-2">Accept</button>
+                    <SubmitButton className="btn btn-primary px-4 py-2">Accept</SubmitButton>
                   </form>
                   <form action={declineAction.bind(null, c.id)}>
-                    <button type="submit" className="btn btn-ghost px-4 py-2">Decline</button>
+                    <SubmitButton className="btn btn-ghost px-4 py-2">Decline</SubmitButton>
                   </form>
                   <div className="ml-auto flex items-center gap-3">
                     <form action={blockAction.bind(null, c.user.id)}>
@@ -94,12 +130,12 @@ export default async function BuddiesPage({ searchParams }: Props) {
                       @{c.user.username}
                       {c.user.discordHandle ? ` · Discord ${c.user.discordHandle}` : ""}
                     </span>
+                    <span className={`truncate text-xs ${activityLabel(week.get(c.user.id)?.lastActiveAt ?? null) === "Studied today" ? "text-success" : "text-muted"}`}>
+                      {activityLabel(week.get(c.user.id)?.lastActiveAt ?? null)}
+                      {c.unread > 0 ? ` · ${c.unread} new ${c.unread === 1 ? "message" : "messages"}` : ""}
+                    </span>
                   </span>
-                  {c.unread > 0 ? (
-                    <span className="rounded-full bg-accent px-2 text-xs text-on-accent">{c.unread}</span>
-                  ) : (
-                    <span aria-hidden="true" className="text-subtle">→</span>
-                  )}
+                  {week.get(c.user.id) && <GoalRing done={week.get(c.user.id)!.done} goal={week.get(c.user.id)!.goal} />}
                 </Link>
               </li>
             ))}
@@ -114,9 +150,14 @@ export default async function BuddiesPage({ searchParams }: Props) {
             <p className="mt-1 text-sm text-muted">Ranked by shared subjects, then shared interests.</p>
           </div>
           {suggestions.length === 0 ? (
-            <div className="card p-10 text-center text-sm text-muted">
-              No one new to suggest right now. Add more subjects or interests on your{" "}
-              <Link href="/me" className="text-accent-text hover:underline">Me page</Link>, or check back soon.
+            <div className="card flex flex-col items-center gap-4 p-10 text-center">
+              <p className="font-display text-2xl text-fg">No one new to suggest yet</p>
+              <p className="max-w-md text-sm text-muted">
+                The fastest way to get a study buddy is to bring one. Send a friend the link, then add each other here.
+                You can also add more subjects or interests on your{" "}
+                <Link href="/me" className="text-accent-text hover:underline">Me page</Link>.
+              </p>
+              <InviteButton />
             </div>
           ) : (
             <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -137,7 +178,7 @@ export default async function BuddiesPage({ searchParams }: Props) {
                     </ul>
                   )}
                   <form action={requestBuddyAction.bind(null, s.id)} className="mt-auto">
-                    <button type="submit" className="btn btn-primary w-full py-2">Send buddy request</button>
+                    <SubmitButton className="btn btn-primary w-full py-2">Send buddy request</SubmitButton>
                   </form>
                 </li>
               ))}
@@ -173,7 +214,7 @@ function PersonHeader({ user }: { user: { name: string; username: string; subjec
     <div className="flex items-center gap-3">
       <Avatar name={user.name} username={user.username} size={44} />
       <div className="min-w-0">
-        <p className="truncate font-semibold text-fg">{user.name}</p>
+        <Link href={`/u/${user.username}`} className="block truncate font-semibold text-fg hover:text-accent-text">{user.name}</Link>
         <p className="truncate text-xs text-subtle">
           @{user.username}
           {user.subjects.length > 0 ? ` · learning ${user.subjects.join(", ")}` : ""}
