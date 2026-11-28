@@ -47,10 +47,10 @@ export default async function ProfileSessionPage({ params }: Props) {
       <BackLink href={`/profile/${userId}`}>{isOwner ? "My Profile" : user.name}</BackLink>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Session review
         </p>
-        <h1 className="mt-1 font-serif text-3xl text-fg">
+        <h1 className="mt-1 font-display text-3xl text-fg">
           {session.topic.title}
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -93,12 +93,12 @@ export default async function ProfileSessionPage({ params }: Props) {
           return (
             <div
               key={answer.id}
-              className="flex flex-col gap-4 rounded-[24px] border border-line bg-surface p-6"
+              className="flex flex-col gap-4 card p-6"
             >
               {/* Question header */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
+                  <p className="eyebrow">
                     {idx + 1}. {answer.question.type.replace(/_/g, " ")}
                   </p>
                   <p className="mt-1 font-semibold text-fg">

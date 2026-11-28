@@ -59,12 +59,20 @@
   box-sizing: border-box;
 }
 
+@media (min-width: 40rem) {
+  body {
+    padding-bottom: 0;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
   min-height: 100vh;
+  /* Room for the phone tab bar (components/ui/mobile-tabbar.tsx). */
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   background-color: var(--color-canvas);
   /* Two soft light sources, fixed so they don't scroll with content. */
   background-image:

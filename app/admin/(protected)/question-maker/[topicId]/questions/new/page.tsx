@@ -26,10 +26,10 @@ export default async function NewQMQuestionPage({ params }: Props) {
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
       </Link>
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · Quizzes · {topic.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">New question</h1>
+        <h1 className="mt-2 font-display text-4xl text-fg">New question</h1>
       </div>
       <QMQuestionForm action={action} submitLabel="Create question" />
     </div>

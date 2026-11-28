@@ -129,7 +129,7 @@ export function AnswerDisplay({
     const correct = answer.trim().toLowerCase() === questionData.answer.trim().toLowerCase();
     return (
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-fg/60">{questionData.sentence}</p>
+        <p className="text-sm text-muted">{questionData.sentence}</p>
         <div className="flex gap-3">
           <div className={`flex-1 rounded-xl border px-4 py-3 text-sm ${correct ? "border-success/40 bg-success/8 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>
             <span className="text-xs font-semibold uppercase tracking-widest opacity-60 block mb-1">Student</span>
@@ -151,7 +151,7 @@ export function AnswerDisplay({
     const correct = studentBool === questionData.isTrue;
     return (
       <div className="flex flex-col gap-2">
-        <p className="text-sm text-fg/60">{questionData.statement}</p>
+        <p className="text-sm text-muted">{questionData.statement}</p>
         <div className="flex gap-3">
           <div className={`rounded-xl border px-4 py-3 text-sm font-semibold ${correct ? "border-success/40 bg-success/8 text-success" : "border-danger/30 bg-danger/10 text-danger"}`}>
             Student: {studentBool ? "True" : "False"}
@@ -163,7 +163,7 @@ export function AnswerDisplay({
           )}
         </div>
         {questionData.explanation && (
-          <p className="mt-1 text-xs text-fg/45">{questionData.explanation}</p>
+          <p className="mt-1 text-xs text-subtle">{questionData.explanation}</p>
         )}
       </div>
     );
@@ -191,7 +191,7 @@ export function AnswerDisplay({
         </div>
         {!isCorrect && (
           <div className="mt-1 flex flex-wrap gap-2">
-            <span className="self-center text-xs text-fg/40">Correct:</span>
+            <span className="self-center text-xs text-subtle">Correct:</span>
             {questionData.words.map((w, i) => (
               <span key={i} className="rounded-full bg-accent/12 px-3 py-1 text-sm text-accent-text">{w}</span>
             ))}

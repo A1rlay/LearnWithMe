@@ -6,8 +6,7 @@ import type { MissedQuestion, StudentInsight } from "@/server/data/class-insight
 
 export function ClassInsights({ students, missed }: { students: StudentInsight[]; missed: MissedQuestion[] }) {
   if (students.length === 0) return null;
-  const weekAgo = Date.now() - 7 * 86_400_000;
-  const quiet = students.filter((s) => !s.week.lastActiveAt || s.week.lastActiveAt.getTime() < weekAgo);
+  const quiet = students.filter((s) => s.quiet);
   const onTrack = students.filter((s) => s.week.done >= s.week.goal).length;
 
   return (
@@ -43,7 +42,7 @@ export function ClassInsights({ students, missed }: { students: StudentInsight[]
             </thead>
             <tbody className="divide-y divide-line">
               {students.map((s) => {
-                const isQuiet = !s.week.lastActiveAt || s.week.lastActiveAt.getTime() < weekAgo;
+                const isQuiet = s.quiet;
                 return (
                   <tr key={s.id}>
                     <th scope="row" className="px-4 py-2.5 font-medium">

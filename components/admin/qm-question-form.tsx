@@ -11,9 +11,9 @@ import type {
 } from "@/server/data/question-maker";
 
 const inputClass =
-  "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
+  "field";
 
-const labelClass = "text-xs font-semibold uppercase tracking-[0.22em] text-fg/55";
+const labelClass = "text-sm font-medium text-fg";
 
 type Props = {
   action: (formData: FormData) => Promise<void>;
@@ -35,7 +35,7 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
   const classifierData = defaults?.type === "CLASSIFIER" ? (defaults.data as ClassifierData) : null;
 
   return (
-    <form action={action} className="flex flex-col gap-6 rounded-[28px] border border-line bg-surface p-8">
+    <form action={action} className="flex flex-col gap-6 card p-8">
       <input type="hidden" name="type" value={type} />
 
       {/* Type selector */}
@@ -50,7 +50,7 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
               className={`rounded-xl border px-3 py-2.5 text-xs font-bold transition-colors ${
                 type === t
                   ? "border-accent-text bg-accent text-fg"
-                  : "border-fg/20 text-fg/60 hover:border-fg hover:text-fg"
+                  : "border-line-strong text-muted hover:border-fg hover:text-fg"
               }`}
             >
               {t === "MULTIPLE_OPTION" ? "Multiple option" : t === "OPEN_ANSWER" ? "Open answer" : t === "MATCHER" ? "Matcher" : "Classifier"}
@@ -65,7 +65,7 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
         <input id="prompt" name="prompt" defaultValue={defaults?.prompt} required className={inputClass} />
       </div>
       <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Hint (optional)</span>
+        <span className="text-sm font-medium text-fg">Hint (optional)</span>
         <input name="hint" maxLength={200} defaultValue={defaults?.hint ?? ""} placeholder="A nudge, not the answer. e.g. Listen for the -ed ending." className="field" />
       </label>
 
@@ -76,7 +76,7 @@ export function QMQuestionForm({ action, defaults, submitLabel }: Props) {
       {type === "CLASSIFIER" && <ClassifierFields defaults={classifierData ?? undefined} />}
 
       <div className="pt-2">
-        <button type="submit" className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90">
+        <button type="submit" className="btn btn-primary">
           {submitLabel}
         </button>
       </div>
@@ -91,16 +91,16 @@ function MultipleOptionFields({ defaults }: { defaults?: MultipleOptionData }) {
   const [correctIndex, setCorrectIndex] = useState(defaults?.correctIndex ?? 0);
 
   return (
-    <fieldset className="flex flex-col gap-4 rounded-[20px] border border-line p-5">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-fg/55">Options</legend>
+    <fieldset className="flex flex-col gap-4 rounded-2xl border border-line p-5">
+      <legend className="px-1 text-sm font-medium text-fg">Options</legend>
       <input type="hidden" name="optionCount" value={optionCount} />
       <input type="hidden" name="correctIndex" value={correctIndex} />
 
       <div className="flex items-center gap-3">
-        <span className="text-xs text-fg/55">Number of options:</span>
+        <span className="text-xs text-subtle">Number of options:</span>
         {[2, 3, 4, 5, 6].map((n) => (
           <button key={n} type="button" onClick={() => setOptionCount(n)}
-            className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${optionCount === n ? "bg-accent text-fg" : "border border-fg/20 text-fg/60 hover:border-fg"}`}>
+            className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${optionCount === n ? "bg-accent text-fg" : "border border-line-strong text-muted hover:border-fg"}`}>
             {n}
           </button>
         ))}
@@ -110,13 +110,13 @@ function MultipleOptionFields({ defaults }: { defaults?: MultipleOptionData }) {
         {Array.from({ length: optionCount }, (_, i) => (
           <div key={i} className="flex items-center gap-3">
             <button type="button" onClick={() => setCorrectIndex(i)}
-              className={`h-5 w-5 shrink-0 rounded-full border-2 transition-colors ${correctIndex === i ? "border-success bg-success" : "border-fg/30"}`}
+              className={`h-5 w-5 shrink-0 rounded-full border-2 transition-colors ${correctIndex === i ? "border-success bg-success" : "border-line-strong"}`}
               title="Mark as correct" />
             <input name={`option_${i}`} defaultValue={defaults?.options[i] ?? ""} placeholder={`Option ${i + 1}`} required
               className="flex-1 rounded-xl border border-line-strong bg-surface-2 px-4 py-2.5 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text" />
           </div>
         ))}
-        <p className="text-xs text-fg/40">Click the circle to mark the correct answer.</p>
+        <p className="text-xs text-subtle">Click the circle to mark the correct answer.</p>
       </div>
     </fieldset>
   );
@@ -130,7 +130,7 @@ function OpenAnswerFields({ defaults }: { defaults?: { referenceAnswer: string }
       <label htmlFor="referenceAnswer" className={labelClass}>Reference answer</label>
       <textarea id="referenceAnswer" name="referenceAnswer" defaultValue={defaults?.referenceAnswer ?? ""} rows={3}
         className={inputClass} placeholder="The expected correct answer (used during review)" />
-      <p className="text-xs text-fg/40">Students' open answers will be marked pending until you review them.</p>
+      <p className="text-xs text-subtle">Students&apos; open answers will be marked pending until you review them.</p>
     </div>
   );
 }
@@ -231,8 +231,8 @@ function MatcherFields({ defaults }: { defaults?: MatcherData }) {
   const count = lefts.length;
 
   return (
-    <fieldset className="flex flex-col gap-4 rounded-[20px] border border-line p-5">
-      <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-fg/55">Pairs</legend>
+    <fieldset className="flex flex-col gap-4 rounded-2xl border border-line p-5">
+      <legend className="px-1 text-sm font-medium text-fg">Pairs</legend>
 
       {/* Serialized hidden inputs — left_i / right_i where left[i] matches right[connections[i]] */}
       <input type="hidden" name="pairCount" value={count} />
@@ -249,10 +249,10 @@ function MatcherFields({ defaults }: { defaults?: MatcherData }) {
 
       {/* Count selector */}
       <div className="flex items-center gap-3">
-        <span className="text-xs text-fg/55">Number of pairs:</span>
+        <span className="text-xs text-subtle">Number of pairs:</span>
         {[2, 3, 4, 5, 6, 7, 8].map((n) => (
           <button key={n} type="button" onClick={() => changeCount(n)}
-            className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${count === n ? "bg-accent text-fg" : "border border-fg/20 text-fg/60 hover:border-fg"}`}>
+            className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${count === n ? "bg-accent text-fg" : "border border-line-strong text-muted hover:border-fg"}`}>
             {n}
           </button>
         ))}
@@ -260,11 +260,11 @@ function MatcherFields({ defaults }: { defaults?: MatcherData }) {
 
       {/* Column headers */}
       <div className="grid" style={{ gridTemplateColumns: "1fr 22px 48px 22px 1fr", gap: "8px" }}>
-        <span className="text-xs font-bold uppercase tracking-widest text-fg/40">Left</span>
+        <span className="text-xs font-bold uppercase tracking-widest text-subtle">Left</span>
         <span />
         <span />
         <span />
-        <span className="text-xs font-bold uppercase tracking-widest text-fg/40">Right</span>
+        <span className="text-xs font-bold uppercase tracking-widest text-subtle">Right</span>
       </div>
 
       {/* Pair rows */}
@@ -299,7 +299,7 @@ function MatcherFields({ defaults }: { defaults?: MatcherData }) {
                       ? "scale-125 border-fg bg-fg"
                       : isLeftConnected
                       ? "border-accent-text bg-accent"
-                      : "border-fg/35 hover:border-fg"
+                      : "border-line-strong hover:border-fg"
                   }`}
                 />
 
@@ -316,8 +316,8 @@ function MatcherFields({ defaults }: { defaults?: MatcherData }) {
                     isRightConnected
                       ? "border-accent-text bg-accent"
                       : activeLeft !== null
-                      ? "border-fg/50 hover:border-accent-text hover:scale-110"
-                      : "border-fg/35"
+                      ? "border-line-strong hover:border-accent-text hover:scale-110"
+                      : "border-line-strong"
                   }`}
                 />
 
@@ -358,7 +358,7 @@ function MatcherFields({ defaults }: { defaults?: MatcherData }) {
         </svg>
       </div>
 
-      <p className="text-xs text-fg/40">
+      <p className="text-xs text-subtle">
         {activeLeft !== null
           ? `→ Now click the right ● dot that matches "${lefts[activeLeft] || `Left ${activeLeft + 1}`}"`
           : allConnected
@@ -381,13 +381,13 @@ function ClassifierFields({ defaults }: { defaults?: ClassifierData }) {
       <input type="hidden" name="itemCount" value={itemCount} />
 
       {/* Categories */}
-      <fieldset className="flex flex-col gap-3 rounded-[20px] border border-line p-5">
-        <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-fg/55">Categories</legend>
+      <fieldset className="flex flex-col gap-3 rounded-2xl border border-line p-5">
+        <legend className="px-1 text-sm font-medium text-fg">Categories</legend>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-fg/55">Number:</span>
+          <span className="text-xs text-subtle">Number:</span>
           {[2, 3, 4].map((n) => (
             <button key={n} type="button" onClick={() => setCatCount(n)}
-              className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${catCount === n ? "bg-accent text-fg" : "border border-fg/20 text-fg/60 hover:border-fg"}`}>
+              className={`h-8 w-8 rounded-full text-xs font-bold transition-colors ${catCount === n ? "bg-accent text-fg" : "border border-line-strong text-muted hover:border-fg"}`}>
               {n}
             </button>
           ))}
@@ -399,10 +399,10 @@ function ClassifierFields({ defaults }: { defaults?: ClassifierData }) {
       </fieldset>
 
       {/* Items */}
-      <fieldset className="flex flex-col gap-3 rounded-[20px] border border-line p-5">
-        <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-fg/55">Items</legend>
+      <fieldset className="flex flex-col gap-3 rounded-2xl border border-line p-5">
+        <legend className="px-1 text-sm font-medium text-fg">Items</legend>
         <div className="flex items-center gap-3">
-          <span className="text-xs text-fg/55">Number of items (max 30):</span>
+          <span className="text-xs text-subtle">Number of items (max 30):</span>
           <input
             type="number"
             min={2}
@@ -429,7 +429,7 @@ function ClassifierFields({ defaults }: { defaults?: ClassifierData }) {
             </div>
           ))}
         </div>
-        <p className="text-xs text-fg/40">Assign each item to its correct category.</p>
+        <p className="text-xs text-subtle">Assign each item to its correct category.</p>
       </fieldset>
     </div>
   );

@@ -8,7 +8,7 @@ import { requireEditorPage } from "@/lib/auth";
 type Props = { params: Promise<{ setId: string }> };
 
 const inputClass =
-  "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
+  "field";
 
 export default async function NewSpellRightWordPage({ params }: Props) {
   const { setId } = await params;
@@ -33,18 +33,18 @@ export default async function NewSpellRightWordPage({ params }: Props) {
       </Link>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · Sounds & spelling · {set.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">Add word</h1>
+        <h1 className="mt-2 font-display text-4xl text-fg">Add word</h1>
       </div>
 
       <form
         action={create}
-        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
+        className="flex flex-col gap-5 card p-8"
       >
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="word" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+          <label htmlFor="word" className="text-sm font-medium text-fg">
             Word <span className="text-accent-text">*</span>
           </label>
           <input
@@ -58,7 +58,7 @@ export default async function NewSpellRightWordPage({ params }: Props) {
 
         {isTermination && (
           <div className="flex flex-col gap-1.5">
-            <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+            <span className="text-sm font-medium text-fg">
               Correct termination <span className="text-accent-text">*</span>
             </span>
             <div className="flex gap-4">
@@ -86,9 +86,9 @@ export default async function NewSpellRightWordPage({ params }: Props) {
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="explanation" className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+          <label htmlFor="explanation" className="text-sm font-medium text-fg">
             Explanation
-            <span className="ml-1 normal-case text-fg/30">(shown after answer)</span>
+            <span className="ml-1 normal-case text-subtle">(shown after answer)</span>
           </label>
           <textarea
             id="explanation"
@@ -106,7 +106,7 @@ export default async function NewSpellRightWordPage({ params }: Props) {
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+            className="btn btn-primary"
           >
             Add word
           </button>

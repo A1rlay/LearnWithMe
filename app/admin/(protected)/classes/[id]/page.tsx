@@ -69,13 +69,13 @@ export default async function ClassDetailPage({ params }: Props) {
       : [{ id: session.userId, name: session.name }];
 
   const inputClass =
-    "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
+    "field";
 
   return (
     <div className="flex flex-col gap-10">
       <Link
         href="/admin/classes"
-        className="flex items-center gap-1.5 text-sm font-semibold text-fg/55 hover:text-fg"
+        className="flex items-center gap-1.5 text-sm font-semibold text-subtle hover:text-fg"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Classes
       </Link>
@@ -83,14 +83,14 @@ export default async function ClassDetailPage({ params }: Props) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">Class</p>
-          <h1 className="mt-1 font-serif text-3xl text-fg">{cls.name}</h1>
+          <p className="eyebrow">Class</p>
+          <h1 className="mt-1 font-display text-3xl text-fg">{cls.name}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted">
             <span>Teacher: {cls.teacher.name}</span>
             <span>·</span>
             <span>
               Join code:{" "}
-              <code className="rounded bg-fg/8 px-2 py-0.5 font-mono text-accent-text">
+              <code className="rounded bg-surface-3 px-2 py-0.5 font-mono text-accent-text">
                 {cls.code}
               </code>
             </span>
@@ -104,7 +104,7 @@ export default async function ClassDetailPage({ params }: Props) {
       <ClassInsights students={insights.students} missed={insights.missed} />
 
       {/* Edit */}
-      <details className="rounded-[24px] border border-line bg-surface">
+      <details className="card">
         <summary className="cursor-pointer px-6 py-4 text-sm font-semibold text-fg">
           Edit class details
         </summary>
@@ -126,7 +126,7 @@ export default async function ClassDetailPage({ params }: Props) {
               </select>
             )}
           </div>
-          <button type="submit" className="self-start rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-fg transition-opacity hover:opacity-90">
+          <button type="submit" className="self-start btn btn-primary">
             Save changes
           </button>
         </form>
@@ -134,16 +134,16 @@ export default async function ClassDetailPage({ params }: Props) {
 
       {/* ── Assignments ── */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <h2 className="eyebrow">
           Assignments ({assignments.length})
         </h2>
 
         {assignments.length === 0 ? (
-          <div className="rounded-[20px] border border-dashed border-line p-8 text-center text-sm text-muted">
+          <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-8 text-center text-sm text-muted">
             No activities assigned yet. Add one below.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[24px] border border-line bg-surface">
+          <div className="overflow-hidden card">
             {assignments.map((a, i) => {
               const completed = completionMap.get(a.topicId) ?? 0;
               const total = cls.students.length;
@@ -160,7 +160,7 @@ export default async function ClassDetailPage({ params }: Props) {
                     </div>
                     {a.note && <p className="text-xs text-muted">{a.note}</p>}
                     {a.dueAt && (
-                      <p className="text-xs text-fg/40">
+                      <p className="text-xs text-subtle">
                         Due {new Date(a.dueAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
                       </p>
                     )}
@@ -169,9 +169,9 @@ export default async function ClassDetailPage({ params }: Props) {
                   {/* Completion bar */}
                   <div className="flex w-28 shrink-0 flex-col items-end gap-1.5">
                     <span className="text-xs font-semibold text-muted">{completed}/{total} done</span>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-fg/8">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
                       <div
-                        className={`h-full rounded-full transition-all ${pct >= 80 ? "bg-success" : pct >= 40 ? "bg-warning" : "bg-fg/20"}`}
+                        className={`h-full rounded-full transition-all ${pct >= 80 ? "bg-success" : pct >= 40 ? "bg-warning" : "bg-surface-3"}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -189,7 +189,7 @@ export default async function ClassDetailPage({ params }: Props) {
         )}
 
         {unassignedTopics.length > 0 && (
-          <form action={assignTopicAction.bind(null, cls.id)} className="flex flex-col gap-3 rounded-[20px] border border-line bg-surface p-5">
+          <form action={assignTopicAction.bind(null, cls.id)} className="flex flex-col gap-3 card p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">Assign activity</p>
             <div className="flex flex-wrap gap-3">
               <select name="topicId" required className={`min-w-40 flex-1 ${inputClass}`}>
@@ -201,7 +201,7 @@ export default async function ClassDetailPage({ params }: Props) {
               <input name="dueAt" type="date" className={`w-40 ${inputClass}`} title="Due date (optional)" />
             </div>
             <input name="note" placeholder="Note for students (optional)" className={`w-full ${inputClass}`} />
-            <button type="submit" className="self-start rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-fg transition-opacity hover:opacity-90">
+            <button type="submit" className="self-start btn btn-primary">
               Assign
             </button>
           </form>
@@ -210,16 +210,16 @@ export default async function ClassDetailPage({ params }: Props) {
 
       {/* ── Students ── */}
       <section className="flex flex-col gap-4">
-        <h2 className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <h2 className="eyebrow">
           Students ({cls.students.length})
         </h2>
 
         {cls.students.length === 0 ? (
-          <div className="rounded-[20px] border border-dashed border-line p-8 text-center text-sm text-muted">
+          <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-8 text-center text-sm text-muted">
             No students enrolled. Share the join code or add manually below.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-[24px] border border-line bg-surface">
+          <div className="overflow-hidden card">
             {cls.students.map((s, i) => (
               <div
                 key={s.studentId}
@@ -249,7 +249,7 @@ export default async function ClassDetailPage({ params }: Props) {
                 <option key={s.id} value={s.id}>{s.name} (@{s.username})</option>
               ))}
             </select>
-            <button type="submit" className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-fg transition-opacity hover:opacity-90">
+            <button type="submit" className="btn btn-primary">
               Add
             </button>
           </form>

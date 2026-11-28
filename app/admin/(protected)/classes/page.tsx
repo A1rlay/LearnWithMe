@@ -15,43 +15,43 @@ export default async function ClassesPage() {
     <div className="flex flex-col gap-8">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          <p className="eyebrow">
             Classes
           </p>
-          <h1 className="mt-1 font-serif text-3xl text-fg">
+          <h1 className="mt-1 font-display text-3xl text-fg">
             Class Management
           </h1>
         </div>
         <Link
           href="/admin/classes/new"
-          className="rounded-full bg-accent px-5 py-2.5 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+          className="btn btn-primary"
         >
           New class
         </Link>
       </div>
 
       {classes.length === 0 ? (
-        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-12 text-center text-sm text-muted">
           No classes yet.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[28px] border border-line bg-surface">
+        <div className="overflow-hidden card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line">
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+                <th className="px-6 py-4 text-left text-sm font-medium text-fg">
                   Class
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+                <th className="px-6 py-4 text-left text-sm font-medium text-fg">
                   Teacher
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+                <th className="px-6 py-4 text-left text-sm font-medium text-fg">
                   Code
                 </th>
-                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+                <th className="px-6 py-4 text-left text-sm font-medium text-fg">
                   Students
                 </th>
-                <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+                <th className="px-6 py-4 text-right text-sm font-medium text-fg">
                   Actions
                 </th>
               </tr>
@@ -66,7 +66,7 @@ export default async function ClassesPage() {
                   </td>
                   <td className="px-6 py-4 text-muted">{cls.teacher.name}</td>
                   <td className="px-6 py-4">
-                    <code className="rounded bg-fg/8 px-2 py-0.5 text-xs font-mono text-accent-text">
+                    <code className="rounded bg-surface-3 px-2 py-0.5 text-xs font-mono text-accent-text">
                       {cls.code}
                     </code>
                   </td>

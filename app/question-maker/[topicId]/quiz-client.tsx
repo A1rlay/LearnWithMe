@@ -70,14 +70,14 @@ export function QuizClient({ topic, topicId }: Props) {
       {/* Progress */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-fg/55">
+          <p className="text-sm font-medium text-fg">
             {topic.title}
           </p>
-          <p className="text-xs text-fg/45">
+          <p className="text-xs text-subtle">
             {step + 1} / {topic.questions.length}
           </p>
         </div>
-        <div className="h-1.5 w-full rounded-full bg-fg/10">
+        <div className="h-1.5 w-full rounded-full bg-surface-3">
           <div
             className="h-full rounded-full bg-accent transition-all duration-300"
             style={{ width: `${((step + 1) / topic.questions.length) * 100}%` }}
@@ -94,7 +94,7 @@ export function QuizClient({ topic, topicId }: Props) {
 
       {/* Question */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
+        <p className="eyebrow">
           Question {step + 1}
         </p>
         <h2 className="mt-2 text-2xl font-bold text-fg">{current.prompt}</h2>
@@ -114,7 +114,7 @@ export function QuizClient({ topic, topicId }: Props) {
         {step > 0 ? (
           <button
             onClick={() => setStep((s) => s - 1)}
-            className="flex items-center gap-1.5 rounded-full border border-fg/25 px-5 py-3 text-sm font-semibold text-fg/70 transition-colors hover:border-fg hover:text-fg"
+            className="flex items-center gap-1.5 rounded-full border border-line-strong px-5 py-3 text-sm font-semibold text-muted transition-colors hover:border-fg hover:text-fg"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             Previous
@@ -122,7 +122,7 @@ export function QuizClient({ topic, topicId }: Props) {
         ) : (
           <Link
             href={`/subjects/${topic.subjectId}`}
-            className="flex items-center gap-1.5 text-sm text-fg/45 transition-colors hover:text-fg"
+            className="flex items-center gap-1.5 text-sm text-subtle transition-colors hover:text-fg"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             Exit
@@ -132,7 +132,7 @@ export function QuizClient({ topic, topicId }: Props) {
           <button
             onClick={handleSubmit}
             disabled={!isAnswerReady(current, answers[step]) || submitting}
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="btn btn-primary disabled:opacity-40"
           >
             {submitting ? "Submitting…" : "Submit"}
           </button>
@@ -140,7 +140,7 @@ export function QuizClient({ topic, topicId }: Props) {
           <button
             onClick={() => setStep((s) => s + 1)}
             disabled={!isAnswerReady(current, answers[step])}
-            className="flex items-center gap-1.5 rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="flex items-center gap-1.5 btn btn-primary disabled:opacity-40"
           >
             Next
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
@@ -194,7 +194,7 @@ function MultipleOptionInput({
           className={`rounded-2xl border px-5 py-4 text-left text-sm font-medium transition-colors ${
             selected === i
               ? "border-accent-text bg-accent/15 text-fg"
-              : "border-fg/18 text-fg/80 hover:border-fg/40"
+              : "border-line-strong text-muted hover:border-fg"
           }`}
         >
           {opt}
@@ -221,9 +221,9 @@ function OpenAnswerInput({
         value={text}
         onChange={(e) => onChange(e.target.value || null)}
         placeholder="Type your answer here…"
-        className="rounded-2xl border border-fg/20 bg-surface-2 px-5 py-4 text-sm text-fg placeholder:text-fg/35 outline-none focus:border-accent-text resize-none"
+        className="rounded-2xl border border-line-strong bg-surface-2 px-5 py-4 text-sm text-fg placeholder:text-subtle outline-none focus:border-accent-text resize-none"
       />
-      <p className="text-xs text-fg/40">Your teacher will review this answer.</p>
+      <p className="text-xs text-subtle">Your teacher will review this answer.</p>
     </div>
   );
 }
@@ -314,7 +314,7 @@ function MatcherInput({
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-xs text-fg/45">
+      <p className="text-xs text-subtle">
         {allMatched
           ? "All pairs connected. Click any item to change a match."
           : activeLeft !== null
@@ -346,10 +346,10 @@ function MatcherInput({
                   }}
                   className={`rounded-xl border px-4 py-3 text-left text-sm transition-colors ${
                     isActive
-                      ? "border-fg bg-fg/10 text-fg ring-1 ring-fg/30"
+                      ? "border-fg bg-surface-3 text-fg ring-1 ring-fg/30"
                       : isMatched
                       ? "border-accent/55 text-fg"
-                      : "border-fg/18 text-fg/80 hover:border-fg"
+                      : "border-line-strong text-muted hover:border-fg"
                   }`}
                 >
                   {pair.left}
@@ -375,8 +375,8 @@ function MatcherInput({
                     isMatched
                       ? "border-accent/55 text-fg"
                       : clickable
-                      ? "border-fg/35 text-fg hover:border-accent-text hover:bg-accent/8 cursor-pointer"
-                      : "border-fg/18 text-fg/60"
+                      ? "border-line-strong text-fg hover:border-accent-text hover:bg-accent/8 cursor-pointer"
+                      : "border-line-strong text-muted"
                   }`}
                 >
                   {data.pairs[actualIdx].right}
@@ -481,7 +481,7 @@ function ClassifierInput({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xs text-fg/45">
+      <p className="text-xs text-subtle">
         {hasTapSelection
           ? `Tap a category to place "${data.items[activeItem!].text}", or tap it again to cancel.`
           : "Drag items into a category, or tap to select and then tap a category."}
@@ -491,10 +491,10 @@ function ClassifierInput({
       <div
         className={`min-h-12 rounded-2xl border-2 border-dashed p-4 transition-colors ${
           dragOver === "bank"
-            ? "border-fg/45 bg-fg/5"
+            ? "border-line-strong bg-surface-3"
             : hasTapSelection
-            ? "border-fg/20"
-            : "border-fg/15"
+            ? "border-line-strong"
+            : "border-line-strong"
         }`}
         onDragOver={(e) => { e.preventDefault(); setDragOver("bank"); }}
         onDragLeave={() => setDragOver(null)}
@@ -507,7 +507,7 @@ function ClassifierInput({
       >
         <div className="flex flex-wrap gap-2 min-h-8">
           {unplaced.length === 0 ? (
-            <span className="text-xs text-fg/30">All items placed</span>
+            <span className="text-xs text-subtle">All items placed</span>
           ) : (
             unplaced.map((ii) => (
               <div
@@ -520,8 +520,8 @@ function ClassifierInput({
                   activeItem === ii
                     ? "border-accent-text bg-accent/25 ring-2 ring-accent-text scale-105"
                     : dragItem === ii
-                    ? "opacity-40 border-fg/30"
-                    : "border-fg/30 hover:border-fg"
+                    ? "opacity-40 border-line-strong"
+                    : "border-line-strong hover:border-fg"
                 }`}
               >
                 {data.items[ii].text}
@@ -554,7 +554,7 @@ function ClassifierInput({
               className={`min-h-24 rounded-2xl border-2 p-4 transition-colors ${
                 highlight
                   ? "cursor-pointer border-accent-text bg-accent/6"
-                  : "border-fg/18"
+                  : "border-line-strong"
               }`}
             >
               <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-accent-text">
@@ -586,7 +586,7 @@ function ClassifierInput({
         })}
       </div>
 
-      <p className="text-xs text-fg/40">
+      <p className="text-xs text-subtle">
         Mobile: tap an item to select it, tap a category to place it, tap a placed item twice to return it.
       </p>
     </div>
@@ -612,15 +612,15 @@ function ReviewScreen({
     <main className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-6 py-12 sm:py-16">
       {/* Score card */}
       <div className="text-center">
-        <p className="text-xs font-bold uppercase tracking-[0.32em] text-fg/55">
+        <p className="text-xs font-bold uppercase tracking-[0.32em] text-subtle">
           {topic.title}
         </p>
         <h1 className="mt-2 text-4xl font-extrabold text-fg">Quiz complete!</h1>
       </div>
 
-      <div className="flex flex-col items-center gap-2 rounded-[28px] border border-line bg-surface px-10 py-8 text-center">
+      <div className="flex flex-col items-center gap-2 card px-10 py-8 text-center">
         <p className="text-6xl font-extrabold text-success">{pct}%</p>
-        <p className="text-sm text-fg/60">
+        <p className="text-sm text-muted">
           {correct} correct out of {autoGraded} auto-graded
           {pending > 0 && (
             <span className="ml-1 text-warning">
@@ -632,7 +632,7 @@ function ReviewScreen({
 
       {/* Per-question review */}
       <div className="flex flex-col gap-3">
-        <h2 className="text-base font-bold uppercase tracking-[0.2em] text-fg/55">
+        <h2 className="text-base font-bold uppercase tracking-[0.2em] text-subtle">
           Review
         </h2>
         {scored.map((s, i) => (
@@ -644,13 +644,13 @@ function ReviewScreen({
       <div className="flex flex-wrap gap-3">
         <Link
           href={`/question-maker/${topic.id}`}
-          className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+          className="btn btn-primary"
         >
           Try again
         </Link>
         <Link
           href={`/subjects/${topic.subjectId}`}
-          className="flex items-center gap-1.5 rounded-full border border-fg/25 px-6 py-3 text-sm font-semibold text-fg/70 transition-colors hover:border-fg hover:text-fg"
+          className="flex items-center gap-1.5 rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-muted transition-colors hover:border-fg hover:text-fg"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           Back to topics
@@ -665,7 +665,7 @@ function QuestionReview({ index, scored }: { index: number; scored: ScoredAnswer
   const data = question.data as QMQuestionData;
 
   return (
-    <div className="flex flex-col gap-3 rounded-[24px] border border-line bg-surface p-5">
+    <div className="flex flex-col gap-3 card p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-text">
@@ -710,7 +710,7 @@ function ReviewMultipleOption({ data, answer }: { data: MultipleOptionData; answ
               ? "bg-accent/12 text-accent-text"
               : i === chosen
               ? "bg-danger/10 text-danger"
-              : "text-fg/45"
+              : "text-subtle"
           }`}
         >
           <span className="w-4 shrink-0 text-center font-bold text-xs">
@@ -734,7 +734,7 @@ function ReviewOpenAnswer({ answer }: { answer: unknown }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="rounded-xl border border-line px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-fg/40">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-subtle">
           Your answer
         </p>
         <p className="mt-1 text-sm text-fg">

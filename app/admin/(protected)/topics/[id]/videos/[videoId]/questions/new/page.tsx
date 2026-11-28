@@ -31,23 +31,23 @@ export default async function NewQuestionPage({ params }: NewQuestionPageProps) 
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · {video.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">
+        <h1 className="mt-2 font-display text-4xl text-fg">
           New question
         </h1>
       </div>
 
       <form
         action={create}
-        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
+        className="flex flex-col gap-5 card p-8"
       >
         <QuestionFields defaultOrder={nextOrder} />
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+            className="btn btn-primary"
           >
             Create question
           </button>

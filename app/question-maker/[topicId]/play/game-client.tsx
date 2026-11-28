@@ -83,7 +83,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
           <div>
             <Link
               href={`/question-maker/${topic.id}`}
-              className="flex items-center gap-1.5 text-sm font-semibold text-fg/55 hover:text-fg"
+              className="flex items-center gap-1.5 text-sm font-semibold text-subtle hover:text-fg"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
               Back
@@ -92,21 +92,21 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
               Game Mode
             </p>
             <h1 className="mt-2 text-4xl font-extrabold text-fg">{topic.title}</h1>
-            <p className="mt-2 text-sm text-fg/50">
+            <p className="mt-2 text-sm text-subtle">
               {topic.questions.length} question{topic.questions.length !== 1 ? "s" : ""} · 5×5 board
             </p>
           </div>
 
-          <div className="flex flex-col gap-6 rounded-[28px] border border-line bg-surface p-8">
+          <div className="flex flex-col gap-6 card p-8">
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Number of teams</span>
+              <span className="text-sm font-medium text-fg">Number of teams</span>
               <div className="flex gap-2">
                 {[2, 3, 4].map((n) => (
                   <button
                     key={n}
                     type="button"
                     onClick={() => setTeamCount(n)}
-                    className={`h-10 w-10 rounded-full text-sm font-bold transition-colors ${teamCount === n ? "bg-accent text-fg" : "border border-fg/20 text-fg/60 hover:border-fg"}`}
+                    className={`h-10 w-10 rounded-full text-sm font-bold transition-colors ${teamCount === n ? "bg-accent text-fg" : "border border-line-strong text-muted hover:border-fg"}`}
                   >
                     {n}
                   </button>
@@ -138,7 +138,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
             <button
               type="button"
               onClick={startGame}
-              className="rounded-full bg-accent py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+              className="btn btn-primary"
             >
               Start game
             </button>
@@ -161,17 +161,17 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
               className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-surface px-8 py-4 text-center"
             >
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">{t.name}</p>
-              <p className="font-serif text-4xl text-fg">{t.score}</p>
+              <p className="font-display text-4xl text-fg">{t.score}</p>
             </div>
           ))}
           <div className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-surface px-6 py-4 text-center">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">Left</p>
-            <p className="font-serif text-4xl text-fg">{remaining}</p>
+            <p className="font-display text-4xl text-fg">{remaining}</p>
           </div>
         </div>
 
         {/* Point value legend */}
-        <div className="flex justify-center gap-2 text-xs text-fg/40">
+        <div className="flex justify-center gap-2 text-xs text-subtle">
           {POINT_VALUES.map((v, i) => (
             <span key={i}>Row {i + 1} = {v} pts</span>
           ))}
@@ -194,8 +194,8 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
                 disabled={isUsed}
                 className={`aspect-square rounded-2xl text-lg font-extrabold transition-all ${
                   isUsed
-                    ? "bg-fg/4 text-fg/15 cursor-not-allowed"
-                    : "bg-surface-2 border border-fg/15 text-accent-text hover:bg-surface-3 hover:border-accent-text active:scale-95 cursor-pointer"
+                    ? "bg-surface-3 text-subtle/50 cursor-not-allowed"
+                    : "bg-surface-2 border border-line-strong text-accent-text hover:bg-surface-3 hover:border-accent-text active:scale-95 cursor-pointer"
                 }`}
               >
                 {isUsed ? "✓" : pts}
@@ -207,11 +207,11 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
         {remaining === 0 && (
           <div className="text-center">
             <p className="text-2xl font-extrabold text-fg mb-2">Game over!</p>
-            <p className="text-fg/60 text-sm mb-4">
+            <p className="text-muted text-sm mb-4">
               Winner: {[...teams].sort((a, b) => b.score - a.score)[0].name} with {Math.max(...teams.map((t) => t.score))} pts
             </p>
             <button onClick={() => { setUsed(Array(TOTAL).fill(false)); setTeams(teams.map((t) => ({ ...t, score: 0 }))); }}
-              className="rounded-full border border-fg/25 px-6 py-3 text-sm font-bold text-fg hover:bg-fg/10">
+              className="rounded-full border border-line-strong px-6 py-3 text-sm font-bold text-fg hover:bg-surface-3">
               Play again
             </button>
           </div>
@@ -232,7 +232,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
 
         {/* Question */}
         <div className="w-full max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text mb-3">
+          <p className="eyebrow mb-3">
             {currentQuestion.type.replace(/_/g, " ")}
           </p>
           <h2 className="text-3xl font-extrabold text-fg leading-snug">
@@ -243,33 +243,33 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
           {"options" in data && (
             <div className="mt-6 grid grid-cols-2 gap-3">
               {(data.options as string[]).map((opt, i) => (
-                <div key={i} className="rounded-2xl border border-fg/18 bg-fg/5 px-4 py-3 text-left text-sm text-fg">
-                  <span className="font-bold text-fg/40 mr-2">{String.fromCharCode(65 + i)}.</span>
+                <div key={i} className="rounded-2xl border border-line-strong bg-surface-3 px-4 py-3 text-left text-sm text-fg">
+                  <span className="font-bold text-subtle mr-2">{String.fromCharCode(65 + i)}.</span>
                   {opt}
                 </div>
               ))}
             </div>
           )}
           {"sentence" in data && (
-            <p className="mt-4 text-xl text-fg/70">{data.sentence as string}</p>
+            <p className="mt-4 text-xl text-muted">{data.sentence as string}</p>
           )}
           {"statement" in data && (
-            <p className="mt-4 text-xl text-fg/70">{data.statement as string}</p>
+            <p className="mt-4 text-xl text-muted">{data.statement as string}</p>
           )}
           {"word" in data && (
-            <p className="mt-4 text-3xl font-extrabold tracking-[0.3em] text-fg/50">
+            <p className="mt-4 text-3xl font-extrabold tracking-[0.3em] text-subtle">
               {(data.word as string).split("").sort(() => Math.random() - 0.5).join("")}
             </p>
           )}
           {"front" in data && (
-            <p className="mt-4 text-2xl font-bold text-fg/70">{data.front as string}</p>
+            <p className="mt-4 text-2xl font-bold text-muted">{data.front as string}</p>
           )}
         </div>
 
         {/* Award points to team (shown if not yet awarded) */}
         {awardingTeam === null ? (
           <div className="flex flex-col items-center gap-4 w-full max-w-md">
-            <p className="text-sm font-semibold text-fg/60">
+            <p className="text-sm font-semibold text-muted">
               Award {cellPoints} points to:
             </p>
             <div className="flex flex-wrap justify-center gap-3">
@@ -278,7 +278,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
                   key={i}
                   type="button"
                   onClick={() => awardPoints(i, cellPoints)}
-                  className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+                  className="btn btn-primary"
                 >
                   {t.name}
                 </button>
@@ -286,7 +286,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
               <button
                 type="button"
                 onClick={closeQuestion}
-                className="rounded-full border border-fg/20 px-6 py-3 text-sm font-semibold text-fg/60 hover:border-fg hover:text-fg"
+                className="rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-muted hover:border-fg hover:text-fg"
               >
                 No one (skip)
               </button>
@@ -300,7 +300,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
             <button
               type="button"
               onClick={closeQuestion}
-              className="rounded-full bg-accent px-8 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+              className="btn btn-primary"
             >
               Back to board
             </button>

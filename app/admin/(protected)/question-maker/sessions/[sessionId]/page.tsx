@@ -19,16 +19,16 @@ export default async function QMSessionReviewPage({ params }: Props) {
     <div className="flex flex-col gap-6">
       <Link
         href={`/admin/question-maker/sessions?topicId=${session.topicId}`}
-        className="flex items-center gap-1.5 text-sm font-semibold text-fg/55 transition-colors hover:text-fg"
+        className="flex items-center gap-1.5 text-sm font-semibold text-subtle transition-colors hover:text-fg"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
       </Link>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · Quizzes · {session.topic.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">Session review</h1>
+        <h1 className="mt-2 font-display text-4xl text-fg">Session review</h1>
         {session.completedAt && (
           <p className="mt-1 text-sm text-muted">
             Completed {new Date(session.completedAt).toLocaleString()}
@@ -52,11 +52,11 @@ export default async function QMSessionReviewPage({ params }: Props) {
           return (
             <div
               key={answer.id}
-              className="flex flex-col gap-4 rounded-[24px] border border-line bg-surface p-6"
+              className="flex flex-col gap-4 card p-6"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-text">
+                  <p className="eyebrow">
                     {idx + 1}. {answer.question.type.replace(/_/g, " ")}
                   </p>
                   <p className="mt-1 font-semibold text-fg">

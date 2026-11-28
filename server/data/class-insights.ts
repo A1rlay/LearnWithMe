@@ -10,6 +10,8 @@ export type StudentInsight = {
   week: WeekProgress;
   answers30d: number;
   pct30d: number | null;
+  /** No finished activity in the last 7 days. */
+  quiet: boolean;
 };
 
 export type MissedQuestion = { id: string; prompt: string; activity: string; kind: "Quiz" | "Video"; attempts: number; wrongPct: number };
@@ -76,14 +78,17 @@ export async function getClassInsights(classId: string): Promise<{ students: Stu
   ]);
 
   const accMap = new Map(acc.map((r) => [r.userId, r]));
+  const weekAgo = Date.now() - 7 * 86_400_000;
   const students = members
     .map(({ student: s }) => {
       const a = accMap.get(s.id);
+      const w = week.get(s.id);
       return {
         ...s,
-        week: week.get(s.id) ?? { done: 0, goal: 3, lastActiveAt: null },
+        week: w ?? { done: 0, goal: 3, lastActiveAt: null },
         answers30d: a?.total ?? 0,
         pct30d: a && a.total > 0 ? Math.round((a.correct / a.total) * 100) : null,
+        quiet: !w || !w.lastActiveAt || w.lastActiveAt.getTime() < weekAgo,
       };
     })
     // Quietest first: they are the ones to check on.

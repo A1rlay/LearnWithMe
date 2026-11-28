@@ -29,17 +29,17 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
       </div>
 
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+        <p className="eyebrow">
           Studio · {question.video.title}
         </p>
-        <h1 className="mt-2 font-serif text-4xl text-fg">
+        <h1 className="mt-2 font-display text-4xl text-fg">
           Edit question {question.order}
         </h1>
       </div>
 
       <form
         action={update}
-        className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
+        className="flex flex-col gap-5 card p-8"
       >
         <QuestionFields
           defaults={{
@@ -52,7 +52,7 @@ export default async function EditQuestionPage({ params }: EditQuestionPageProps
         <div className="flex gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
+            className="btn btn-primary"
           >
             Save changes
           </button>
@@ -78,7 +78,7 @@ export function QuestionFields({
     defaults?.options?.find((o) => o.isCorrect)?.order ?? 1;
 
   const inputClass =
-    "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
+    "field";
 
   return (
     <>
@@ -87,7 +87,7 @@ export function QuestionFields({
           <div className="flex flex-col gap-1.5">
             <label
               htmlFor="order"
-              className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
+              className="text-sm font-medium text-fg"
             >
               Order <span className="text-accent-text">*</span>
             </label>
@@ -103,7 +103,7 @@ export function QuestionFields({
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="checkpointSeconds"
-            className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
+            className="text-sm font-medium text-fg"
           >
             Checkpoint (seconds) <span className="text-accent-text">*</span>
           </label>
@@ -121,7 +121,7 @@ export function QuestionFields({
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="prompt"
-          className="text-xs font-semibold uppercase tracking-[0.22em] text-muted"
+          className="text-sm font-medium text-fg"
         >
           Prompt <span className="text-accent-text">*</span>
         </label>
@@ -134,12 +134,12 @@ export function QuestionFields({
         />
       </div>
       <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">Hint (optional)</span>
+        <span className="text-sm font-medium text-fg">Hint (optional)</span>
         <input name="hint" maxLength={200} defaultValue={defaults?.hint ?? ""} placeholder="A nudge, not the answer. e.g. Listen for the -ed ending." className="field" />
       </label>
 
-      <fieldset className="flex flex-col gap-3 rounded-[20px] border border-line p-5">
-        <legend className="px-1 text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+      <fieldset className="flex flex-col gap-3 rounded-2xl border border-line p-5">
+        <legend className="px-1 text-sm font-medium text-fg">
           Options: select the correct answer
         </legend>
         {[1, 2, 3, 4].map((n) => {

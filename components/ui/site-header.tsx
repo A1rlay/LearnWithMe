@@ -3,6 +3,7 @@ import Link from "next/link";
 import { logoutAction } from "@/app/login/actions";
 import { Wordmark } from "@/components/brand/logo";
 import { Avatar } from "@/components/people/avatar";
+import { MobileTabbar } from "@/components/ui/mobile-tabbar";
 import { getSession } from "@/lib/session";
 import { incomingRequestCount, unreadCount } from "@/server/data/buddies";
 
@@ -17,6 +18,10 @@ export async function SiteHeader() {
     : [0, 0];
 
   return (
+    <>
+    {session && (
+      <MobileTabbar unread={unread} requests={requests} isStaff={isStaff} username={session.username} />
+    )}
     <header className="sticky top-0 z-40 border-b border-line bg-canvas/70 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link href="/" aria-label="Learn With Me home" className="shrink-0">
@@ -35,7 +40,7 @@ export async function SiteHeader() {
                 Buddies
                 {requests > 0 && <Badge n={requests} />}
               </Link>
-              <Link href="/messages" className={`${link} relative`} aria-label={unread ? `Messages, ${unread} unread` : "Messages"}>
+              <Link href="/messages" className={`${link} relative hidden sm:inline-flex`} aria-label={unread ? `Messages, ${unread} unread` : "Messages"}>
                 Messages
                 {unread > 0 && <Badge n={unread} />}
               </Link>
@@ -56,6 +61,7 @@ export async function SiteHeader() {
         </nav>
       </div>
     </header>
+    </>
   );
 }
 

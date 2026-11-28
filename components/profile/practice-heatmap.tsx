@@ -97,7 +97,8 @@ export function PracticeHeatmap({ days, today }: { days: Day[]; today: string })
               strokeOpacity={0.5}
               onMouseEnter={() =>
                 setTip({
-                  x: LEFT + c.x + CELL / 2,
+                  // Position inside the scrolling box, captured at hover time.
+                  x: LEFT + c.x + CELL / 2 - (scroller.current?.scrollLeft ?? 0),
                   y: TOP + c.y,
                   text: `${c.n === 0 ? "No" : c.n} ${c.n === 1 ? "answer" : "answers"} on ${fmt(c.day, { weekday: "short", month: "short", day: "numeric" })}`,
                 })
@@ -109,7 +110,7 @@ export function PracticeHeatmap({ days, today }: { days: Day[]; today: string })
           <div
             role="tooltip"
             className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg border border-line-strong bg-surface-3 px-2.5 py-1.5 text-xs text-fg shadow-[var(--shadow-card)]"
-            style={{ left: tip.x - (scroller.current?.scrollLeft ?? 0), top: tip.y - 6 }}
+            style={{ left: tip.x, top: tip.y - 6 }}
           >
             {tip.text}
           </div>

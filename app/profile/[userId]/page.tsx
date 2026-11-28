@@ -54,7 +54,7 @@ export default async function ProfilePage({ params }: Props) {
       </BackLink>
 
       {/* Header card */}
-      <div className="flex flex-col gap-6 rounded-[28px] border border-line bg-surface p-8 sm:flex-row sm:items-start">
+      <div className="flex flex-col gap-6 card p-8 sm:flex-row sm:items-start">
         {/* Avatar */}
         <div
           className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-2xl font-extrabold"
@@ -69,7 +69,7 @@ export default async function ProfilePage({ params }: Props) {
             <span className={`chip ${ROLE_BADGE[user.role]}`}>{ROLE_LABEL[user.role]}</span>
           </div>
           <p className="font-mono text-sm text-muted">@{user.username}</p>
-          {user.bio && <p className="mt-1 text-sm text-fg/70">{user.bio}</p>}
+          {user.bio && <p className="mt-1 text-sm text-muted">{user.bio}</p>}
 
           {/* Classes the student belongs to */}
           {classes.length > 0 && (
@@ -77,7 +77,7 @@ export default async function ProfilePage({ params }: Props) {
               {classes.map((cs) => (
                 <span
                   key={cs.classId}
-                  className="rounded-full border border-fg/15 px-3 py-1 text-xs text-fg/60"
+                  className="rounded-full border border-line-strong px-3 py-1 text-xs text-muted"
                 >
                   {cs.class.name} · {cs.class.teacher.name}
                 </span>
@@ -130,10 +130,10 @@ export default async function ProfilePage({ params }: Props) {
         ].map((s) => (
           <div
             key={s.label}
-            className="flex flex-col items-center gap-1 rounded-[20px] border border-line bg-surface py-6 text-center"
+            className="flex flex-col items-center gap-1 card py-6 text-center"
           >
-            <p className="font-serif text-4xl text-fg">{s.value}</p>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted">
+            <p className="font-display text-4xl text-fg">{s.value}</p>
+            <p className="text-sm font-medium text-fg">
               {s.label}
             </p>
           </div>
@@ -143,7 +143,7 @@ export default async function ProfilePage({ params }: Props) {
       {/* Topic breakdown */}
       {stats.topics.length > 0 && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          <h2 className="eyebrow">
             Topic performance
           </h2>
           <div className="flex flex-col gap-3">
@@ -152,7 +152,7 @@ export default async function ProfilePage({ params }: Props) {
               .map((t) => (
                 <div
                   key={t.id}
-                  className="flex flex-col gap-2 rounded-[20px] border border-line bg-surface px-5 py-4"
+                  className="flex flex-col gap-2 card px-5 py-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-semibold text-fg">{t.title}</span>
@@ -166,7 +166,7 @@ export default async function ProfilePage({ params }: Props) {
                     </div>
                   </div>
                   {t.total > 0 && (
-                    <div className="h-1.5 w-full rounded-full bg-fg/8">
+                    <div className="h-1.5 w-full rounded-full bg-surface-3">
                       <div
                         className={`h-full rounded-full transition-all ${t.avgPct >= 80 ? "bg-success" : t.avgPct >= 50 ? "bg-warning" : "bg-danger"}`}
                         style={{ width: `${t.avgPct}%` }}
@@ -182,15 +182,15 @@ export default async function ProfilePage({ params }: Props) {
       {/* Recent activity */}
       {stats.recentSessions.length > 0 && (
         <div className="flex flex-col gap-4">
-          <h2 className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+          <h2 className="eyebrow">
             Recent activity
           </h2>
-          <div className="overflow-hidden rounded-[28px] border border-line bg-surface">
+          <div className="overflow-hidden card">
             {stats.recentSessions.map((s, i) => (
               <Link
                 key={s.id}
                 href={`/profile/${userId}/sessions/${s.id}`}
-                className={`group flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-fg/4 ${i < stats.recentSessions.length - 1 ? "border-b border-line" : ""}`}
+                className={`group flex items-center justify-between gap-4 px-6 py-4 transition-colors hover:bg-surface-3 ${i < stats.recentSessions.length - 1 ? "border-b border-line" : ""}`}
               >
                 <div className="flex flex-col gap-0.5">
                   <span className="text-sm font-semibold text-fg group-hover:underline">
@@ -210,7 +210,7 @@ export default async function ProfilePage({ params }: Props) {
                   >
                     {s.total > 0 ? `${s.pct}%` : "submitted"}
                   </span>
-                  <svg className="shrink-0 text-fg/20 transition-colors group-hover:text-fg/50" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg className="shrink-0 text-subtle/50 transition-colors group-hover:text-fg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </div>
@@ -221,7 +221,7 @@ export default async function ProfilePage({ params }: Props) {
       )}
 
       {stats.totalSessions === 0 && stats.videosWatched === 0 && (
-        <div className="rounded-[28px] border border-dashed border-line p-12 text-center text-sm text-muted">
+        <div className="rounded-[var(--radius-card)] border border-dashed border-line-strong p-12 text-center text-sm text-muted">
           No activity yet.
         </div>
       )}

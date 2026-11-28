@@ -125,7 +125,7 @@ export function TerminationClient({
           <p className="text-xs font-bold uppercase tracking-[0.32em] text-accent-text">
             Sounds · Word endings
           </p>
-          <h1 className="font-serif text-4xl text-fg">Results</h1>
+          <h1 className="font-display text-4xl text-fg">Results</h1>
           <p className="mt-1 text-lg text-muted">
             {score} / {words.length} correct
           </p>
@@ -149,7 +149,7 @@ export function TerminationClient({
                     <button
                       type="button"
                       onClick={() => playUrl(a.audioUrl!)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-fg/20 text-fg/60 hover:border-fg hover:text-fg transition-colors"
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-line-strong text-muted hover:border-fg hover:text-fg transition-colors"
                       aria-label={`Play ${a.word.word}`}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -194,13 +194,13 @@ export function TerminationClient({
           <button
             type="button"
             onClick={handlePlayAgain}
-            className="rounded-full bg-accent px-6 py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
+            className="btn btn-primary"
           >
             Play again
           </button>
           <Link
             href={`/subjects/${subjectId}`}
-            className="rounded-full border border-fg/25 px-6 py-3 text-sm font-semibold text-fg/60 hover:border-fg hover:text-fg transition-colors"
+            className="rounded-full border border-line-strong px-6 py-3 text-sm font-semibold text-muted hover:border-fg hover:text-fg transition-colors"
           >
             All sets
           </Link>
@@ -227,8 +227,8 @@ export function TerminationClient({
       </div>
 
       {/* Audio card */}
-      <div className="w-full max-w-md rounded-[28px] border border-line bg-surface p-10 flex flex-col items-center gap-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
+      <div className="w-full max-w-md card p-10 flex flex-col items-center gap-6">
+        <p className="eyebrow">
           Listen, then choose the ending sound
         </p>
 
@@ -279,7 +279,7 @@ export function TerminationClient({
                       : isWrong
                         ? "border-danger bg-danger/10 text-danger"
                         : "border-line text-muted opacity-40"
-                    : "cursor-pointer border-line bg-surface text-fg hover:border-fg/50 hover:bg-fg/5",
+                    : "cursor-pointer border-line bg-surface text-fg hover:border-fg hover:bg-surface-3",
                 ].join(" ")}
               >
                 <span className="text-2xl font-extrabold">{c.label}</span>
@@ -292,7 +292,7 @@ export function TerminationClient({
 
       {/* Result panel */}
       {phase === "answered" && (
-        <div className="w-full max-w-md rounded-[20px] border border-line bg-surface p-6 flex flex-col gap-4">
+        <div className="w-full max-w-md card p-6 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             {selected === current.correctAnswer ? (
               <span className="text-2xl text-success">✓</span>

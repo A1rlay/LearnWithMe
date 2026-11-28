@@ -324,7 +324,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
 
   if (!videoId) {
     return (
-      <div className="mt-8 rounded-[28px] border border-line bg-fg/76 p-6 text-sm text-muted">
+      <div className="mt-8 rounded-[var(--radius-card)] border border-line bg-surface-3 p-6 text-sm text-muted">
         Invalid video URL. Please update the URL in the admin panel.
       </div>
     );
@@ -333,7 +333,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
   return (
     <div ref={wrapperRef} className="flex flex-col gap-3">
       {/* YouTube iframe + overlay */}
-      <div className="overflow-hidden rounded-[28px] border border-line bg-black">
+      <div className="overflow-hidden rounded-[var(--radius-card)] border border-line bg-black">
         <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
           {/* iframe */}
           <div ref={containerRef} className="absolute inset-0 h-full w-full" />
@@ -354,7 +354,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
             }}
           >
             {coverActive && playerPhase !== "checkpoint" && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-fg/20 backdrop-blur-sm transition-transform hover:scale-105">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-3 backdrop-blur-sm transition-transform hover:scale-105">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z" />
                 </svg>
@@ -365,12 +365,12 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
       </div>
 
       {/* Controls bar */}
-      <div className="rounded-2xl border border-fg/18 bg-fg/10 px-5 py-3 backdrop-blur-sm">
+      <div className="rounded-2xl border border-line-strong bg-surface-3 px-5 py-3 backdrop-blur-sm">
         <div className="flex items-center justify-between gap-3">
           {/* Progress bar + question counter */}
           <div className="min-w-0 flex-1">
             {progressPct !== null && (
-              <div className="h-1 w-full overflow-hidden rounded-full bg-fg/15">
+              <div className="h-1 w-full overflow-hidden rounded-full bg-surface-3">
                 <div
                   className="h-full rounded-full bg-accent transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
@@ -378,7 +378,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
               </div>
             )}
             {totalQuestions > 0 && (
-              <p className="mt-1.5 text-xs text-fg/55">
+              <p className="mt-1.5 text-xs text-subtle">
                 {completedCount} / {totalQuestions} questions answered
               </p>
             )}
@@ -394,7 +394,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                 aria-label={captionsOn ? "Hide subtitles" : "Show subtitles"}
                 title={captionsOn ? "Hide subtitles to challenge yourself" : "Show subtitles"}
                 className={`rounded-md border px-1.5 py-0.5 font-mono text-[11px] font-semibold transition-colors ${
-                  captionsOn ? "border-fg/60 text-fg" : "border-fg/25 text-fg/45 line-through hover:text-fg"
+                  captionsOn ? "border-line-strong text-fg" : "border-line-strong text-subtle line-through hover:text-fg"
                 }`}
               >
                 CC
@@ -404,7 +404,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
             {/* Mute toggle */}
             <button
               onClick={handleToggleMute}
-              className="text-fg/70 transition-colors hover:text-fg"
+              className="text-muted transition-colors hover:text-fg"
               aria-label={muted ? "Unmute" : "Mute"}
             >
               {muted || volume === 0 ? (
@@ -436,7 +436,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
             {/* Fullscreen */}
             <button
               onClick={handleFullscreen}
-              className="text-fg/70 transition-colors hover:text-fg"
+              className="text-muted transition-colors hover:text-fg"
               aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
             >
               {isFullscreen ? (
@@ -459,7 +459,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
           <div className="max-h-[90vh] w-full max-w-md overflow-y-auto card p-7 shadow-2xl">
             {quizPhase === "answering" && (
               <>
-                <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-text">
+                <p className="eyebrow">
                   Question {activeQuestion.order}
                 </p>
                 <h2 className="mt-3 font-display text-2xl text-fg">
@@ -476,7 +476,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
                         className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-colors ${
                           selected
                             ? "border-accent-text bg-accent/20 text-fg"
-                            : "border-line-strong text-fg/85 hover:border-accent-text/60 hover:bg-surface-2"
+                            : "border-line-strong text-muted hover:border-accent-text/60 hover:bg-surface-2"
                         }`}
                       >
                         <input
@@ -572,7 +572,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
       {playerPhase === "done" && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-canvas/70 p-4 backdrop-blur-md sm:items-center">
           <div className="max-h-[90vh] w-full max-w-md overflow-y-auto card p-7 shadow-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.28em] text-accent-text">
+            <p className="eyebrow">
               Lesson complete
             </p>
             <h2 className="mt-2 font-display text-2xl text-fg">
