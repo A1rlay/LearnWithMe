@@ -1,3 +1,4 @@
+import { getTheme } from "@/lib/theme";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 
@@ -20,13 +21,13 @@ export const metadata: Metadata = {
     "Learn from people who love teaching what they know. Practise with short activities and watch your skills grow.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${geistMono.variable} ${instrument.variable}`}>
+    <html lang="en" data-theme={await getTheme()} className={`${geist.variable} ${geistMono.variable} ${instrument.variable}`}>
       <body className="min-h-screen antialiased">
         <a
           href="#main"

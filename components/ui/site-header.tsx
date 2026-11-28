@@ -4,6 +4,8 @@ import { logoutAction } from "@/app/login/actions";
 import { Wordmark } from "@/components/brand/logo";
 import { Avatar } from "@/components/people/avatar";
 import { MobileTabbar } from "@/components/ui/mobile-tabbar";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { getTheme } from "@/lib/theme";
 import { getSession } from "@/lib/session";
 import { incomingRequestCount, unreadCount } from "@/server/data/buddies";
 
@@ -29,6 +31,7 @@ export async function SiteHeader() {
         </Link>
 
         <nav aria-label="Main" className="flex items-center gap-0.5 sm:gap-1">
+          <ThemeToggle initial={await getTheme()} />
           <Link href="/#subjects" className={`${link} hidden md:inline-flex`}>Subjects</Link>
           {session ? (
             <>
