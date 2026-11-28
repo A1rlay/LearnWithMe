@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 
 import { TagInput } from "@/components/ui/tag-input";
+import { TimezoneInput } from "@/components/ui/timezone-input";
 
 import { saveProfileAction, type FormState } from "./actions";
 
@@ -15,6 +16,7 @@ type Props = {
     email: string | null;
     lookingForBuddies: boolean;
     weeklyGoal: number;
+    profileVisibility: "MEMBERS" | "BUDDIES" | "ONLY_ME";
     learning: string[];
   };
   subjects: { id: string; name: string }[];
@@ -25,6 +27,7 @@ export function ProfileForm({ me, subjects }: Props) {
 
   return (
     <form action={action} className="flex flex-col gap-5">
+      <TimezoneInput />
       <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-accent-text/30 bg-accent/10 p-4">
         <input
           type="checkbox"
@@ -95,6 +98,23 @@ export function ProfileForm({ me, subjects }: Props) {
             ))}
           </div>
         )}
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-1.5 text-sm font-medium text-fg">Who can see my profile page</legend>
+        <div className="flex flex-wrap gap-2">
+          {([
+            ["MEMBERS", "Anyone signed in"],
+            ["BUDDIES", "Only my buddies"],
+            ["ONLY_ME", "Only me"],
+          ] as const).map(([v, label]) => (
+            <label key={v} className="toggle-chip">
+              <input type="radio" name="profileVisibility" value={v} defaultChecked={me.profileVisibility === v} className="sr-only" />
+              {label}
+            </label>
+          ))}
+        </div>
+        <span className="text-xs text-subtle">Your practice calendar, projects and skills. People who aren&apos;t signed in never see it.</span>
       </fieldset>
 
       <details className="rounded-2xl border border-line p-4">

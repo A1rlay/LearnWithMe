@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { requireSession } from "@/lib/auth";
-import { normalizeDiscord, normalizeEmail, parseInterests, parseWeeklyGoal, passwordError } from "@/lib/identity";
+import { normalizeDiscord, normalizeEmail, normalizeTimezone, parseInterests, parseVisibility, parseWeeklyGoal, passwordError } from "@/lib/identity";
 import { hashPassword, verifyPassword } from "@/lib/password";
 import { unblockUser } from "@/server/data/buddies";
 import { setPasswordHash, updateMyProfile } from "@/server/data/me";
@@ -37,6 +37,8 @@ export async function saveProfileAction(_prev: FormState, formData: FormData): P
       email,
       lookingForBuddies: formData.get("lookingForBuddies") === "on",
       weeklyGoal: parseWeeklyGoal(formData.get("weeklyGoal")),
+      timezone: normalizeTimezone(formData.get("timezone")),
+      profileVisibility: parseVisibility(formData.get("profileVisibility")),
       subjectIds: formData.getAll("subjectIds").map(String),
     });
   } catch (e) {
@@ -47,6 +49,7 @@ export async function saveProfileAction(_prev: FormState, formData: FormData): P
   }
   revalidatePath("/me");
   revalidatePath("/buddies");
+  revalidatePath(`/u/${username}`);
   return { ok: "Saved." };
 }
 

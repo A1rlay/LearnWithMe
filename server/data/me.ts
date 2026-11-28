@@ -14,6 +14,7 @@ export async function getMe(userId: string) {
       discordHandle: true,
       lookingForBuddies: true,
       weeklyGoal: true,
+      profileVisibility: true,
       role: true,
       learning: { select: { subjectId: true } },
     },
@@ -35,13 +36,18 @@ export async function updateMyProfile(
     email: string | null;
     lookingForBuddies: boolean;
     weeklyGoal: number;
+    timezone: string;
+    profileVisibility: "MEMBERS" | "BUDDIES" | "ONLY_ME";
     subjectIds: string[];
   },
 ) {
   const allowed = await prisma.subject.findMany({ where: { ...VISIBLE, id: { in: data.subjectIds } }, select: { id: true } });
-  const { name, bio, interests, discordHandle, email, lookingForBuddies, weeklyGoal } = data;
+  const { name, bio, interests, discordHandle, email, lookingForBuddies, weeklyGoal, timezone, profileVisibility } = data;
   await prisma.$transaction([
-    prisma.user.update({ where: { id: userId }, data: { name, bio, interests, discordHandle, email, lookingForBuddies, weeklyGoal } }),
+    prisma.user.update({
+      where: { id: userId },
+      data: { name, bio, interests, discordHandle, email, lookingForBuddies, weeklyGoal, timezone, profileVisibility },
+    }),
     prisma.learnerSubject.deleteMany({ where: { userId } }),
     prisma.learnerSubject.createMany({ data: allowed.map((s) => ({ userId, subjectId: s.id })), skipDuplicates: true }),
   ]);
@@ -59,7 +65,7 @@ export async function needsOnboarding(userId: string): Promise<boolean> {
 /** First-run choices. Empty choices are fine: skipping just marks the flow done. */
 export async function completeOnboarding(
   userId: string,
-  data: { subjectIds: string[]; interests: string[]; lookingForBuddies: boolean; weeklyGoal: number } | null,
+  data: { subjectIds: string[]; interests: string[]; lookingForBuddies: boolean; weeklyGoal: number; timezone: string } | null,
 ) {
   if (!data) {
     await prisma.user.update({ where: { id: userId }, data: { onboardedAt: new Date() } });
@@ -73,6 +79,7 @@ export async function completeOnboarding(
         interests: data.interests,
         lookingForBuddies: data.lookingForBuddies,
         weeklyGoal: data.weeklyGoal,
+        timezone: data.timezone,
         onboardedAt: new Date(),
       },
     }),

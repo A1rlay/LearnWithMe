@@ -52,7 +52,8 @@ export default async function MePage({ searchParams }: Props) {
           </div>
           <p className="font-mono text-sm text-muted">@{me.username}</p>
         </div>
-        <div className="ml-auto flex gap-2">
+        <div className="ml-auto flex flex-wrap gap-2">
+          <Link href={`/u/${me.username}`} className="btn btn-ghost">View my profile</Link>
           <Link href="/buddies" className="btn btn-ghost">
             {connections.buddies.length} {connections.buddies.length === 1 ? "buddy" : "buddies"}
             {connections.incoming.length > 0 && (
@@ -76,6 +77,7 @@ export default async function MePage({ searchParams }: Props) {
               email: me.email,
               lookingForBuddies: me.lookingForBuddies,
               weeklyGoal: me.weeklyGoal,
+              profileVisibility: me.profileVisibility,
               learning: me.learning.map((l) => l.subjectId),
             }}
             subjects={subjects}

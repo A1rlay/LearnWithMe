@@ -213,7 +213,7 @@ function PersonHeader({ user }: { user: { name: string; username: string; subjec
     <div className="flex items-center gap-3">
       <Avatar name={user.name} username={user.username} size={44} />
       <div className="min-w-0">
-        <p className="truncate font-semibold text-fg">{user.name}</p>
+        <Link href={`/u/${user.username}`} className="block truncate font-semibold text-fg hover:text-accent-text">{user.name}</Link>
         <p className="truncate text-xs text-subtle">
           @{user.username}
           {user.subjects.length > 0 ? ` · learning ${user.subjects.join(", ")}` : ""}

@@ -35,6 +35,10 @@ model User {
   weeklyGoal         Int                 @default(3)
   /// Set when the first-run flow is finished or skipped; null sends new users to /welcome.
   onboardedAt        DateTime?           @db.Timestamptz(3)
+  /// IANA zone from the browser; days on the profile heatmap and streaks use it.
+  timezone           String              @default("UTC")
+  profileVisibility  ProfileVisibility   @default(MEMBERS)
+  projects           LearningProject[]
   learning           LearnerSubject[]
   buddyRequestsSent  BuddyConnection[]   @relation("BuddyRequester")
   buddyPairsClosed   BuddyConnection[]   @relation("BuddyClosedBy")
@@ -60,6 +64,38 @@ model User {
 // A Subject (English, Math, Guitar…) is the top level learners browse. It is only
 // listed while at least one expert (SubjectExpert) is assigned.
 
+/// Who can open /u/<username>. Staff can always see it (classes, reports).
+enum ProfileVisibility {
+  MEMBERS // anyone signed in
+  BUDDIES // accepted buddies only
+  ONLY_ME
+}
+
+enum ProjectStatus {
+  PLANNED
+  ACTIVE
+  DONE
+}
+
+/// A learner's own goal, shown like a pinned repository on their profile.
+model LearningProject {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId   String?
+  subject     Subject?      @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  url         String?
+  status      ProjectStatus @default(ACTIVE)
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @db.Timestamptz(3)
+
+  @@index([userId])
+  @@index([subjectId])
+}
+
 enum ActivityType {
   VIDEO
   QUIZ
@@ -67,20 +103,21 @@ enum ActivityType {
 }
 
 model Subject {
-  id             String           @id @default(cuid())
-  name           String           @unique
+  id             String            @id @default(cuid())
+  name           String            @unique
   description    String?
-  order          Int              @default(0)
+  order          Int               @default(0)
   /// Activity kinds this subject offers (English: all three; most subjects: video + quiz).
-  activityTypes  ActivityType[]   @default([VIDEO, QUIZ])
+  activityTypes  ActivityType[]    @default([VIDEO, QUIZ])
   experts        SubjectExpert[]
   skills         Skill[]
   topics         Topic[]
   qmTopics       QMTopic[]
   spellRightSets SpellRightSet[]
   learners       LearnerSubject[]
-  createdAt      DateTime         @default(now()) @db.Timestamptz(3)
-  updatedAt      DateTime         @updatedAt @db.Timestamptz(3)
+  projects       LearningProject[]
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @db.Timestamptz(3)
 }
 
 model SubjectExpert {

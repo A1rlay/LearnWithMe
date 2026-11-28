@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { TagInput } from "@/components/ui/tag-input";
+import { TimezoneInput } from "@/components/ui/timezone-input";
 import { finishWelcomeAction, skipWelcomeAction } from "./actions";
 
 type Subject = { id: string; name: string; description: string | null; activities: number; learners: number };
@@ -31,6 +32,7 @@ export function WelcomeFlow({ name, subjects }: { name: string; subjects: Subjec
       </div>
 
       <form action={finishWelcomeAction} className="flex flex-col gap-8">
+        <TimezoneInput />
         {/* Step 1. Hidden steps stay in the DOM so their fields are posted. */}
         <section hidden={step !== 0} aria-labelledby="w1" className="flex flex-col gap-5">
           <div>
