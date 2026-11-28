@@ -14,6 +14,7 @@ type Props = {
     discordHandle: string | null;
     email: string | null;
     lookingForBuddies: boolean;
+    weeklyGoal: number;
     learning: string[];
   };
   subjects: { id: string; name: string }[];
@@ -63,6 +64,19 @@ export function ProfileForm({ me, subjects }: Props) {
         placeholder="Type one and press Enter, e.g. music"
         hint="Shared interests help match you with buddies."
       />
+
+      <fieldset id="goal" className="flex flex-col gap-2">
+        <legend className="mb-1.5 text-sm font-medium text-fg">Weekly goal</legend>
+        <div className="flex flex-wrap gap-2">
+          {[1, 2, 3, 5, 7, 10].map((g) => (
+            <label key={g} className="toggle-chip">
+              <input type="radio" name="weeklyGoal" value={g} defaultChecked={me.weeklyGoal === g} className="sr-only" />
+              {g} a week
+            </label>
+          ))}
+        </div>
+        <span className="text-xs text-subtle">Activities you aim to finish each week. Your buddies see your progress.</span>
+      </fieldset>
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1.5 text-sm font-medium text-fg">Subjects I&apos;m learning</legend>

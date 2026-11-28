@@ -13,6 +13,7 @@ export async function getMe(userId: string) {
       interests: true,
       discordHandle: true,
       lookingForBuddies: true,
+      weeklyGoal: true,
       role: true,
       learning: { select: { subjectId: true } },
     },
@@ -33,13 +34,14 @@ export async function updateMyProfile(
     discordHandle: string | null;
     email: string | null;
     lookingForBuddies: boolean;
+    weeklyGoal: number;
     subjectIds: string[];
   },
 ) {
   const allowed = await prisma.subject.findMany({ where: { ...VISIBLE, id: { in: data.subjectIds } }, select: { id: true } });
-  const { name, bio, interests, discordHandle, email, lookingForBuddies } = data;
+  const { name, bio, interests, discordHandle, email, lookingForBuddies, weeklyGoal } = data;
   await prisma.$transaction([
-    prisma.user.update({ where: { id: userId }, data: { name, bio, interests, discordHandle, email, lookingForBuddies } }),
+    prisma.user.update({ where: { id: userId }, data: { name, bio, interests, discordHandle, email, lookingForBuddies, weeklyGoal } }),
     prisma.learnerSubject.deleteMany({ where: { userId } }),
     prisma.learnerSubject.createMany({ data: allowed.map((s) => ({ userId, subjectId: s.id })), skipDuplicates: true }),
   ]);

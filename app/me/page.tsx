@@ -75,6 +75,7 @@ export default async function MePage({ searchParams }: Props) {
               discordHandle: me.discordHandle,
               email: me.email,
               lookingForBuddies: me.lookingForBuddies,
+              weeklyGoal: me.weeklyGoal,
               learning: me.learning.map((l) => l.subjectId),
             }}
             subjects={subjects}
