@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import { DeleteButton } from "@/components/admin/delete-button";
+import { ActivityTypeChecks } from "@/components/studio/activity-type-checks";
 import { BackLink } from "@/components/ui/nav-link";
 import { requireSubjectEditor, ForbiddenError } from "@/lib/auth";
 import { adminGetSubject, getExpertCandidates } from "@/server/data/subjects";
@@ -10,6 +11,7 @@ import {
   deleteSkillAction,
   deleteSubjectAction,
   renameSkillAction,
+  setActivityTypesAction,
   unassignExpertAction,
   updateSubjectAction,
 } from "../actions";
@@ -44,9 +46,9 @@ export default async function SubjectDetailPage({ params }: Props) {
           <h1 className="mt-2 font-display text-5xl text-fg">{subject.name}</h1>
           <p className="mt-2 text-sm text-muted">
             {live ? (
-              <span className="text-success">● Live — learners can find this subject.</span>
+              <span className="text-success">● Live: learners can find this subject.</span>
             ) : (
-              <span className="text-warning">● Hidden — assign an expert to publish it.</span>
+              <span className="text-warning">● Hidden: assign an expert to publish it.</span>
             )}
           </p>
         </div>
@@ -65,7 +67,7 @@ export default async function SubjectDetailPage({ params }: Props) {
           </div>
           {subject.skills.length === 0 ? (
             <p className="rounded-xl border border-dashed border-line-strong p-4 text-sm text-muted">
-              No skills yet. Add the first one below — e.g. Listening, Grammar, Vocabulary.
+              No skills yet. Add the first one below, e.g. Listening, Grammar, Vocabulary.
             </p>
           ) : (
             <ul className="flex flex-col gap-2">
@@ -98,7 +100,7 @@ export default async function SubjectDetailPage({ params }: Props) {
           </div>
           {subject.experts.length === 0 ? (
             <p className="rounded-xl border border-dashed border-warning/40 p-4 text-sm text-warning">
-              No experts — the subject is hidden from learners.
+              No experts, so the subject is hidden from learners.
             </p>
           ) : (
             <ul className="flex flex-col divide-y divide-line">
@@ -138,6 +140,20 @@ export default async function SubjectDetailPage({ params }: Props) {
             ))}
         </section>
       </div>
+
+      <section id="activity-types" aria-labelledby="types-h" className="card flex flex-col gap-4 p-6">
+        <div>
+          <h2 id="types-h" className="font-semibold text-fg">Activity kinds</h2>
+          <p className="mt-1 text-sm text-muted">
+            Which kinds of activity fit {subject.name}. Learners only see these, and Studio only lets you
+            create these here. Turning one off hides its existing activities without deleting them.
+          </p>
+        </div>
+        <form action={setActivityTypesAction.bind(null, id)} className="flex flex-wrap items-center justify-between gap-3">
+          <ActivityTypeChecks defaults={subject.activityTypes} />
+          <button type="submit" className="btn btn-primary px-4 py-2">Save kinds</button>
+        </form>
+      </section>
 
       {isAdmin && (
         <section aria-labelledby="details-h" className="card flex flex-col gap-4 p-6">

@@ -16,8 +16,9 @@ type EditTopicPageProps = {
 export default async function EditTopicPage({ params }: EditTopicPageProps) {
   const { id } = await params;
   await requireEditorPage({ kind: "topic", id });
-  const [topic, subjects] = await Promise.all([adminGetTopic(id), pickerSubjects()]);
+  const topic = await adminGetTopic(id);
   if (!topic) notFound();
+  const subjects = await pickerSubjects("VIDEO", topic.subjectId);
 
   const update = updateTopicAction.bind(null, id);
 

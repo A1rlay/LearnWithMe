@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 
+import { TagInput } from "@/components/ui/tag-input";
+
 import { saveProfileAction, type FormState } from "./actions";
 
 type Props = {
@@ -32,8 +34,8 @@ export function ProfileForm({ me, subjects }: Props) {
         <span className="flex flex-col gap-0.5">
           <span className="text-sm font-semibold text-fg">Show me to study buddies</span>
           <span className="text-xs text-muted">
-            Others who opted in can see your display name, @username, bio, interests and subjects —
-            never your email. Your Discord is shared only with buddies you accept.
+            Others who opted in can see your display name, @username, bio, interests and subjects,
+            but never your email. Your Discord is shared only with buddies you accept.
           </span>
         </span>
       </label>
@@ -54,11 +56,13 @@ export function ProfileForm({ me, subjects }: Props) {
         <textarea name="bio" defaultValue={me.bio ?? ""} rows={3} maxLength={300} placeholder="What are you learning, and why? When do you like to study?" className="field" />
       </label>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-fg">Interests</span>
-        <input name="interests" defaultValue={me.interests.join(", ")} placeholder="music, travel, football, games" className="field" />
-        <span className="text-xs text-subtle">Comma-separated, up to 10. Shared interests help match you with buddies.</span>
-      </label>
+      <TagInput
+        name="interests"
+        label="Interests"
+        defaultValue={me.interests}
+        placeholder="Type one and press Enter, e.g. music"
+        hint="Shared interests help match you with buddies."
+      />
 
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1.5 text-sm font-medium text-fg">Subjects I&apos;m learning</legend>

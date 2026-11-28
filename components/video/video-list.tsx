@@ -6,7 +6,7 @@ export function VideoList({ topic }: { topic: TopicDetail }) {
   if (topic.videos.length === 0) {
     return (
       <p className="card p-8 text-center text-sm text-muted">
-        No videos yet — the expert is still recording this topic.
+        No videos yet. The expert is still recording this topic.
       </p>
     );
   }

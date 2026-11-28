@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireEditorOf, requireRole, requireSubjectEditor } from "@/lib/auth";
+import { parseActivityTypes } from "@/lib/activity-types";
 import { int, str } from "@/lib/form";
 import {
   adminAssignExpert,
@@ -14,6 +15,7 @@ import {
   createSkill,
   deleteSkill,
   renameSkill,
+  setSubjectActivityTypes,
 } from "@/server/data/subjects";
 
 function revalidateSubject(id?: string) {
@@ -32,6 +34,7 @@ export async function createSubjectAction(formData: FormData) {
     name,
     description: str(formData, "description") || null,
     order: int(formData, "order"),
+    activityTypes: parseActivityTypes(formData.getAll("activityTypes")),
   });
   revalidateSubject();
   redirect(`/admin/subjects/${s.id}`);
@@ -55,6 +58,14 @@ export async function deleteSubjectAction(id: string) {
   await adminDeleteSubject(id);
   revalidateSubject();
   redirect("/admin/subjects");
+}
+
+/** Owner and the subject's experts choose which kinds of activity the subject offers. */
+export async function setActivityTypesAction(id: string, formData: FormData) {
+  await requireSubjectEditor(id);
+  await setSubjectActivityTypes(id, parseActivityTypes(formData.getAll("activityTypes")));
+  revalidateSubject(id);
+  revalidatePath("/admin/games");
 }
 
 // ─── Experts (owner only) ─────────────────────────────────────────────────────

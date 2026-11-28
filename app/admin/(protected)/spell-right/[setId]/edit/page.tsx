@@ -16,8 +16,9 @@ const inputClass =
 export default async function EditSpellRightSetPage({ params }: Props) {
   const { setId } = await params;
   await requireEditorPage({ kind: "spellSet", id: setId });
-  const [set, subjects] = await Promise.all([adminGetSpellRightSet(setId), pickerSubjects()]);
+  const set = await adminGetSpellRightSet(setId);
   if (!set) notFound();
+  const subjects = await pickerSubjects("SPELLING", set.subjectId);
 
   const update = updateSpellRightSetAction.bind(null, setId);
 

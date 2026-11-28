@@ -31,7 +31,7 @@ export default async function HomePage() {
         </h1>
         <p className="max-w-xl text-base leading-relaxed text-muted sm:text-lg">
           Every subject is taught by an expert. Practise with short videos, quizzes and speaking
-          drills — each one trains a specific skill, and your skill chart shows how you grow.
+          drills. Each one trains a specific skill, and your skill chart shows how you grow.
         </p>
         <div className="flex flex-wrap gap-3">
           <a href="#subjects" className="btn btn-primary px-6 py-3">
@@ -43,7 +43,7 @@ export default async function HomePage() {
             </Link>
           ) : (
             <Link href="/signup" className="btn btn-ghost px-6 py-3">
-              Join free — just a username
+              Join free with just a username
             </Link>
           )}
         </div>
@@ -114,7 +114,7 @@ export default async function HomePage() {
           {[
             ["Pick a subject", "Each one is taught by an expert who builds its activities."],
             ["Practise a skill", "Every activity says which skills it trains, so you know why you're doing it."],
-            ["Find study buddies", "Learn alongside people studying the same things — and watch your skill chart grow."],
+            ["Find study buddies", "Learn alongside people studying the same things, and watch your skill chart grow."],
           ].map(([title, body], i) => (
             <li key={title} className="card flex flex-col gap-2 p-5">
               <span className="font-mono text-xs text-subtle">0{i + 1}</span>

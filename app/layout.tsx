@@ -17,7 +17,7 @@ const instrument = Instrument_Serif({
 export const metadata: Metadata = {
   title: { default: "Learn With Me", template: "%s · Learn With Me" },
   description:
-    "Learn from people who love teaching what they know — practise with short activities and watch your skills grow.",
+    "Learn from people who love teaching what they know. Practise with short activities and watch your skills grow.",
 };
 
 export default function RootLayout({

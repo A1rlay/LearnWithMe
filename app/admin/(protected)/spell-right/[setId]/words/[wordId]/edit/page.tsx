@@ -56,7 +56,7 @@ export default async function EditSpellRightWordPage({ params }: Props) {
             </span>
             <div className="flex gap-4">
               {[
-                { value: "ed", label: "/ɪd/ — ed", hint: "wanted, landed" },
+                { value: "ed", label: "/ɪd/ (ed)", hint: "wanted, landed" },
                 { value: "t", label: "/t/", hint: "walked, jumped" },
                 { value: "d", label: "/d/", hint: "played, moved" },
               ].map((opt) => (

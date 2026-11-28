@@ -53,10 +53,10 @@ export async function blockAction(otherId: string) {
   redirect("/buddies?notice=" + encodeURIComponent("Blocked. You won't see each other anymore."));
 }
 export async function reportAction(reportedId: string, messageId: string | null, formData: FormData) {
-  const reason = [formData.get("category")?.toString(), formData.get("details")?.toString()].filter(Boolean).join(" — ");
+  const reason = [formData.get("category")?.toString(), formData.get("details")?.toString()].filter(Boolean).join(": ");
   // Only same-site paths we know: never redirect to a client-supplied URL.
   const raw = formData.get("back")?.toString() ?? "";
   const back = /^\/(buddies|messages(\/[A-Za-z0-9_-]{1,40})?)$/.test(raw) ? raw : "/buddies";
   await run(back, (me) => reportUser(me, reportedId, reason, messageId));
-  redirect(`${back}?notice=${encodeURIComponent("Thanks — the owner will review your report.")}`);
+  redirect(`${back}?notice=${encodeURIComponent("Thanks, the owner will review your report.")}`);
 }

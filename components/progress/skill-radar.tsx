@@ -154,11 +154,11 @@ export function SkillRadar({ skills, title }: { skills: RadarSkill[]; title: str
             <p className="font-semibold text-fg">{tip.name}</p>
             <dl className="mt-1.5 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-muted">
               <dt className="flex items-center gap-1.5"><Swatch kind="now" />Now</dt>
-              <dd className="text-right font-mono text-fg">{tip.pct === null ? "—" : `${tip.pct}%`}</dd>
+              <dd className="text-right font-mono text-fg">{tip.pct === null ? "-" : `${tip.pct}%`}</dd>
               {hasThen && (
                 <>
                   <dt className="flex items-center gap-1.5"><Swatch kind="then" />30 days ago</dt>
-                  <dd className="text-right font-mono text-fg">{tip.pctThen === null ? "—" : `${tip.pctThen}%`}</dd>
+                  <dd className="text-right font-mono text-fg">{tip.pctThen === null ? "-" : `${tip.pctThen}%`}</dd>
                 </>
               )}
               <dt>Answers</dt>
@@ -190,7 +190,7 @@ function Legend({ hasThen }: { hasThen: boolean }) {
       {hasThen ? (
         <li className="flex items-center gap-1.5"><Swatch kind="then" />30 days ago</li>
       ) : (
-        <li className="text-subtle">Keep practising — your 30-day comparison appears after a month.</li>
+        <li className="text-subtle">Keep practising. Your 30-day comparison appears after a month.</li>
       )}
     </ul>
   );
@@ -213,8 +213,8 @@ function SkillTable({ skills, hasThen }: { skills: RadarSkill[]; hasThen: boolea
           {skills.map((s) => (
             <tr key={s.name}>
               <th scope="row" className="py-1.5 font-medium text-fg">{s.name}</th>
-              <td className="py-1.5 text-right font-mono text-fg">{s.pct === null ? "—" : `${s.pct}%`}</td>
-              {hasThen && <td className="py-1.5 text-right font-mono text-muted">{s.pctThen === null ? "—" : `${s.pctThen}%`}</td>}
+              <td className="py-1.5 text-right font-mono text-fg">{s.pct === null ? "-" : `${s.pct}%`}</td>
+              {hasThen && <td className="py-1.5 text-right font-mono text-muted">{s.pctThen === null ? "-" : `${s.pctThen}%`}</td>}
               <td className="py-1.5 text-right font-mono text-muted">{s.total}</td>
             </tr>
           ))}

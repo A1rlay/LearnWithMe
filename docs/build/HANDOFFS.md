@@ -89,3 +89,13 @@ report → admin Reports. Migration verified on PR-1-schema copies with collisio
 
 **Next:** product — forum (owner to discuss with partner); consider Discord OAuth and email recovery
 once there are real users.
+
+### tech-lead — Activity kinds per subject + interest chips — 2026-11-27
+**Did:** `Subject.activityTypes` (VIDEO/QUIZ/SPELLING; existing subjects keep all, new default VIDEO+QUIZ).
+Studio Activities grouped by subject; lists and New forms scoped with `?subject=`; learner pages,
+catalog counts and direct activity URLs honour the kinds. Interests became a chip input. Removed em
+dashes from all user-facing copy.
+**Decisions:** enum array on Subject — rejected: a join table (no per-kind settings yet). Turning a
+kind off hides, never deletes. Moving an activity into a subject requires the kind; staying put doesn't.
+**Verification:** migration rehearsed on a Neon branch (zero drift); E2E as owner: chips add/remove/
+dedupe/persist, kind off hides in Studio + learner page, back on restores.

@@ -5,13 +5,16 @@ import { pickerSubjects } from "@/lib/studio";
 
 import { createTopicAction } from "../actions";
 
-export default async function NewTopicPage() {
-  const subjects = await pickerSubjects();
+export default async function NewTopicPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
+  const { subject } = await searchParams;
+  const subjects = await pickerSubjects("VIDEO");
+  const defaultSubjectId = subjects.some((s) => s.id === subject) ? subject : undefined;
+  const back = defaultSubjectId ? `/admin/topics?subject=${defaultSubjectId}` : "/admin/topics";
   return (
     <div className="flex flex-col gap-6">
       <div>
         <Link
-          href="/admin/topics"
+          href={back}
           className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
@@ -32,7 +35,7 @@ export default async function NewTopicPage() {
         className="flex flex-col gap-5 rounded-[28px] border border-line bg-surface p-8"
       >
         <TopicFields />
-        <SubjectSkillPicker subjects={subjects} />
+        <SubjectSkillPicker subjects={subjects} defaultSubjectId={defaultSubjectId} />
         <div className="flex gap-3 pt-2">
           <button
             type="submit"

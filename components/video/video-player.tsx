@@ -311,7 +311,7 @@ export function VideoPlayer({ video, onComplete }: { video: VideoLesson; onCompl
   if (!videoId) {
     return (
       <div className="mt-8 rounded-[28px] border border-line bg-fg/76 p-6 text-sm text-muted">
-        Invalid video URL — please update the URL in the admin panel.
+        Invalid video URL. Please update the URL in the admin panel.
       </div>
     );
   }

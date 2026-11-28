@@ -8,12 +8,15 @@ import { createSpellRightSetAction } from "../actions";
 const inputClass =
   "rounded-xl border border-line-strong bg-surface-2 px-4 py-3 text-sm text-fg placeholder:text-subtle outline-none transition-colors focus:border-accent-text";
 
-export default async function NewSpellRightSetPage() {
-  const subjects = await pickerSubjects();
+export default async function NewSpellRightSetPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
+  const { subject } = await searchParams;
+  const subjects = await pickerSubjects("SPELLING");
+  const defaultSubjectId = subjects.some((s) => s.id === subject) ? subject : undefined;
+  const back = defaultSubjectId ? `/admin/spell-right?subject=${defaultSubjectId}` : "/admin/spell-right";
   return (
     <div className="flex flex-col gap-6">
       <Link
-        href="/admin/spell-right"
+        href={back}
         className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
       >
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -70,7 +73,7 @@ export default async function NewSpellRightSetPage() {
           <input id="order" name="order" type="number" defaultValue={0} className={inputClass} />
         </div>
 
-        <SubjectSkillPicker subjects={subjects} />
+        <SubjectSkillPicker subjects={subjects} defaultSubjectId={defaultSubjectId} />
 
         <div className="flex gap-3 pt-2">
           <button

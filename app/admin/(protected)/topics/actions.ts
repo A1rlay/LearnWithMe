@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { requireEditorOf, requireSubjectEditor } from "@/lib/auth";
 import { str, subjectAndSkills } from "@/lib/form";
 import { adminCreateTopic, adminDeleteTopic, adminUpdateTopic } from "@/server/data/admin";
-import { setActivitySubjectAndSkills } from "@/server/data/subjects";
+import { assertSubjectOffers, setActivitySubjectAndSkills } from "@/server/data/subjects";
 
 function parseTags(raw: string): string[] {
   return raw
@@ -23,6 +23,7 @@ function revalidateLearner() {
 export async function createTopicAction(formData: FormData) {
   const { subjectId, skillIds } = subjectAndSkills(formData);
   await requireSubjectEditor(subjectId);
+  await assertSubjectOffers(subjectId, "VIDEO");
   const topic = await adminCreateTopic({
     title: str(formData, "title"),
     description: str(formData, "description"),
@@ -32,7 +33,7 @@ export async function createTopicAction(formData: FormData) {
   });
   await setActivitySubjectAndSkills("topic", topic.id, subjectId, skillIds);
   revalidateLearner();
-  redirect("/admin/topics");
+  redirect(`/admin/topics?subject=${subjectId}`);
 }
 
 export async function updateTopicAction(id: string, formData: FormData) {
@@ -48,7 +49,7 @@ export async function updateTopicAction(id: string, formData: FormData) {
   });
   await setActivitySubjectAndSkills("topic", id, subjectId, skillIds);
   revalidateLearner();
-  redirect("/admin/topics");
+  redirect(`/admin/topics?subject=${subjectId}`);
 }
 
 export async function deleteTopicAction(id: string) {

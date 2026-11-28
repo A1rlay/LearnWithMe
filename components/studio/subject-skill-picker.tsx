@@ -24,7 +24,7 @@ export function SubjectSkillPicker({
   if (subjects.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-warning/40 p-4 text-sm text-warning">
-        You aren&apos;t an expert for any subject yet, so you can&apos;t create activities.
+        None of your subjects offers this kind of activity. Turn it on under Subjects, or ask the owner to make you an expert.
       </p>
     );
   }
@@ -90,7 +90,7 @@ export function SubjectSkillPicker({
           </div>
         ) : (
           <p className="text-xs text-subtle">
-            This subject has no skills yet — add them on the subject page so learners&apos; progress can be charted.
+            This subject has no skills yet. Add them on the subject page so learners&apos; progress can be charted.
           </p>
         )}
       </div>

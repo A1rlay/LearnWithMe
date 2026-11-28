@@ -3,17 +3,17 @@ import Link from "next/link";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { deleteTopicAction } from "./actions";
 import { adminGetAllTopics } from "@/server/data/admin";
-import { editableSubjectIds, requireRole } from "@/lib/auth";
+import { studioScope } from "@/lib/studio";
 
-export default async function AdminTopicsPage() {
-  const session = await requireRole("ADMIN", "TEACHER");
-  const topics = await adminGetAllTopics(await editableSubjectIds(session));
+export default async function AdminTopicsPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {
+  const scope = await studioScope((await searchParams).subject);
+  const topics = await adminGetAllTopics(scope.ids);
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <Link
-          href="/admin"
+          href={`/admin/games${scope.q}`}
           className="flex items-center gap-2 text-base font-bold text-fg transition-colors hover:text-accent-text"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg> Back
@@ -23,14 +23,14 @@ export default async function AdminTopicsPage() {
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent-text">
-            Admin
+            {scope.subject ? `${scope.subject.name} · Video lessons` : "Studio · Video lessons"}
           </p>
           <h1 className="mt-2 font-serif text-4xl text-fg">
             Topics
           </h1>
         </div>
         <Link
-          href="/admin/topics/new"
+          href={`/admin/topics/new${scope.q}`}
           className="rounded-full bg-accent px-5 py-3 text-sm font-bold text-fg transition-opacity hover:opacity-90"
         >
           New topic

@@ -125,7 +125,7 @@ export default async function ProfilePage({ params }: Props) {
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: "Quizzes done", value: stats.totalSessions },
-          { label: "Avg score", value: stats.totalSessions > 0 ? `${stats.overallPct}%` : "—" },
+          { label: "Avg score", value: stats.totalSessions > 0 ? `${stats.overallPct}%` : "-" },
           { label: "Videos watched", value: stats.videosWatched },
         ].map((s) => (
           <div
@@ -161,7 +161,7 @@ export default async function ProfilePage({ params }: Props) {
                       <span
                         className={`font-bold ${t.avgPct >= 80 ? "text-success" : t.avgPct >= 50 ? "text-warning" : "text-danger"}`}
                       >
-                        {t.total > 0 ? `${t.avgPct}%` : "—"}
+                        {t.total > 0 ? `${t.avgPct}%` : "-"}
                       </span>
                     </div>
                   </div>

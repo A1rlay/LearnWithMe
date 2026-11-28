@@ -74,7 +74,7 @@ export default async function QMSessionsPage({ searchParams }: Props) {
                   <p className="mt-1 text-sm text-muted">
                     {session.completedAt
                       ? new Date(session.completedAt).toLocaleString()
-                      : "—"}
+                      : "-"}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">

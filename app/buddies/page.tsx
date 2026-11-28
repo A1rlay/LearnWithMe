@@ -31,7 +31,7 @@ export default async function BuddiesPage({ searchParams }: Props) {
           Learning is easier <span className="italic text-accent-text">together</span>.
         </h1>
         <p className="max-w-2xl text-muted">
-          Find people learning the same subjects. Send a request — once they accept, you can message each other
+          Find people learning the same subjects. Send a request. Once they accept, you can message each other
           here and see each other&apos;s Discord.
         </p>
       </header>

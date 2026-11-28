@@ -15,7 +15,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
   const video = await getVideoLessonById(videoId);
 
   if (!video) notFound();
-  await assertSubjectViewable(video.topic.subjectId);
+  await assertSubjectViewable(video.topic.subjectId, "VIDEO");
 
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 pb-24 pt-10 sm:px-6">
@@ -23,7 +23,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="font-display text-4xl leading-tight text-fg">{video.title}</h1>
-        <span className="chip">{video.subtitlesEnabled ? "Subtitles on" : "Subtitles off — listen closely"}</span>
+        <span className="chip">{video.subtitlesEnabled ? "Subtitles on" : "Subtitles off, listen closely"}</span>
       </div>
 
       <VideoPlayer video={video} onComplete={markVideoCompleteAction.bind(null, videoId)} />

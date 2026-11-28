@@ -14,7 +14,7 @@ import {
   adminUpdateSpellRightSet,
   adminUpdateSpellRightWord,
 } from "@/server/data/spell-right";
-import { setActivitySubjectAndSkills } from "@/server/data/subjects";
+import { assertSubjectOffers, setActivitySubjectAndSkills } from "@/server/data/subjects";
 
 function revalidateSR(setId?: string) {
   revalidatePath("/admin/spell-right");
@@ -27,6 +27,7 @@ function revalidateSR(setId?: string) {
 export async function createSpellRightSetAction(formData: FormData) {
   const { subjectId, skillIds } = subjectAndSkills(formData);
   await requireSubjectEditor(subjectId);
+  await assertSubjectOffers(subjectId, "SPELLING");
   const mode = formData.get("mode")?.toString() as SpellRightMode;
   if (!Object.values(SpellRightMode).includes(mode)) throw new Error("Unknown mode.");
   const set = await adminCreateSpellRightSet({
@@ -52,7 +53,7 @@ export async function updateSpellRightSetAction(id: string, formData: FormData) 
   });
   await setActivitySubjectAndSkills("spellSet", id, subjectId, skillIds);
   revalidateSR(id);
-  redirect("/admin/spell-right");
+  redirect(`/admin/spell-right?subject=${subjectId}`);
 }
 
 export async function deleteSpellRightSetAction(id: string) {

@@ -473,7 +473,7 @@ function ClassifierInput({
     <div className="flex flex-col gap-4">
       <p className="text-xs text-fg/45">
         {hasTapSelection
-          ? `Tap a category to place "${data.items[activeItem!].text}" — or tap it again to cancel.`
+          ? `Tap a category to place "${data.items[activeItem!].text}", or tap it again to cancel.`
           : "Drag items into a category, or tap to select and then tap a category."}
       </p>
 
