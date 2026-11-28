@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { editableSubjectIds, requireRole } from "@/lib/auth";
 import { adminGetDashboardCounts } from "@/server/data/admin";
+import { getActivationFunnel } from "@/server/data/activity";
 import { adminGetSubjects } from "@/server/data/subjects";
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
@@ -9,9 +10,10 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 export default async function StudioOverviewPage() {
   const session = await requireRole("ADMIN", "TEACHER");
   const isAdmin = session.role === "ADMIN";
-  const [counts, subjects] = await Promise.all([
+  const [counts, subjects, funnel] = await Promise.all([
     adminGetDashboardCounts(),
     adminGetSubjects(await editableSubjectIds(session)),
+    isAdmin ? getActivationFunnel(30) : null,
   ]);
 
   const hidden = subjects.filter((s) => s.experts.length === 0);
@@ -88,6 +90,8 @@ export default async function StudioOverviewPage() {
         )}
       </section>
 
+      {funnel && <ActivationFunnel f={funnel} />}
+
       {isAdmin && (
         <section aria-labelledby="totals-h" className="flex flex-col gap-4">
           <h2 id="totals-h" className="text-sm font-semibold text-fg">
@@ -109,5 +113,36 @@ export default async function StudioOverviewPage() {
         </section>
       )}
     </div>
+  );
+}
+
+function ActivationFunnel({ f }: { f: NonNullable<Awaited<ReturnType<typeof getActivationFunnel>>> }) {
+  const pct = (n: number) => (f.signedUp === 0 ? "-" : `${Math.round((n / f.signedUp) * 100)}%`);
+  const steps: [string, number, string][] = [
+    ["Signed up", f.signedUp, "New learner accounts"],
+    ["Finished welcome", f.onboarded, "Picked subjects or skipped"],
+    ["Activated", f.firstActivity7d, "Finished an activity within 7 days"],
+    ["Has a buddy", f.withBuddy, "At least one accepted buddy"],
+    ["Came back", f.returnedWeek2, "Finished an activity in their second week"],
+  ];
+  return (
+    <section aria-labelledby="funnel-h" className="flex flex-col gap-4">
+      <div>
+        <h2 id="funnel-h" className="text-sm font-semibold text-fg">New learners, last {f.windowDays} days</h2>
+        <p className="mt-1 text-xs text-muted">
+          The number to grow is <span className="text-fg">Activated</span>. Percentages are of everyone who signed up.
+        </p>
+      </div>
+      <ol className="grid gap-3 sm:grid-cols-5">
+        {steps.map(([label, n, hint], i) => (
+          <li key={label} className={`card flex flex-col gap-1 p-4 ${i === 2 ? "border-accent-text/40" : ""}`}>
+            <span className="text-xs text-muted">{label}</span>
+            <span className="font-mono text-2xl text-fg">{n}</span>
+            <span className="font-mono text-xs text-subtle">{i === 0 ? "100%" : pct(n)}</span>
+            <span className="mt-1 text-[11px] leading-snug text-subtle">{hint}</span>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }

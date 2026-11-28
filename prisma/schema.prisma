@@ -31,6 +31,10 @@ model User {
   discordHandle      String?
   /// Opt-in: discoverable as a study buddy and allowed to send requests.
   lookingForBuddies  Boolean             @default(false)
+  /// Activities per week the learner aims for (shared with buddies). 1..14.
+  weeklyGoal         Int                 @default(3)
+  /// Set when the first-run flow is finished or skipped; null sends new users to /welcome.
+  onboardedAt        DateTime?           @db.Timestamptz(3)
   learning           LearnerSubject[]
   buddyRequestsSent  BuddyConnection[]   @relation("BuddyRequester")
   buddyPairsClosed   BuddyConnection[]   @relation("BuddyClosedBy")
@@ -188,17 +192,19 @@ model ClassStudent {
 // ─── WordCatch (video lessons) ────────────────────────────────────────────────
 
 model Topic {
-  id          String       @id @default(cuid())
-  subjectId   String
-  subject     Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
-  skills      TopicSkill[]
-  title       String
-  description String?
-  level       String?
-  tags        String[]
-  videos      Video[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id           String       @id @default(cuid())
+  subjectId    String
+  subject      Subject      @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  skills       TopicSkill[]
+  title        String
+  description  String?
+  level        String?
+  /// Shown before the activity starts: what to do and what it practises.
+  instructions String?
+  tags         String[]
+  videos       Video[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
   @@unique([id, subjectId])
   @@index([subjectId])
@@ -256,18 +262,20 @@ enum QMSessionMode {
 }
 
 model QMTopic {
-  id          String            @id @default(cuid())
-  subjectId   String
-  subject     Subject           @relation(fields: [subjectId], references: [id], onDelete: Restrict)
-  skills      QMTopicSkill[]
-  title       String
-  description String?
-  order       Int               @default(0)
-  questions   QMQuestion[]
-  sessions    QMSession[]
-  assignments ClassAssignment[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id           String            @id @default(cuid())
+  subjectId    String
+  subject      Subject           @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  skills       QMTopicSkill[]
+  title        String
+  description  String?
+  level        String?
+  instructions String?
+  order        Int               @default(0)
+  questions    QMQuestion[]
+  sessions     QMSession[]
+  assignments  ClassAssignment[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@unique([id, subjectId])
   @@index([subjectId])
@@ -280,6 +288,7 @@ model QMQuestion {
   order     Int
   type      QMQuestionType
   prompt    String
+  hint      String?
   data      Json
   answers   QMAnswer[]
   createdAt DateTime       @default(now())
@@ -324,6 +333,8 @@ model Question {
   id                String           @id @default(cuid())
   videoId           String
   prompt            String
+  /// Optional nudge a learner can reveal before answering.
+  hint              String?
   order             Int
   checkpointSeconds Int              @default(0)
   video             Video            @relation(fields: [videoId], references: [id], onDelete: Cascade)
@@ -376,18 +387,20 @@ enum SpellRightMode {
 }
 
 model SpellRightSet {
-  id          String               @id @default(cuid())
-  subjectId   String
-  subject     Subject              @relation(fields: [subjectId], references: [id], onDelete: Restrict)
-  skills      SpellRightSetSkill[]
-  title       String
-  description String?
-  mode        SpellRightMode
-  order       Int                  @default(0)
-  words       SpellRightWord[]
-  sessions    SpellRightSession[]
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  id           String               @id @default(cuid())
+  subjectId    String
+  subject      Subject              @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  skills       SpellRightSetSkill[]
+  title        String
+  description  String?
+  level        String?
+  instructions String?
+  mode         SpellRightMode
+  order        Int                  @default(0)
+  words        SpellRightWord[]
+  sessions     SpellRightSession[]
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
 
   @@unique([id, subjectId])
   @@index([subjectId])

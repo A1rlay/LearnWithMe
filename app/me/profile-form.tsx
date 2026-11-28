@@ -73,7 +73,7 @@ export function ProfileForm({ me, subjects }: Props) {
             {subjects.map((s) => (
               <label
                 key={s.id}
-                className="cursor-pointer rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:text-fg has-[:checked]:border-accent-text/60 has-[:checked]:bg-accent/25 has-[:checked]:text-fg has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-text"
+                className="toggle-chip"
               >
                 <input type="checkbox" name="subjectIds" value={s.id} defaultChecked={me.learning.includes(s.id)} className="sr-only" />
                 {s.name}

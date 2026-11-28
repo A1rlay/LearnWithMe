@@ -168,6 +168,42 @@ a {
     color: var(--color-muted);
   }
 
+  /* Checkbox/radio pill: <label class="toggle-chip"><input class="sr-only">Label</label>.
+     Selected = filled + ✓, so it never relies on colour alone. */
+  .toggle-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: pointer;
+    border-radius: 9999px;
+    border: 1px solid var(--color-line-strong);
+    padding: 0.375rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  }
+  .toggle-chip:hover {
+    color: var(--color-fg);
+  }
+  .toggle-chip:has(:checked) {
+    border-color: color-mix(in oklab, var(--color-accent-text) 60%, transparent);
+    background: color-mix(in oklab, var(--color-accent) 25%, transparent);
+    color: var(--color-fg);
+  }
+  .toggle-chip:has(:checked)::before {
+    content: "✓";
+    font-size: 0.7rem;
+  }
+  .toggle-chip:has(:focus-visible) {
+    outline: 2px solid var(--color-accent-text);
+    outline-offset: 2px;
+  }
+  .toggle-chip-lg {
+    padding: 0.6rem 1.1rem;
+    font-size: 0.875rem;
+  }
+
   .field {
     width: 100%;
     border-radius: 0.75rem;

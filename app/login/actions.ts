@@ -74,7 +74,7 @@ export async function signupAction(_prev: SignupState, formData: FormData): Prom
   }
 
   await createSession({ userId: user.id, username: user.username, role: user.role, name: user.name });
-  redirect("/me?welcome=1");
+  redirect("/welcome");
 }
 
 export async function logoutAction() {

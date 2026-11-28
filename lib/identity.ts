@@ -43,3 +43,9 @@ export function parseInterests(raw: string): string[] {
   }
   return out;
 }
+
+/** Activities per week, 1..14 (DB CHECK matches). Falls back to 3. */
+export function parseWeeklyGoal(raw: FormDataEntryValue | null): number {
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 14 ? n : 3;
+}
