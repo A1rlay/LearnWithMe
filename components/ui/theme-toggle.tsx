@@ -1,15 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 /** Dark ↔ light. The choice lives in a cookie so the server renders the right theme first. */
 export function ThemeToggle({ initial }: { initial: "dark" | "light" }) {
   const [theme, setTheme] = useState(initial);
+  // Where the theme is heading. View transitions apply the change a frame later, so neither
+  // React state nor the DOM is current when two clicks land inside one frame.
+  const target = useRef(initial);
   function toggle() {
-    const next = theme === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
+    const next = target.current === "light" ? "dark" : "light";
+    target.current = next;
+    const apply = () => {
+      document.documentElement.dataset.theme = next;
+      setTheme(next);
+    };
     document.cookie = `theme=${next}; path=/; max-age=31536000; samesite=lax`;
-    setTheme(next);
+    // Cross-fade the whole page where the browser supports it; instant swap elsewhere.
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (document.startViewTransition && !reduce) {
+      // A newer click skips the running transition; that rejection is expected, not an error.
+      const t = document.startViewTransition(apply);
+      t.ready.catch(() => {});
+      t.finished.catch(() => {});
+    } else apply();
   }
   const toLight = theme === "dark";
   return (
@@ -18,9 +32,9 @@ export function ThemeToggle({ initial }: { initial: "dark" | "light" }) {
       onClick={toggle}
       aria-label={toLight ? "Switch to light theme" : "Switch to dark theme"}
       title={toLight ? "Light theme" : "Dark theme"}
-      className="grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+      className="press grid h-8 w-8 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-fg"
     >
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <svg key={theme} className="animate-pop" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         {toLight ? (
           <>
             <circle cx="12" cy="12" r="4" />

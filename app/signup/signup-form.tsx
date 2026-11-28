@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 
 import { signupAction, type SignupState } from "@/app/login/actions";
+import { Spinner } from "@/components/ui/spinner";
 
 export function SignupForm() {
   const [state, action, pending] = useActionState<SignupState, FormData>(signupAction, {});
@@ -51,7 +52,7 @@ export function SignupForm() {
         <span className="text-xs text-subtle">At least 8 characters.</span>
       </label>
       <button type="submit" disabled={pending} className="btn btn-primary mt-2 w-full py-3">
-        {pending ? "Creating your account…" : "Create account"}
+        {pending ? <><Spinner />Creating your account…</> : "Create account"}
       </button>
     </form>
   );

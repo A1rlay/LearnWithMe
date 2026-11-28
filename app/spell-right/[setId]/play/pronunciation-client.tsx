@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingLabel, Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -269,13 +270,13 @@ export function PronunciationClient({
             Sounds · Speaking
           </p>
           <h1 className="font-display text-4xl text-fg">Results</h1>
-          <p className="mt-1 text-lg text-muted">
+          <p className="animate-pop mt-1 text-lg text-muted">
             {score} / {words.length} correct
           </p>
         </div>
 
         {/* Word review */}
-        <div className="flex flex-col gap-3">
+        <div className="stagger flex flex-col gap-3">
           {answers.map((a, i) => (
             <div
               key={i}
@@ -359,10 +360,10 @@ export function PronunciationClient({
         </p>
 
         {gamePhase === "loading" ? (
-          <div className="h-20 flex items-center text-sm text-muted">Loading…</div>
+          <div className="h-20 flex items-center"><LoadingLabel /></div>
         ) : (
           <>
-            <p className="text-5xl font-extrabold text-fg">{current.word}</p>
+            <p key={index} className="animate-enter text-5xl font-extrabold text-fg">{current.word}</p>
             {ipa ? (
               <p className="text-lg text-muted">{ipa}</p>
             ) : null}
@@ -377,7 +378,7 @@ export function PronunciationClient({
             <button
               type="button"
               onClick={startRecording}
-              className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-accent-text bg-accent/12 text-accent-text hover:bg-accent/22 transition-colors"
+              className="press flex h-20 w-20 items-center justify-center rounded-full border-2 border-accent-text bg-accent/12 text-accent-text hover:bg-accent/22 hover:scale-105"
               aria-label="Start recording"
             >
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -400,7 +401,7 @@ export function PronunciationClient({
             </button>
           )}
           <p className="text-xs text-muted">
-            {isConnecting ? "Connecting…" : recordPhase === "recording" ? "Recording… tap to stop" : "Tap the mic to start"}
+            {isConnecting ? <span className="inline-flex items-center gap-1.5"><Spinner size={12} />Connecting…</span> : recordPhase === "recording" ? "Recording… tap to stop" : "Tap the mic to start"}
           </p>
           {error && <p className="text-xs text-danger text-center max-w-xs">{error}</p>}
         </div>
@@ -408,9 +409,9 @@ export function PronunciationClient({
 
       {/* Result panel */}
       {recordPhase === "evaluated" && (
-        <div className="w-full max-w-md card p-6 flex flex-col gap-4">
+        <div className={`w-full max-w-md card p-6 flex flex-col gap-4 ${isCorrect ? "animate-enter" : "animate-shake"}`}>
           <div className="flex items-center gap-3">
-            <span className={`text-3xl ${isCorrect ? "text-success" : "text-danger"}`}>
+            <span className={`animate-pop text-3xl ${isCorrect ? "text-success" : "text-danger"}`}>
               {isCorrect ? "✓" : "✗"}
             </span>
             <div>
@@ -438,7 +439,7 @@ export function PronunciationClient({
               <button
                 type="button"
                 onClick={handleTryAgain}
-                className="flex-1 rounded-full border border-line-strong py-3 text-sm font-semibold text-muted hover:border-fg hover:text-fg transition-colors"
+                className="press flex-1 rounded-full border border-line-strong py-3 text-sm font-semibold text-muted hover:border-fg hover:text-fg transition-colors"
               >
                 Try again
               </button>
@@ -446,7 +447,7 @@ export function PronunciationClient({
             <button
               type="button"
               onClick={handleNext}
-              className="flex-1 rounded-full bg-accent py-3 text-sm font-bold text-fg hover:opacity-90 transition-opacity"
+              className="btn btn-primary flex-1"
             >
               {index + 1 < words.length ? "Next word" : "See results"}
             </button>

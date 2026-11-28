@@ -127,3 +127,34 @@ drift, 11 CHECKs; production procedure rehearsed on a branch of main → zero dr
 - LOW — `lastActiveAt` counts completions only; answering without finishing reads as inactive.
 - Blocked on owner: email notifications (needs an email provider + domain), error tracking (needs a
   Sentry project/DSN).
+
+### frontend — Motion and loading system — Build + Harden — 2026-11-27
+**Did:** CSS-only motion system (ADR 0002): page entrance via `template.tsx` + `.page-enter`;
+route skeletons with a labelled spinner (`app/loading.tsx`, Studio `loading.tsx`); top navigation
+bar (`NavProgress`); shared `Spinner`/`LoadingLabel` used by every pending button (submit, quiz
+submit, welcome finish, message send, profile/project/signup, delete dialog); staggered grids and
+lists across learner pages and Studio; question changes slide in; right answers pop, wrong ones
+shake (always with a word); scores pop; goal rings sweep; skill radar grows from the centre;
+badges pop; hints, notices, new messages and dialogs ease in; tab-bar active indicator; tactile
+press on buttons and chips; focus ring glow on fields; theme switch cross-fades (View Transitions).
+**Decisions**
+- CSS only. Rejected: framer-motion (30–45 KB, forces client components). Cost: no exit animations.
+- No React `<ViewTransition>`. Rejected because Next marks it not production-ready. Revisit when it is stable.
+- Entrances use fill-mode `backwards`. Rejected `both`, because it pins `transform` and silently kills hover lifts.
+- `.stagger` is declared before the feedback utilities so pop/shake win the cascade on staggered children.
+**Verification (non-author):** red-team on a prod build: 4 proved, all fixed and re-verified with the
+red-team's own scripts. (1) nav bar stuck 15 s when a pending navigation was cancelled by a
+same-page click: now finishes, about 460 ms. (2) Theme toggle lost a click inside one frame, plus an
+uncaught AbortError: target kept in a ref, rejections handled, OK at 16 ms gaps, 0 errors. (3) Send
+button reflowed 20 px while pending: width now constant at 74.5 px. (4) Hover scale snapped: `.press`
+now transitions `scale`/`translate`. Held up: CLS 0.0000 on 5 routes × 2 viewports; reduced motion
+leaves no long/looping animation and no hidden content; hover/press after entrance; pop/shake on answers;
+composer draft survives polling; skip link and route announcer intact; no console/hydration errors.
+**Risks**
+- LOW: with prefetch + skeleton the URL commits in about 36 ms, so the nav bar mostly shows only for
+  un-prefetched or query-only navigations. This is by design: the skeleton is the primary signal.
+- LOW: `router.push` and server-action redirects don't drive the bar. The submit spinner covers them.
+**Named but not implemented:** "Loading…" announcement was suspected to be suppressed by
+`aria-busy`. I removed `aria-busy` from the skeleton, but this has not been checked with a real screen reader.
+Studio delete dialog and quiz review-screen pop have not been checked end to end (no staff login; a drag-and-drop question blocked automation).
+**Next:** owner: try it on a phone and say if any motion feels too much; tester: check the Studio dialog with a staff account.

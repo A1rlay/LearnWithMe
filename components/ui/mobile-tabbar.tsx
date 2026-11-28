@@ -25,14 +25,18 @@ export function MobileTabbar({ unread, requests, isStaff, username }: { unread: 
               <Link
                 href={t.href}
                 aria-current={on ? "page" : undefined}
-                className={`relative flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium ${on ? "text-fg" : "text-subtle"}`}
+                className={`relative flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${on ? "text-fg" : "text-subtle"}`}
               >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={on ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <span
+                  aria-hidden="true"
+                  className={`absolute inset-x-1/4 top-0 h-0.5 rounded-full bg-accent-text transition-[transform,opacity] duration-300 ${on ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"}`}
+                />
+                <svg className={`transition-transform duration-200 ${on ? "-translate-y-px scale-110" : ""}`} width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={on ? 2.2 : 1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d={t.d} />
                 </svg>
                 {t.label}
                 {t.badge ? (
-                  <span className="absolute right-[calc(50%-18px)] top-1 rounded-full bg-accent px-1 text-[9px] leading-4 text-on-accent">
+                  <span className="animate-pop absolute right-[calc(50%-18px)] top-1 rounded-full bg-accent px-1 text-[9px] leading-4 text-on-accent">
                     {t.badge > 9 ? "9+" : t.badge}
                     <span className="sr-only"> new</span>
                   </span>

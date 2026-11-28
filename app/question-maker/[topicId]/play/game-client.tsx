@@ -161,12 +161,12 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
               className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-surface px-8 py-4 text-center"
             >
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">{t.name}</p>
-              <p className="font-display text-4xl text-fg">{t.score}</p>
+              <p key={t.score} className="animate-pop font-display text-4xl text-fg">{t.score}</p>
             </div>
           ))}
           <div className="flex flex-col items-center gap-1 rounded-2xl border border-line bg-surface px-6 py-4 text-center">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-muted">Left</p>
-            <p className="font-display text-4xl text-fg">{remaining}</p>
+            <p key={remaining} className="animate-pop font-display text-4xl text-fg">{remaining}</p>
           </div>
         </div>
 
@@ -179,7 +179,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
 
         {/* Board grid */}
         <div
-          className="mx-auto w-full max-w-2xl grid gap-2"
+          className="stagger mx-auto w-full max-w-2xl grid gap-2"
           style={{ gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))` }}
         >
           {Array.from({ length: TOTAL }, (_, cellIdx) => {
@@ -205,7 +205,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
         </div>
 
         {remaining === 0 && (
-          <div className="text-center">
+          <div className="animate-enter text-center">
             <p className="text-2xl font-extrabold text-fg mb-2">Game over!</p>
             <p className="text-muted text-sm mb-4">
               Winner: {[...teams].sort((a, b) => b.score - a.score)[0].name} with {Math.max(...teams.map((t) => t.score))} pts
@@ -226,12 +226,12 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
     return (
       <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-6 py-12">
         {/* Points badge */}
-        <div className="rounded-full border border-accent-text px-6 py-2 text-sm font-bold text-accent-text">
+        <div className="animate-pop rounded-full border border-accent-text px-6 py-2 text-sm font-bold text-accent-text">
           {cellPoints} points
         </div>
 
         {/* Question */}
-        <div className="w-full max-w-2xl text-center">
+        <div className="animate-enter w-full max-w-2xl text-center">
           <p className="eyebrow mb-3">
             {currentQuestion.type.replace(/_/g, " ")}
           </p>
@@ -241,7 +241,7 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
 
           {/* Show answer hints for game mode */}
           {"options" in data && (
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="stagger mt-6 grid grid-cols-2 gap-3">
               {(data.options as string[]).map((opt, i) => (
                 <div key={i} className="rounded-2xl border border-line-strong bg-surface-3 px-4 py-3 text-left text-sm text-fg">
                   <span className="font-bold text-subtle mr-2">{String.fromCharCode(65 + i)}.</span>
@@ -293,8 +293,8 @@ export function GameClient({ topic }: { topic: QMTopicDetail }) {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-lg font-bold text-accent-text">
+          <div className="animate-enter flex flex-col items-center gap-4">
+            <p className="animate-pop text-lg font-bold text-accent-text">
               +{pointsAwarded} pts → {teams[awardingTeam].name}
             </p>
             <button

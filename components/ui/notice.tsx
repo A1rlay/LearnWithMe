@@ -2,7 +2,7 @@
 export function Notice({ text }: { text?: string }) {
   if (!text) return null;
   return (
-    <p role="status" className="card border-accent-text/30 px-4 py-3 text-sm text-fg">
+    <p role="status" className="card animate-enter border-accent-text/30 px-4 py-3 text-sm text-fg">
       {text.slice(0, 200)}
     </p>
   );

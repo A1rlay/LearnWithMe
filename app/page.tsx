@@ -73,8 +73,8 @@ export default async function HomePage() {
             </p>
           </div>
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {subjects.map((s, i) => {
+          <ul className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {subjects.map((s) => {
               const activities = s.videoTopicCount + s.quizCount + s.spellingSetCount;
               return (
                 <li key={s.id}>
@@ -82,11 +82,6 @@ export default async function HomePage() {
                     href={`/subjects/${s.id}`}
                     className="card card-interactive group relative flex h-full flex-col gap-5 overflow-hidden p-6"
                   >
-                    <div
-                      aria-hidden="true"
-                      className="pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full opacity-25 blur-3xl transition-opacity group-hover:opacity-45"
-                      style={{ background: i % 2 ? "var(--color-series-then)" : "var(--color-series-now)" }}
-                    />
                     <div className="flex items-start justify-between gap-3">
                       <h3 className="font-display text-3xl text-fg">{s.name}</h3>
                       <span className="chip font-mono">{activities} activities</span>
@@ -114,7 +109,7 @@ export default async function HomePage() {
       {/* How it works — the pedagogy, in plain words */}
       <section aria-labelledby="how-h" className="flex flex-col gap-6">
         <h2 id="how-h" className="eyebrow">How it works</h2>
-        <ol className="grid gap-4 sm:grid-cols-3">
+        <ol className="stagger grid gap-4 sm:grid-cols-3">
           {[
             ["Pick a subject", "Each one is taught by an expert who builds its activities."],
             ["Practise a skill", "Every activity says which skills it trains, so you know why you're doing it."],

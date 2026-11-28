@@ -72,7 +72,7 @@ export default async function ActivitiesHubPage({ searchParams }: Props) {
                 This subject offers no activity kinds yet. Turn some on from the subject page.
               </p>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="stagger grid gap-4 sm:grid-cols-2">
                 {ACTIVITY_TYPES.filter((t) => current.activityTypes.includes(t)).map((t) => {
                   const m = ACTIVITY_META[t];
                   const count =

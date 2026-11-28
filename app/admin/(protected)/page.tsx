@@ -62,7 +62,7 @@ export default async function StudioOverviewPage() {
               : "You're not assigned to a subject yet. Ask the owner to add you as an expert."}
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {subjects.map((s) => (
               <Link key={s.id} href={`/admin/subjects/${s.id}`} className="card card-interactive flex flex-col gap-3 p-5">
                 <div className="flex items-start justify-between gap-2">
@@ -97,7 +97,7 @@ export default async function StudioOverviewPage() {
           <h2 id="totals-h" className="text-sm font-semibold text-fg">
             Platform totals
           </h2>
-          <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <dl className="stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
             {[
               ["Subjects", counts.subjectCount],
               ["Videos", counts.videoCount],
@@ -133,7 +133,7 @@ function ActivationFunnel({ f }: { f: NonNullable<Awaited<ReturnType<typeof getA
           The number to grow is <span className="text-fg">Activated</span>. Percentages are of everyone who signed up.
         </p>
       </div>
-      <ol className="grid gap-3 sm:grid-cols-5">
+      <ol className="stagger grid gap-3 sm:grid-cols-5">
         {steps.map(([label, n, hint], i) => (
           <li key={label} className={`card flex flex-col gap-1 p-4 ${i === 2 ? "border-accent-text/40" : ""}`}>
             <span className="text-xs text-muted">{label}</span>

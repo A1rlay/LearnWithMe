@@ -168,7 +168,7 @@ export default async function ProfilePage({ params }: Props) {
 
       {/* ── Main ────────────────────────────────────────────── */}
       <div className="flex min-w-0 flex-col gap-10">
-        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <dl className="stagger grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="Current streak" value={`${streak.current} ${streak.current === 1 ? "day" : "days"}`} accent={streak.current > 0}>
             {streak.current > 0 && !streak.practicedToday && isMe ? "Practise today to keep it" : streak.practicedToday ? "Practised today" : null}
           </Stat>
@@ -191,7 +191,7 @@ export default async function ProfilePage({ params }: Props) {
           {profile.projects.length === 0 && !isMe ? (
             <p className="text-sm text-subtle">No projects yet.</p>
           ) : (
-            <ul className="grid gap-3 md:grid-cols-2">
+            <ul className="stagger grid gap-3 md:grid-cols-2">
               {profile.projects.map((p) => (
                 <ProjectCard key={p.id} p={p} editable={isMe} subjects={pickable} />
               ))}

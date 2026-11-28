@@ -2,6 +2,7 @@
 
 import { ActivityInstructions } from "@/components/ui/activity-instructions";
 import { HintToggle } from "@/components/ui/hint-toggle";
+import { Spinner } from "@/components/ui/spinner";
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 
@@ -79,7 +80,7 @@ export function QuizClient({ topic, topicId }: Props) {
         </div>
         <div className="h-1.5 w-full rounded-full bg-surface-3">
           <div
-            className="h-full rounded-full bg-accent transition-all duration-300"
+            className="h-full rounded-full bg-accent transition-[width] duration-500 ease-[var(--ease-out)]"
             style={{ width: `${((step + 1) / topic.questions.length) * 100}%` }}
           />
         </div>
@@ -92,7 +93,8 @@ export function QuizClient({ topic, topicId }: Props) {
         />
       )}
 
-      {/* Question */}
+      {/* Question: keyed so each new question slides in */}
+      <div key={current.id} className="animate-enter flex flex-col gap-8">
       <div>
         <p className="eyebrow">
           Question {step + 1}
@@ -108,13 +110,14 @@ export function QuizClient({ topic, topicId }: Props) {
         value={answers[step]}
         onChange={saveAnswer}
       />
+      </div>
 
       {/* Nav */}
       <div className="flex items-center justify-between gap-4 pt-2">
         {step > 0 ? (
           <button
             onClick={() => setStep((s) => s - 1)}
-            className="flex items-center gap-1.5 rounded-full border border-line-strong px-5 py-3 text-sm font-semibold text-muted transition-colors hover:border-fg hover:text-fg"
+            className="press flex items-center gap-1.5 rounded-full border border-line-strong px-5 py-3 text-sm font-semibold text-muted transition-colors hover:border-fg hover:text-fg"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             Previous
@@ -132,9 +135,10 @@ export function QuizClient({ topic, topicId }: Props) {
           <button
             onClick={handleSubmit}
             disabled={!isAnswerReady(current, answers[step]) || submitting}
+            aria-busy={submitting}
             className="btn btn-primary disabled:opacity-40"
           >
-            {submitting ? "Submitting…" : "Submit"}
+            {submitting ? <><Spinner />Submitting…</> : "Submit"}
           </button>
         ) : (
           <button
@@ -618,8 +622,8 @@ function ReviewScreen({
         <h1 className="mt-2 text-4xl font-extrabold text-fg">Quiz complete!</h1>
       </div>
 
-      <div className="flex flex-col items-center gap-2 card px-10 py-8 text-center">
-        <p className="text-6xl font-extrabold text-success">{pct}%</p>
+      <div className="animate-enter flex flex-col items-center gap-2 card px-10 py-8 text-center">
+        <p className="animate-pop text-6xl font-extrabold text-success">{pct}%</p>
         <p className="text-sm text-muted">
           {correct} correct out of {autoGraded} auto-graded
           {pending > 0 && (
@@ -635,9 +639,11 @@ function ReviewScreen({
         <h2 className="text-base font-bold uppercase tracking-[0.2em] text-subtle">
           Review
         </h2>
+        <div className="stagger flex flex-col gap-3">
         {scored.map((s, i) => (
           <QuestionReview key={s.question.id} index={i} scored={s} />
         ))}
+        </div>
       </div>
 
       {/* Actions */}

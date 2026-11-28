@@ -18,12 +18,15 @@ export function GoalRing({ done, goal, size = 44, label }: { done: number; goal:
             stroke={met ? "var(--color-series-then)" : "var(--color-series-now)"}
             strokeWidth={stroke}
             strokeLinecap="round"
-            strokeDasharray={`${c * frac} ${c}`}
+            strokeDasharray={c}
+            strokeDashoffset={c * (1 - frac)}
+            className="goal-ring-fill"
+            style={{ "--ring-c": `${c}` } as React.CSSProperties}
           />
         )}
       </svg>
       <span className="absolute font-mono text-[11px] text-fg">
-        {met ? "✓" : `${done}/${goal}`}
+        {met ? <span className="animate-pop inline-block">✓</span> : `${done}/${goal}`}
       </span>
       <span className="sr-only">{label ?? `${done} of ${goal} activities this week${met ? ", goal met" : ""}`}</span>
     </span>
